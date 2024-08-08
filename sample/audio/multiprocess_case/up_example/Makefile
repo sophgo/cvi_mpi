@@ -6,7 +6,7 @@ ifeq ($(MW_VER), )
 PARAM_FILE:=../../../../Makefile.param
 include $(PARAM_FILE)
 else
-PARAM_FILE:=../../../../../$(shell echo $(MW_VER))/Makefile.param
+PARAM_FILE:=../../../../Makefile.param
 include $(PARAM_FILE)
 endif
 endif

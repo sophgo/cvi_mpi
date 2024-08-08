@@ -61,56 +61,6 @@ static inline CVI_S32 CHECK_VPSS_CHN_VALID(VPSS_CHN VpssChn)
 static CVI_S32 _vpss_update_rotation_mesh(VPSS_GRP VpssGrp, VPSS_CHN VpssChn,
 	ROTATION_E enRotation, CVI_U32 u32Width, CVI_U32 u32Height)
 {
-#ifdef ARCH_CV183X
-	CVI_U64 paddr, paddr_old;
-	CVI_VOID *vaddr, *vaddr_old;
-	struct cvi_gdc_mesh *pmesh = &mesh[VpssGrp][VpssChn];
-
-	// acquire memory space for mesh.
-	if (CVI_SYS_IonAlloc_Cached(&paddr, &vaddr, "vpss_mesh", CVI_GDC_MESH_SIZE_ROT) != CVI_SUCCESS) {
-		CVI_TRACE_VPSS(CVI_DBG_ERR, "Grp(%d) Chn(%d) Can't acquire memory for rotation mesh.\n"
-			, VpssGrp, VpssChn);
-		return CVI_ERR_VPSS_NOMEM;
-	}
-
-	SIZE_S in_size, out_size;
-
-	in_size.u32Width = u32Width;
-	in_size.u32Height = u32Height;
-	if (enRotation == ROTATION_180) {
-		out_size = in_size;
-	} else {
-		out_size.u32Width = in_size.u32Height;
-		out_size.c = in_size.u32Width;
-	}
-	mesh_gen_rotation(in_size, out_size, enRotation, paddr, vaddr);
-	CVI_SYS_IonFlushCache(paddr, vaddr, CVI_GDC_MESH_SIZE_ROT);
-
-	CVI_TRACE_VPSS(CVI_DBG_DEBUG, "Grp(%d) Chn(%d) mesh base(%#"PRIx64") vaddr(%p)\n"
-		, VpssGrp, VpssChn, paddr, vaddr);
-
-	pthread_mutex_lock(&pmesh->lock);
-	if (pmesh->paddr != 0) {
-		paddr_old = pmesh->paddr;
-		vaddr_old = pmesh->vaddr;
-	} else {
-		paddr_old = 0;
-		vaddr_old = NULL;
-	}
-	pmesh->paddr = paddr;
-	pmesh->vaddr = vaddr;
-	pthread_mutex_unlock(&pmesh->lock);
-	if (paddr_old)
-		CVI_SYS_IonFree(paddr_old, vaddr_old);
-#elif defined(ARCH_CV182X)
-	struct cvi_gdc_mesh *pmesh = &mesh[VpssGrp][VpssChn];
-
-	UNUSED(u32Width);
-	UNUSED(u32Height);
-	UNUSED(enRotation);
-	// TODO: dummy settings
-	pmesh->paddr = DEFAULT_MESH_PADDR;
-#elif defined(__CV181X__) || defined(__CV180X__)
 	CVI_S32 fd = get_vpss_fd();
 	struct cvi_gdc_mesh *pmesh = &mesh[VpssGrp][VpssChn];
 	struct vpss_chn_rot_cfg cfg;
@@ -124,8 +74,6 @@ static CVI_S32 _vpss_update_rotation_mesh(VPSS_GRP VpssGrp, VPSS_CHN VpssChn,
 	cfg.VpssChn = VpssChn;
 	cfg.enRotation = enRotation;
 	return vpss_set_chn_rotation(fd, &cfg);
-#endif
-	return CVI_SUCCESS;
 }
 
 static CVI_S32 _vpss_update_ldc_mesh(VPSS_GRP VpssGrp, VPSS_CHN VpssChn,
