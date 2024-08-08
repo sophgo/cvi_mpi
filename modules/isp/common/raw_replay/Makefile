@@ -1,6 +1,6 @@
 SHELL = /bin/bash
 ifeq ($(PARAM_FILE), )
-	PARAM_FILE:=../../../../../$(shell echo $(MW_VER))/Makefile.param
+	PARAM_FILE:=../../../../Makefile.param
 	include $(PARAM_FILE)
 endif
 
@@ -13,13 +13,7 @@ SRCS = $(wildcard $(SDIR)/*.c)
 INCS = -I$(MW_INC) -I$(ISP_INC) -I$(KERNEL_INC) -I$(SYS_INC)  -I../../algo
 
 # SOC Architecture
-ifeq ($(CHIP_ARCH), CV183X)
-	INCS += -I$(ISP_BASE_PATH)/include
-	DEFS += -DCHIP_ARCH_CV183X
-else ifeq ($(CHIP_ARCH), CV182X)
-	INCS += -I$(ISP_BASE_PATH)/isp/inc
-	DEFS += -DCHIP_ARCH_CV182X
-else ifeq ($(CHIP_ARCH), CV181X)
+ifeq ($(CHIP_ARCH), CV181X)
 	INCS += -I$(ISP_BASE_PATH)/isp/inc
 	INCS += -I$(VI_INC)
 	INCS += -I$(VPSS_INC)

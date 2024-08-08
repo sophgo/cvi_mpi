@@ -1,6 +1,6 @@
 SHELL = /bin/bash
 ifeq ($(PARAM_FILE), )
-	PARAM_FILE:=../../../../../$(shell echo $(MW_VER))/Makefile.param
+	PARAM_FILE:=../../../../Makefile.param
 	include $(PARAM_FILE)
 endif
 UV_DUMMY=y
@@ -51,11 +51,7 @@ LOCAL_CFLAGS = $(CINCS) $(USRDEFS) -rdynamic -fPIC
 LOCAL_LDFLAGS = $(LINCS) $(LIBS) -shared
 
 # SOC Architecture
-ifeq ($(CHIP_ARCH), CV183X)
-	LOCAL_CFLAGS += -DCHIP_ARCH_CV183X
-else ifeq ($(CHIP_ARCH), CV182X)
-	LOCAL_CFLAGS += -DCHIP_ARCH_CV182X
-else ifeq ($(CHIP_ARCH), CV181X)
+ifeq ($(CHIP_ARCH), CV181X)
 	LOCAL_CFLAGS += -DCHIP_ARCH_CV181X
 else ifeq ($(CHIP_ARCH), CV180X)
 	LOCAL_CFLAGS += -DCHIP_ARCH_CV180X

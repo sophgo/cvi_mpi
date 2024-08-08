@@ -1,6 +1,6 @@
 SHELL = /bin/bash
 ifeq ($(PARAM_FILE), )
-	PARAM_FILE:=../../../../../$(shell echo $(MW_VER))/Makefile.param
+	PARAM_FILE:=../../../../Makefile.param
 	include $(PARAM_FILE)
 endif
 
@@ -21,15 +21,7 @@ LOCAL_CFLAGS = $(INCS)
 RELEASE_FOLDER = $(PWD)/bin
 
 # SOC Architecture
-ifeq ($(CHIP_ARCH), CV183X)
-	LOCAL_CFLAGS += -I$(ISP_BASE_PATH)/include
-	LOCAL_CFLAGS += -DCHIP_ARCH_CV183X
-	DEFS += -DCHIP_ARCH_CV183X
-else ifeq ($(CHIP_ARCH), CV182X)
-	LOCAL_CFLAGS += -I$(ISP_BASE_PATH)/isp/inc
-	LOCAL_CFLAGS += -DCHIP_ARCH_CV182X
-	DEFS += -DCHIP_ARCH_CV182X
-else ifeq ($(CHIP_ARCH), CV181X)
+ifeq ($(CHIP_ARCH), CV181X)
 	LOCAL_CFLAGS += -I$(ISP_BASE_PATH)/isp/inc
 	LOCAL_CFLAGS += -DCHIP_ARCH_CV181X
 	DEFS += -DCHIP_ARCH_CV181X
