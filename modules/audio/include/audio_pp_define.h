@@ -1,0 +1,15 @@
+#ifndef __AUDIO_PP_DEFINE_H__
+#define __AUDIO_PP_DEFINE_H__
+#include <stdio.h>
+#include <stdint.h>
+
+typedef  enum {
+	CVI_AUD_ERR_INVAILD_PARAMS = 0xFFFF0001,
+	CVI_AUD_ERR_NOT_INIT,
+	CVI_AUD_ERR_NO_MEM,
+	CVI_AUD_ERR_INVAILD_ORDER,
+	CVI_AUD_ERR_NO_SOURCE,
+	CVI_AUD_ERR_NULL_PTR,
+} AUDIO_E_ERROR;
+
+#endif //__AUDIO_PP_DEFINE_H__

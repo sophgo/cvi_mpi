@@ -1,0 +1,53 @@
+SHELL = /bin/bash
+ifeq ($(PARAM_FILE), )
+     PARAM_FILE:=../../mpi_param.mk
+     include $(PARAM_FILE)
+endif
+#
+SDIR := $(CURDIR)/src
+SRCS_C := $(SDIR)/cmpr_canvas.c
+SRCS_C += $(SDIR)/cvi_region.c
+SRCS_C += $(SDIR)/osdc.c
+SRCS_C += $(SDIR)/osd_cmpr.c
+#
+ODIR    := $(CURDIR)/obj
+OBJS    := $(SRCS_C:$(SDIR)/%.c=$(ODIR)/%.$(TARGET_MACHINE).$(CHIP_ARCH_L).o)
+DEPS	:= $(SRCS_C:.c=.d)
+#
+INCS = -I$(MW_INC) -I$(MW_INTERNAL_INC) -I$(ISP_INC) -I$(SYS_INC) -I$(MSG_INC) -I$(BIN_INC) -I./include
+#
+TARGET_A = $(MW_LIB)/librgn.a
+TARGET_SO = $(MW_LIB)/librgn.so
+
+EXTRA_CFLAGS = $(INCS)
+
+ifeq ($(MULTI_PROCESS_SUPPORT), 1)
+EXTRA_CFLAGS += -DRPC_MULTI_PROCESS
+endif
+
+.PHONY : clean all
+all : $(TARGET_A) $(TARGET_SO)
+
+$(ODIR)/%.$(TARGET_MACHINE).$(CHIP_ARCH_L).o : $(SDIR)/%.c
+	$(Q)mkdir -p $(dir $@)
+	@$(CC) $(DEPFLAGS) $(CFLAGS) $(EXTRA_CFLAGS)   -c $<  -o $@
+	@echo [$(notdir $(CC))] $(notdir $@)
+
+$(TARGET_A): $(OBJS)
+	@$(AR) $(ARFLAGS) $(TARGET_A) $(OBJS)
+	@echo -e $(YELLOW)[LINK]$(END)[$(notdir $(AR))] $(notdir $(TARGET_A))
+
+$(TARGET_SO): $(OBJS)
+	@$(LD) $(LDFLAGS) -o $(TARGET_SO) --start-group $(OBJS) --end-group
+	@echo -e $(GREEN)[LINK]$(END)[$(notdir $(LD))] $(notdir $(TARGET_SO))
+
+clean:
+	@rm -f $(TARGET_A) $(TARGET_SO)
+
+clean_all: clean
+	@if [ -d "$(SDIR)" ]; then \
+		echo "rm -rf $(ODIR)"; \
+		rm -rf $(ODIR); \
+	fi
+
+-include $(DEPS)
