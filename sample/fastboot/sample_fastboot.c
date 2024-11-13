@@ -67,7 +67,7 @@ CVI_S32 TEST_COMM_SaveFrame(const CVI_CHAR *filename, VIDEO_FRAME_INFO_S *pstVid
 		pstVideoFrame->stVFrame.pu8VirAddr[i]
 			= CVI_SYS_Mmap(pstVideoFrame->stVFrame.u64PhyAddr[i], pstVideoFrame->stVFrame.u32Length[i]);
 
-		SAMPLE_PRT("plane(%d): paddr(%#"PRIx64") vaddr(%p) stride(%d)\n",
+		SAMPLE_PRT("plane(%d): paddr(%#llx) vaddr(%p) stride(%d)\n",
 			   i, pstVideoFrame->stVFrame.u64PhyAddr[i],
 			   pstVideoFrame->stVFrame.pu8VirAddr[i],
 			   pstVideoFrame->stVFrame.u32Stride[i]);

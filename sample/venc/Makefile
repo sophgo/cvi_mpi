@@ -25,7 +25,7 @@ VENC_SRCS = $(SDIR)/sample_venc.c
 # VENC_INC=../../modules/venc
 SAMPLE_VENC_INC=$(SDIR)/include
 SAMPLE_VDEC_INC=$(SDIR)/../vdec/include
-INCS = -I$(MW_INC) -I$(ISP_INC) -I$(COMM_INC) -I$(KERNEL_INC) -I$(SAMPLE_VENC_INC) -I$(SAMPLE_VDEC_INC) -I../common -I$(SYS_INC) -I$(MW_PATH)/3rdparty/inih
+INCS = -I$(MW_INC) -I$(ISP_INC) -I$(COMM_INC) -I$(KERNEL_INC) -I$(SAMPLE_VENC_INC) -I$(SAMPLE_VDEC_INC) -I$(COMMON_DIR) -I$(SYS_INC) -I$(MW_PATH)/3rdparty/inih
 
 OBJS = $(SRCS:.c=.o)
 VENC_OBJS = $(VENC_SRCS:.c=.o)

@@ -8,7 +8,7 @@ include ../sample.mk
 SDIR := $(CURDIR)
 SRCS = $(wildcard $(SDIR)/*.c)
 SRCS +=  $(COMMON_DIR)/sample_common_vo.c $(COMMON_DIR)/sample_common_sys.c $(COMMON_DIR)/sample_common_platform.c $(COMMON_DIR)/sample_common_vpss.c $(COMMON_DIR)/sample_common_venc.c
-INCS = -I$(MW_INC) -I$(ISP_INC) -I../common/ -I$(KERNEL_INC) -I$(PANEL_INC)
+INCS = -I$(MW_INC) -I$(ISP_INC) -I$(COMMON_DIR)/ -I$(KERNEL_INC) -I$(PANEL_INC)
 OBJS = $(SRCS:.c=.o)
 DEPS = $(SRCS:.c=.d)
 

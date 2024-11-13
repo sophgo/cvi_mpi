@@ -42,6 +42,8 @@ void SAMPLE_REGION_Usage(char *sPrgNm)
 	printf("\t 6)VPSS OSD MultiChn.\n");
 	printf("\t 7)VPSS OSD 8bit mode OVERLAY.\n");
 	printf("\t 8)VPSS OSD objects OVERLAY.\n");
+	printf("\t 9)VPSS COVEREX.\n");
+	printf("\t 10)VPSS MOSAIC.\n");
 }
 
 void SAMPLE_REGION_HandleSig(CVI_S32 signo)
@@ -819,7 +821,6 @@ CVI_S32 SAMPLE_REGION_VPSS_OSD_TIME(CVI_VOID)
 
 	stChnAttr.bShow = CVI_TRUE;
 	stChnAttr.enType = OVERLAY_RGN;
-	stChnAttr.unChnAttr.stOverlayChn.u32Layer = 0;
 	for (i = MinHandle; i < MinHandle + HandleNum; i++) {
 		stChnAttr.unChnAttr.stOverlayChn.stPoint.s32X = 20 + 300 * (i - MinHandle);
 		stChnAttr.unChnAttr.stOverlayChn.stPoint.s32Y = 20 + 300 * (i - MinHandle);
@@ -1073,7 +1074,6 @@ CVI_S32 SAMPLE_REGION_VPSS_OSD_MULTICHN(CVI_VOID)
 
 	stOverlayChnAttr.bShow = CVI_TRUE;
 	stOverlayChnAttr.enType = OVERLAY_RGN;
-	stOverlayChnAttr.unChnAttr.stOverlayChn.u32Layer = 0;
 
 	RGN_CHN_ATTR_S stCoverChnAttr;
 
@@ -1084,7 +1084,6 @@ CVI_S32 SAMPLE_REGION_VPSS_OSD_MULTICHN(CVI_VOID)
 	stCoverChnAttr.unChnAttr.stCoverChn.stRect.u32Width = 100;
 	stCoverChnAttr.unChnAttr.stCoverChn.u32Color = 0x00ffff;
 	stCoverChnAttr.unChnAttr.stCoverChn.enCoordinate = RGN_ABS_COOR;
-	stCoverChnAttr.unChnAttr.stCoverChn.u32Layer = 0;
 	stRgnOverlay.unAttr.stOverlay.bFlip = false;
 	stRgnOverlay.unAttr.stOverlay.bMirror = false;
 	for (i = 0; i < 16; i++) {
@@ -1417,6 +1416,38 @@ EXIT0:
 	return s32Ret;
 }
 
+CVI_S32 SAMPLE_REGION_VPSS_COVEREX(CVI_VOID)
+{
+	CVI_S32 s32Ret;
+	CVI_S32 HandleNum;
+	RGN_TYPE_E enType;
+	MMF_CHN_S stChn;
+
+	HandleNum = 3;
+	enType = COVEREX_RGN;
+	stChn.enModId = CVI_ID_VPSS;
+	stChn.s32DevId = 0;
+	stChn.s32ChnId = 0;
+	s32Ret = SAMPLE_REGION_VI_VPSS_VO(HandleNum, enType, &stChn);
+	return s32Ret;
+}
+
+CVI_S32 SAMPLE_REGION_VPSS_MOSAIC(CVI_VOID)
+{
+	CVI_S32 s32Ret;
+	CVI_S32 HandleNum;
+	RGN_TYPE_E enType;
+	MMF_CHN_S stChn;
+
+	HandleNum = 3;
+	enType = MOSAIC_RGN;
+	stChn.enModId = CVI_ID_VPSS;
+	stChn.s32DevId = 0;
+	stChn.s32ChnId = 0;
+	s32Ret = SAMPLE_REGION_VI_VPSS_VO(HandleNum, enType, &stChn);
+	return s32Ret;
+}
+
 int main(int argc, char *argv[])
 {
 	CVI_S32 s32Ret = CVI_FAILURE;
@@ -1468,6 +1499,12 @@ int main(int argc, char *argv[])
 		break;
 	case 8:
 		s32Ret = SAMPLE_REGION_VPSS_OSD_OBJECTS();
+		break;
+	case 9:
+		s32Ret = SAMPLE_REGION_VPSS_COVEREX();
+		break;
+	case 10:
+		s32Ret = SAMPLE_REGION_VPSS_MOSAIC();
 		break;
 	default:
 		SAMPLE_PRT("option, %d, is invaild!\n", s32Index);

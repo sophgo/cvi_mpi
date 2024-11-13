@@ -46,7 +46,7 @@ CVI_S32 SAMPLE_COMM_DATAFIFO_Init(CVI_DATAFIFO_PARAMS_S* params,
 		return -1;
 	}
 
-	SAMPLE_PRT("PhyAddr:%#"PRIx64"\n", *phyAddr);
+	SAMPLE_PRT("PhyAddr:%#llx\n", *phyAddr);
 
 	s32Ret = CVI_DATAFIFO_CMD(*hDataFifo, DATAFIFO_CMD_SET_DATA_RELEASE_CALLBACK, pArg);
 	if (CVI_SUCCESS != s32Ret) {

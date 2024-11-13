@@ -6,6 +6,7 @@ include $(PARAM_FILE)
 endif
 
 include ../sample.mk
+include $(MW_PATH)/modules/audio/audio.mk
 
 SDIR := $(CURDIR)
 3PARTY_INCLUDE = include/include
@@ -61,10 +62,6 @@ else
 endif
 ifeq ($(SUPPORT_EXTERNAL_AAC), yes)
 DEFINES += -DSUPPORT_EXTERNAL_AAC
-endif
-
-ifeq ($(USE_NEXT_SSP_DUAL), yes)
-DEFINES += -DNEXT_SSP_ALGO
 endif
 
 ifeq ($(USE_CVIAUDIO_STATIC), yes)
@@ -170,7 +167,7 @@ ELFFLAGS = $(filter-out -static, $(AUDIO_ELFFLAGS))
 
 EXTRA_LDFLAGS += $(MW_LIB)/libmsg.a $(MW_LIB)/libcvilink.a $(MW_LIB)/libvi.a $(MW_LIB)/libvpss.a \
 				 $(MW_LIB)/libvo.a $(MW_LIB)/librgn.a $(MW_LIB)/libgdc.a
-ifeq ($(CONFIG_AUD_DRV_SEL), y)
+ifeq ($(USE_ALIOS_AUD_DRV), yes)
 DEFINES += -DUSE_ALIOS_AUD_DRV
 endif
 .PHONY : clean all

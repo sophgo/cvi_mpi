@@ -23,7 +23,7 @@ ifeq ($(DESTDIR),)
 	DESTDIR := $(CURDIR)/install
 endif
 
-INCS = -I$(KERNEL_INC) -I$(MW_INC) -I$(ISP_INC) -Iinclude -I$(MW_PATH)/sample -I$(CVI_ISPD2_PATH)
+INCS = -I$(KERNEL_INC) -I$(MW_INC) -I$(ISP_INC) -Iinclude -I$(MW_PATH)/sample -I$(CVI_ISPD2_PATH) -I$(MW_PATH)/3rdparty/inih
 INCS += -I$(ISP_COMMON_DIR)/raw_dump/inc
 INCS += -I$(ISP_COMMON_DIR)/raw_dump/src
 INCS += -I$(ISP_COMMON_DIR)/../algo
@@ -55,6 +55,12 @@ LOCAL_CPPFLAGS = -fno-use-cxa-atexit
 ifeq ($(CONFIG_FAST_BOOT_MODE), y)
 LOCAL_CFLAGS += -DCONFIG_FAST_BOOT_MODE
 LOCAL_CPPFLAGS += -DCONFIG_FAST_BOOT_MODE
+endif
+
+ifeq ($(CHIP_ARCH), CV181X)
+	LOCAL_CFLAGS += -D__CV181X__
+else ifeq ($(CHIP_ARCH), CV180X)
+	LOCAL_CFLAGS += -D__CV180X__
 endif
 
 LOCAL_LDFLAGS = $(LIBS) -Wl,-rpath-link=$(CVI_RTSP_LIB_PATH) -L$(CVI_ISPD2_PATH) -L$(CVI_RTSP_LIB_PATH) -lm -lpthread

@@ -13,5 +13,7 @@
 | VPSS OSD MultiChn          | ./sample_region 6    | Implement the overlay and cover function on VPSS, which has four groups         | dog.bmp            |
 | VPSS OSD 8bit mode OVERLAY | ./sample_region 7    | The implementation of the overlay function on VPSS, superimposing 8-bit images  | tiger_8bitmode.bmp |
 | VPSS OSD objects OVERLAY   | ./sample_region 8    | Implement drawing line and rect function on VPSS                                | NULL               |
+| VPSS COVEREX               | ./sample_region 9    | Implement coverex function on VPSS                                              | NULL               |
+| VPSS MOSAIC                | ./sample_region 10   | Implement mosaic function on VPSS                                               | NULL               |
 |                            |                      |                                                                                 |                    |
 

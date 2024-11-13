@@ -184,10 +184,6 @@ ifeq ($(USE_TINYALSA), yes)
 LDLIBS += -ltinyalsa
 endif
 
-ifeq ($(USE_NEXT_SSP_DUAL), yes)
-EXTRA_CFLAGS += -DNEXT_SSP_ALGO
-endif
-
 ifeq ($(USE_SONIC_LIB), yes)
 EXTRA_CFLAGS += -DUSE_SONIC_LIB
 endif

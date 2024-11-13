@@ -42,10 +42,10 @@ CVI_S32 SAMPLE_PLAT_SYS_INIT(SIZE_S stSize)
 {
 	VB_CONFIG_S	   stVbConf;
 	CVI_U32        u32BlkSize, u32BlkRotSize;
-	CVI_BOOL       b64Ddr = false;
 	CVI_S32 s32Ret = CVI_SUCCESS;
 	COMPRESS_MODE_E    enCompressMode   = COMPRESS_MODE_NONE;
 	struct sigaction sa = {};
+	ION_MEM_STATE_S state_alios = {0};
 
 	memset(&sa, 0, sizeof(struct sigaction));
 	sigemptyset(&sa.sa_mask);
@@ -65,13 +65,13 @@ CVI_S32 SAMPLE_PLAT_SYS_INIT(SIZE_S stSize)
 
 	stVbConf.astCommPool[0].u32BlkSize	= u32BlkSize;
 
-	s32Ret = SAMPLE_COMM_CheckDDR64MBSize(&b64Ddr);
+	s32Ret = CVI_SYS_GetMemoryState(&state_alios);
 	if (s32Ret != CVI_SUCCESS) {
-		CVI_TRACE_LOG(CVI_DBG_ERR, "SAMPLE_COMM_CheckDDR64MBSize failed with %#x\n", s32Ret);
+		SAMPLE_PRT("CVI_SYS_GetMemoryState failed with %#x\n", s32Ret);
 		return s32Ret;
 	}
 
-	if (!b64Ddr)
+	if (state_alios.total_size > 0x3a000000)
 		stVbConf.astCommPool[0].u32BlkCnt	= 8;
 	else
 		stVbConf.astCommPool[0].u32BlkCnt	= 3;

@@ -151,7 +151,7 @@ static int sys_vi_init(void)
 			if (!b64Ddr)
 				stVbConf.astCommPool[stVbConf.u32MaxPoolCnt].u32BlkCnt = 2;
 			else
-				stVbConf.astCommPool[stVbConf.u32MaxPoolCnt].u32BlkCnt = 4;
+				stVbConf.astCommPool[stVbConf.u32MaxPoolCnt].u32BlkCnt = 3;
 			stVbConf.astCommPool[stVbConf.u32MaxPoolCnt].enRemapMode = VB_REMAP_MODE_CACHED;
 			stVbConf.u32MaxPoolCnt++;
 		}

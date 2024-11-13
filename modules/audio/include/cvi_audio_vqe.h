@@ -13,6 +13,13 @@ extern "C" {
 #include <stdio.h>
 #include "cvi_type.h"
 #include "cvi_comm_aio.h"
+
+
+//control for AO_VQE
+/*  AGC Control in SPK Path */
+#define SPK_AGC_ENABLE 0x1  /* bit 0 */
+#define SPK_EQ_ENABLE 0x2  /* bit 1 */
+
 /* Extern variable for cvi_audio_interface.c */
 typedef struct _AI_CHANNEL_VQE_CONFIG {
 	AI_RECORDVQE_CONFIG_S reocrdvqe;

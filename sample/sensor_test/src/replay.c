@@ -211,7 +211,7 @@ CVI_S32 set_replay_pic_config(VIDEO_FRAME_INFO_S *stVideoFrame)
 		fclose(fp_le);
 		return CVI_FAILURE;
 	}
-	SAMPLE_PRT("load le img to bayer buffer: size(0x%x) paddr(0x%#"PRIx64") vaddr(%p)\n",
+	SAMPLE_PRT("load le img to bayer buffer: size(0x%x) paddr(0x%#llx) vaddr(%p)\n",
 		   u32BlkSize, u64PhyAddr_le, puVirAddr_le);
 
 	if (vi_ut_ctx.is_hdr_enable) {
@@ -226,7 +226,7 @@ CVI_S32 set_replay_pic_config(VIDEO_FRAME_INFO_S *stVideoFrame)
 			fclose(fp_se);
 			return CVI_FAILURE;
 		}
-		SAMPLE_PRT("load se img to bayer buffer: size(0x%x) paddr(0x%#"PRIx64") vaddr(%p)\n",
+		SAMPLE_PRT("load se img to bayer buffer: size(0x%x) paddr(0x%#llx) vaddr(%p)\n",
 			u32BlkSize, u64PhyAddr_se, puVirAddr_se);
 	}
 
@@ -694,7 +694,7 @@ CVI_S32 get_replay_yuv_pic_addr(VIDEO_FRAME_INFO_S *stVideoFrame, CVI_U64 *u64Ph
 	*u64PhyAddr_se = CVI_VB_Handle2PhysAddr(vi_usr_blk_uv);
 	puVirAddr_se = CVI_SYS_MmapCache(*u64PhyAddr_se, u32BlkSize);
 
-	SAMPLE_PRT("load yuv to VB: pixnum = %d size(0x%x) y addr(0x%#"PRIx64") uv addr(0x%#"PRIx64")\n",
+	SAMPLE_PRT("load yuv to VB: pixnum = %d size(0x%x) y addr(0x%#llx) uv addr(0x%#llx)\n",
 				pixel_num, u32BlkSize, *u64PhyAddr_le, *u64PhyAddr_se);
 	/*temp_y0, temp_y1, temp_hy0, temp_hy1, temp_u, temp_v, temp_hu, temp_hv*/
 	for (CVI_U32 i = 0; i < pixel_num; i += 4) {
@@ -846,7 +846,7 @@ CVI_S32 get_replay_pic_addr(VIDEO_FRAME_INFO_S *stVideoFrame, CVI_U64 *u64PhyAdd
 		fclose(fp_le);
 		return CVI_FAILURE;
 	}
-	SAMPLE_PRT("load le img to bayer buffer: size(0x%x) paddr(0x%#"PRIx64") vaddr(%p)\n",
+	SAMPLE_PRT("load le img to bayer buffer: size(0x%x) paddr(0x%#llx) vaddr(%p)\n",
 				u32BlkSize, *u64PhyAddr_le, puVirAddr_le);
 
 	fclose(fp_le);
@@ -868,7 +868,7 @@ CVI_S32 get_replay_pic_addr(VIDEO_FRAME_INFO_S *stVideoFrame, CVI_U64 *u64PhyAdd
 			fclose(fp_se);
 			return CVI_FAILURE;
 		}
-		SAMPLE_PRT("load se img to bayer buffer: size(0x%x) paddr(0x%#"PRIx64") vaddr(%p)\n",
+		SAMPLE_PRT("load se img to bayer buffer: size(0x%x) paddr(0x%#llx) vaddr(%p)\n",
 					u32BlkSize, *u64PhyAddr_se, puVirAddr_se);
 
 		fclose(fp_se);
@@ -979,7 +979,7 @@ static CVI_S32 get_yuv_from_addr(CVI_U64 phy_addr_y, CVI_U64 phy_addr_uv)
 			pu8VirAddr[i] = vir_addr + plane_offset;
 			plane_offset += u32Length[i];
 			CVI_TRACE_LOG(CVI_DBG_WARN,
-				   "plane(%d): paddr(%#"PRIx64") vaddr(%p) stride(%d) weigth(%d)\n",
+				   "plane(%d): paddr(%#llx) vaddr(%p) stride(%d) weigth(%d)\n",
 				   i, u64PhyAddr[i],
 				   pu8VirAddr[i],
 				   u32Stride[i],
@@ -1037,7 +1037,7 @@ CVI_S32 get_rgbmap_buf(VIDEO_FRAME_INFO_S *stVideoFrame)
 	}
 	test_vi_mem[0].vir_addr = (CVI_U8 *) CVI_SYS_Mmap(test_vi_mem[0].phy_addr,
 			test_vi_mem[0].size * 3);
-	SAMPLE_PRT("rgbmap le phy_addr:0x%#"PRIx64" vir_addr:%p size:%d\n",
+	SAMPLE_PRT("rgbmap le phy_addr:0x%#llx vir_addr:%p size:%d\n",
 		test_vi_mem[0].phy_addr, test_vi_mem[0].vir_addr, test_vi_mem[0].size);
 
 	if (stVideoFrame->stVFrame.enDynamicRange == DYNAMIC_RANGE_HDR10) {
@@ -1047,7 +1047,7 @@ CVI_S32 get_rgbmap_buf(VIDEO_FRAME_INFO_S *stVideoFrame)
 		}
 		test_vi_mem[1].vir_addr = (CVI_U8 *) CVI_SYS_Mmap(test_vi_mem[1].phy_addr,
 				test_vi_mem[1].size * 3);
-		SAMPLE_PRT("rgbmap se phy_addr::0x%#"PRIx64" vir_addr:%p size:%d\n",
+		SAMPLE_PRT("rgbmap se phy_addr::0x%#llx vir_addr:%p size:%d\n",
 			test_vi_mem[1].phy_addr, test_vi_mem[1].vir_addr, test_vi_mem[1].size);
 	}
 	return CVI_SUCCESS;

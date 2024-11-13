@@ -633,7 +633,7 @@ RETRY_GET_FRAME:
 				pstVdecThreadParam->s32ChnId,
 				&stVFrame, 1000), "CVI_VDEC_GetFrame");
 		if (s32Ret == CVI_SUCCESS) {
-			CVI_VDEC_DISP("PTS = %"PRId64", u32TimeRef = %d\n",
+			CVI_VDEC_DISP("PTS = %lld, u32TimeRef = %d\n",
 					pstVFrame->u64PTS, pstVFrame->u32TimeRef);
 
 			if (pstVdecThreadParam->bDumpYUV == 1) {

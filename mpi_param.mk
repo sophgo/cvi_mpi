@@ -132,8 +132,10 @@ endif
 
 ifeq ("$(CHIP_ARCH)", "CV181X")
 CFLAGS += -D__CV181X__
+CXXFLAGS += -D__CV181X__
 else ifeq ("$(CHIP_ARCH)", "CV180X")
 CFLAGS += -D__CV180X__
+CXXFLAGS += -D__CV180X__
 else
 $(error "nuknown soc type.")
 endif

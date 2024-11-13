@@ -1,1 +1,1 @@
-#define ISP_VERSION "T(2024-09-18), V(I80918b, 6d5cde69)"
+#define ISP_VERSION "T(2024-10-31), V(I224335, 172c742b)"

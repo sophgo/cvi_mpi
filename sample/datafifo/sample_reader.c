@@ -43,8 +43,8 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-	sscanf(argv[1], "%"SCNx64, &phyAddr);
-	SAMPLE_PRT("phyAddr:%#"PRIx64"\n", phyAddr);
+	sscanf(argv[1], "%llu", &phyAddr);
+	SAMPLE_PRT("phyAddr:%#llx\n", phyAddr);
 
 	s32Ret = SAMPLE_COMM_DATAFIFO_Access(&params, phyAddr, &hDataFifo);
 	if (s32Ret != 0) {

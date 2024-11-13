@@ -79,16 +79,9 @@ extern CVI_S32 cviaud_dbg;
 //for ain_getframe / aout_send frame time mode usage
 
 //------patch flag definition
-#if defined(ARCH_CV183X)
-#define ACODEC_ADC	"/dev/cv1835adc"
-#define ACODEC_DAC	"/dev/cv1835dac"
-#elif defined(__CV181X__) || defined(__CV180X__)
 #define ACODEC_ADC	"/dev/cvitekaadc"
 #define ACODEC_DAC	"/dev/cvitekadac"
-#else
-#define ACODEC_ADC	"/dev/cv182xadc"
-#define ACODEC_DAC	"/dev/cv182xdac"
-#endif
+
 #define PCM_DEVICE_CARD0 "plughw:0,0"
 #define PCM_DEVICE_CARD1 "plughw:1,0"
 #define PCM_DEVICE_CARD2 "plughw:2,0"

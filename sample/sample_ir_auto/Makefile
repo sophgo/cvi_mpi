@@ -11,7 +11,7 @@ SRCS += $(COMMON_DIR)/sample_common_vi.c $(COMMON_DIR)/sample_common_isp.c $(COM
 ifeq ($(CONFIG_ENABLE_SDK_ASAN), y)
 SRCS += $(COMMON_DIR)/sample_common_vo.c $(COMMON_DIR)/sample_common_vpss.c $(COMMON_DIR)/sample_common_peripheral.c
 endif
-INCS = -I$(MW_INC) -I$(ISP_INC) -I../common/ -I$(KERNEL_INC) -I$(MSG_INC) -I$(MW_PATH)/3rdparty/inih
+INCS = -I$(MW_INC) -I$(ISP_INC) -I$(COMMON_DIR)/ -I$(KERNEL_INC) -I$(MSG_INC) -I$(MW_PATH)/3rdparty/inih
 OBJS = $(SRCS:.c=.o)
 DEPS = $(SRCS:.c=.d)
 

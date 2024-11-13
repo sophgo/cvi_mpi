@@ -44,6 +44,7 @@
 #include "sensor_cfg.h"
 #include "md5sum.h"
 #include "cvi_datafifo.h"
+#include "cvi_ipcmsg.h"
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -82,21 +83,21 @@ extern int cur_sns_num;
 
 #define SAMPLE_PIXEL_FORMAT VI_PIXEL_FORMAT
 
-#define COLOR_RGB_RED RGB_8BIT(0xFF, 0, 0)
-#define COLOR_RGB_GREEN RGB_8BIT(0, 0xFF, 0)
-#define COLOR_RGB_BLUE RGB_8BIT(0, 0, 0xFF)
-#define COLOR_RGB_BLACK RGB_8BIT(0, 0, 0)
-#define COLOR_RGB_YELLOW RGB_8BIT(0xFF, 0xFF, 0)
-#define COLOR_RGB_CYN RGB_8BIT(0, 0xFF, 0xFF)
-#define COLOR_RGB_WHITE RGB_8BIT(0xFF, 0xFF, 0xFF)
+#define COLOR_RGB_RED RGB_8BIT(0xFF, 0, 0)			/* 8-bit color depth of red */
+#define COLOR_RGB_GREEN RGB_8BIT(0, 0xFF, 0)		/* 8-bit color depth of green */
+#define COLOR_RGB_BLUE RGB_8BIT(0, 0, 0xFF)			/* 8-bit color depth of blue */
+#define COLOR_RGB_BLACK RGB_8BIT(0, 0, 0)			/* 8-bit color depth of black */
+#define COLOR_RGB_YELLOW RGB_8BIT(0xFF, 0xFF, 0)	/* 8-bit color depth of yellow */
+#define COLOR_RGB_CYN RGB_8BIT(0, 0xFF, 0xFF)		/* 8-bit color depth of cyan */
+#define COLOR_RGB_WHITE RGB_8BIT(0xFF, 0xFF, 0xFF)	/* 8-bit color depth of white */
 
-#define COLOR_10_RGB_RED RGB(0x3FF, 0, 0)
-#define COLOR_10_RGB_GREEN RGB(0, 0x3FF, 0)
-#define COLOR_10_RGB_BLUE RGB(0, 0, 0x3FF)
-#define COLOR_10_RGB_BLACK RGB(0, 0, 0)
-#define COLOR_10_RGB_YELLOW RGB(0x3FF, 0x3FF, 0)
-#define COLOR_10_RGB_CYN RGB(0, 0x3FF, 0x3FF)
-#define COLOR_10_RGB_WHITE RGB(0x3FF, 0x3FF, 0x3FF)
+#define COLOR_10_RGB_RED RGB(0x3FF, 0, 0)			/* 10-bit color depth of red */
+#define COLOR_10_RGB_GREEN RGB(0, 0x3FF, 0)			/* 10-bit color depth of green */
+#define COLOR_10_RGB_BLUE RGB(0, 0, 0x3FF)			/* 10-bit color depth of blue */
+#define COLOR_10_RGB_BLACK RGB(0, 0, 0)				/* 10-bit color depth of black */
+#define COLOR_10_RGB_YELLOW RGB(0x3FF, 0x3FF, 0)	/* 10-bit color depth of yellow */
+#define COLOR_10_RGB_CYN RGB(0, 0x3FF, 0x3FF)		/* 10-bit color depth of cyan */
+#define COLOR_10_RGB_WHITE RGB(0x3FF, 0x3FF, 0x3FF)	/* 10-bit color depth of white */
 
 #define SAMPLE_AUDIO_EXTERN_AI_DEV 0
 #define SAMPLE_AUDIO_EXTERN_AO_DEV 0
@@ -987,7 +988,6 @@ CVI_VOID *SAMPLE_COMM_ISP_GetSnsObj(CVI_U32 u32SnsId);
 CVI_VOID *SAMPLE_COMM_GetSnsObj(SNS_TYPE_E enSnsType);
 
 CVI_S32 SAMPLE_AUDIO_DEBUG(void);
-CVI_S32 SAMPLE_AUDIO_DEBUG_LEVEL(ST_AudioUnitTestCfg *testCfg);
 
 CVI_S32 SAMPLE_COMM_VI_GetDevAttrBySns(SNS_TYPE_E enSnsType, VI_DEV_ATTR_S *pstViDevAttr);
 void SAMPLE_COMM_VI_GetSensorInfo(SAMPLE_VI_CONFIG_S *pstViConfig);
@@ -1091,21 +1091,132 @@ CVI_S32 SAMPLE_COMM_VO_StopVO(SAMPLE_VO_CONFIG_S *pstVoConfig);
 CVI_S32 SAMPLE_COMM_VO_StartVO(SAMPLE_VO_CONFIG_S *pstVoConfig);
 CVI_VOID SAMPLE_COMM_VO_Exit(void);
 
+/* SAMPLE_COMM_REGION_Create:
+ *   Create region.
+ *
+ * [in] HandleNum: Number of region handle.
+ * [in] enType: Type of region.
+ * [in] pixelFormat: Pixel format.
+ * return: CVI_SUCCESS if no problem.
+ */
 CVI_S32 SAMPLE_COMM_REGION_Create(CVI_S32 HandleNum, RGN_TYPE_E enType, PIXEL_FORMAT_E pixelFormat);
+
+/* SAMPLE_COMM_REGION_Destroy:
+ *   Destroy region.
+ *
+ * [in] HandleNum: Number of region handle.
+ * [in] enType: Type of region.
+ * return: CVI_SUCCESS if no problem.
+ */
 CVI_S32 SAMPLE_COMM_REGION_Destroy(CVI_S32 HandleNum, RGN_TYPE_E enType);
+
+/* SAMPLE_COMM_REGION_AttachToChn:
+ *   Region apply to chn.
+ *
+ * [in] HandleNum: Number of region handle.
+ * [in] enType: Type of region.
+ * [in] pstChn: Module chn.
+ * return: CVI_SUCCESS if no problem.
+ */
 CVI_S32 SAMPLE_COMM_REGION_AttachToChn(CVI_S32 HandleNum, RGN_TYPE_E enType, MMF_CHN_S *pstChn);
+
+/* SAMPLE_COMM_REGION_DetachFrmChn:
+ *   Cancel region on chn.
+ *
+ * [in] HandleNum: Number of region handle.
+ * [in] enType: Type of region.
+ * [in] pstChn: Module chn.
+ * return: CVI_SUCCESS if no problem.
+ */
 CVI_S32 SAMPLE_COMM_REGION_DetachFrmChn(CVI_S32 HandleNum, RGN_TYPE_E enType, MMF_CHN_S *pstChn);
+
+/* SAMPLE_COMM_REGION_SetBitMap:
+ *   Set bitmap.
+ *
+ * [in] Handle: RGN ID.
+ * [in] filename: Bitmap filename.
+ * [in] pixelFormat: Pixel format.
+ * [in] bCompressed: Compression or not.
+ * return: CVI_SUCCESS if no problem.
+ */
 CVI_S32 SAMPLE_COMM_REGION_SetBitMap(RGN_HANDLE Handle, const char *filename,
 		PIXEL_FORMAT_E pixelFormat, CVI_BOOL bCompressed);
+
+/* SAMPLE_COMM_REGION_GetUpCanvas:
+ *   Get canvas info and update canvas.
+ *
+ * [in] Handle: RGN ID.
+ * [in] filename: Bitmap filename.
+ * return: CVI_SUCCESS if no problem.
+ */
 CVI_S32 SAMPLE_COMM_REGION_GetUpCanvas(RGN_HANDLE Handle, const char *filename);
+
+/* SAMPLE_COMM_REGION_GetMinHandle:
+ *   Get the minimum handle for a region of this type.
+ *
+ * [in] enType: Type of region.
+ * return: MinHandle if no problem.
+ */
 CVI_S32 SAMPLE_COMM_REGION_GetMinHandle(RGN_TYPE_E enType);
+
+/* SAMPLE_COMM_REGION_MST_LoadBmp:
+ *   Load the bitmap file.
+ *
+ * [in] filename: Bitmap filename.
+ * [in] pstBitmap: Bitmap attribute.
+ * [in] bFil: Filter or not.
+ * [in] u16FilColor: Filter color.
+ * [in] pixelFormat: Pixel format.
+ * return: CVI_SUCCESS if no problem.
+ */
 CVI_S32 SAMPLE_COMM_REGION_MST_LoadBmp(const char *filename, BITMAP_S *pstBitmap, CVI_BOOL bFil,
 			CVI_U32 u16FilColor, PIXEL_FORMAT_E enPixelFormat);
+
+/* SAMPLE_COMM_REGION_MST_UpdateCanvas:
+ *   Update canvas.
+ *
+ * [in] filename: Bitmap filename.
+ * [in] pstBitmap: Bitmap attribute.
+ * [in] bFil: Filter or not.
+ * [in] u16FilColor: Filter color.
+ * [in] pstSize: Canvas size.
+ * [in] u32Stride: Stride length.
+ * [in] pixelFormat: Pixel format.
+ * return: CVI_SUCCESS if no problem.
+ */
 CVI_S32 SAMPLE_COMM_REGION_MST_UpdateCanvas(const char *filename, BITMAP_S *pstBitmap, CVI_BOOL bFil,
 				CVI_U32 u16FilColor, SIZE_S *pstSize, CVI_U32 u32Stride, PIXEL_FORMAT_E enPixelFormat);
+
+/* SAMPLE_COMM_ODEC_REGION_Create:
+ *    Create ODEC region.
+ *
+ * [in] u32FileSize: File size.
+ * [in] stSize: Region size.
+ * return: CVI_SUCCESS if no problem.
+ */
 CVI_S32 SAMPLE_COMM_ODEC_REGION_Create(CVI_U32 u32FileSize, SIZE_S *stSize);
+
+/* SAMPLE_COMM_ODEC_REGION_Destroy:
+ *   Destroy ODEC region.
+ *
+ * return: CVI_SUCCESS if no problem.
+ */
 CVI_S32 SAMPLE_COMM_ODEC_REGION_Destroy(void);
+
+/* SAMPLE_COMM_ODEC_REGION_AttachToChn:
+ *   ODEC region apply to chn.
+ *
+ * [in] pstChn: Module chn.
+ * return: CVI_SUCCESS if no problem.
+ */
 CVI_S32 SAMPLE_COMM_ODEC_REGION_AttachToChn(MMF_CHN_S *pstChn);
+
+/* SAMPLE_COMM_ODEC_REGION_DetachFrmChn:
+ *   Cancel ODEC region on chn.
+ *
+ * [in] pstChn: Module chn.
+ * return: CVI_SUCCESS if no problem.
+ */
 CVI_S32 SAMPLE_COMM_ODEC_REGION_DetachFrmChn(MMF_CHN_S *pstChn);
 
 /* Create the thread to get frame from AI and send to AO */
@@ -1281,6 +1392,56 @@ CVI_S32 SAMPLE_COMM_DATAFIFO_Write(CVI_DATAFIFO_HANDLE hDataFifo, CVI_CHAR *pBuf
  * return: CVI_SUCCESS if no problem.
  */
 CVI_S32 SAMPLE_COMM_DATAFIFO_Exit(CVI_DATAFIFO_HANDLE hDataFifo);
+
+/* SAMPLE_COMM_IPCMSG_Init:
+ *   Dual os message communication system initialization.
+ * [in]pszServiceName:Service name.
+ * [in]pstConnectAttr:Connect attribute.
+ * return: CVI_SUCCESS if no problem.
+ */
+CVI_S32 SAMPLE_COMM_IPCMSG_Init(CVI_CHAR *pszServiceName, CVI_IPCMSG_CONNECT_S *pstConnectAttr);
+
+/* SAMPLE_COMM_IPCMSG_Deinit:
+ *   Dual os message communication system deinitialization.
+ * [in]pszServiceName:Service name.
+ * [in]s32Id:Handle of IPCMSG.
+ * return: CVI_SUCCESS if no problem.
+ */
+CVI_S32 SAMPLE_COMM_IPCMSG_Deinit(CVI_CHAR *pszServiceName, CVI_S32 s32Id);
+
+/* SAMPLE_COMM_IPCMSG_SendSync:
+ *   Send message synchronously.
+ * [in]s32Id:Handle of IPCMSG.
+ * [in]u32Module:Module ID.
+ * [in]u32CMD:CMD ID.
+ * [in]pBody:Message body.
+ * [in]u32BodyLen:Length of pBody.
+ * return: CVI_SUCCESS if no problem.
+ */
+CVI_S32 SAMPLE_COMM_IPCMSG_SendSync(CVI_S32 s32Id, CVI_U32 u32Module, CVI_U32 u32CMD, CVI_VOID *pBody, CVI_U32 u32BodyLen);
+
+/* SAMPLE_COMM_IPCMSG_SendAsync:
+ *   Send message asynchronously.
+ * [in]s32Id:Handle of IPCMSG.
+ * [in]u32Module:Module ID.
+ * [in]u32CMD:CMD ID.
+ * [in]pBody:Message body.
+ * [in]u32BodyLen:Length of pBody.
+ * [in]respHandler:Callback function to receive response.
+ * return: CVI_SUCCESS if no problem.
+ */
+CVI_S32 SAMPLE_COMM_IPCMSG_SendAsync(CVI_S32 s32Id, CVI_U32 u32Module, CVI_U32 u32CMD, CVI_VOID *pBody, CVI_U32 u32BodyLen, void (*respHandler)(CVI_IPCMSG_MESSAGE_S*));
+
+/* SAMPLE_COMM_IPCMSG_SendAsync:
+ *   Send message only.
+ * [in]s32Id:Handle of IPCMSG.
+ * [in]u32Module:Module ID.
+ * [in]u32CMD:CMD ID.
+ * [in]pBody:Message body.
+ * [in]u32BodyLen:Length of pBody.
+ * return: CVI_SUCCESS if no problem.
+ */
+CVI_S32 SAMPLE_COMM_IPCMSG_SendOnly(CVI_S32 s32Id, CVI_U32 u32Module, CVI_U32 u32CMD, CVI_VOID *pBody, CVI_U32 u32BodyLen);
 
 #ifdef __cplusplus
 #if __cplusplus

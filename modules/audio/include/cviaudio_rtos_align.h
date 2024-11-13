@@ -80,7 +80,6 @@ struct  _AI_TALKVQE_CONFIG_S_RTOS {
 	AUDIO_ANR_CONFIG_S_RTOS  stAnrCfg;
 	AUDIO_AGC_CONFIG_S_RTOS  stAgcCfg;
 	AUDIO_DELAY_CONFIG_S_RTOS stAecDelayCfg;
-	CVI_U8 s32RevMask;//turn this flag to default 0x11
 	CVI_U8 para_notch_freq;//user can ignore this flag
 	CVI_U8 customize[8];
 } __packed __aligned(0x4);

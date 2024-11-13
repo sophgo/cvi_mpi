@@ -23,6 +23,7 @@ CVI_S32 SAMPLE_VIO_ViRotation(void);
 CVI_S32 SAMPLE_VIO_VpssRotation(void);
 CVI_S32 SAMPLE_VIO_VpssFileIO(SIZE_S stSize);
 CVI_S32 SAMPLE_VIO_VpssCombine2File(SIZE_S stSize);
+CVI_S32 SAMPLE_VIO_VpssStitch(void);
 
 #ifdef __cplusplus
 #if __cplusplus

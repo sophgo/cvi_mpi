@@ -5,9 +5,9 @@ All of the API and headers and are properties of  Crystal Vision Technology.
 Please use it carefully with Crystal Vision edge board and don't use it for profitable purpose or further business behavior before contact us.
 
 ### Requirements
-- Linux linaro version 4.9.38
+- Linux linaro version 5.10
 #### Platforms
-- Embedded development board : cv1835
+- Embedded development board : cv180x/cv181x
 ### Packages
 - build-essential gdb vim cmake libtool autoconf autotools-dev automake python-dev python3-dev python-pip python-cffi python-numpy python-scipy gcc-arm-none-eabi libgoogle-glog-dev libboost-all-dev
 ### Build Commands
@@ -15,8 +15,8 @@ Go to the cviaudio folder and trigger shell command:
 ```sh
 $ ./run.sh
 ```
-The output libs locate in :/cviaudio/install/soc_cv1835_asic/lib
-The output exe binaries locate in :/cviaudio/install/soc_cv1835_asic/bin
+The output libs locate in :/cviaudio/install/soc_cv180x_asic/lib
+The output exe binaries locate in :/cviaudio/install/soc_cv180x_asic/bin
 ### CVI audio API for application layer
 You can check the header files:
   - cvi_audio.h

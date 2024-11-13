@@ -125,6 +125,15 @@ typedef struct _ST_CVIAUDIO_SPEED_CTRL_FUNC {
 	funcp_sonicChangeShortSpeed psonicChangeShortSpeed;
 } ST_CVIAUDIO_SPEED_CTRL_FUNC;
 
+typedef struct _ST_CVIAUDIO_SPEEDPLAY_USR_CONFIG {
+	int sampleRate;
+	int channels;
+	float speed;
+	float pitch;
+	float rate;
+	float volume;
+} ST_CVIAO_SPEEDPLAY_CONFIG;
+
 //API declaration here ------------------------->[start]
 CVI_S32 CVI_AO_EnableSpeedPlay(AUDIO_DEV AoDevId, ST_CVIAO_SPEEDPLAY_CONFIG  AoSpeedCfg);
 CVI_S32 CVI_AO_DisableSpeedPlay(AUDIO_DEV AoDevId);
