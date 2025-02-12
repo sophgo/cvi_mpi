@@ -670,7 +670,7 @@ static CVI_S32 isp_set_paramstruct(VI_PIPE ViPipe, ISP_Parameter_Structures *pst
 	CVI_ISP_SetAutoGammaAttr(ViPipe, &pstParaBuf->autoGamma);
 	CVI_ISP_SetDehazeAttr(ViPipe, &pstParaBuf->dehaze);
 	CVI_ISP_SetClutAttr(ViPipe, &pstParaBuf->clut);
-	CVI_ISP_SetClutSaturationAttr(ViPipe, &pstParaBuf->clut_saturation);
+	CVI_ISP_SetClutHslAttr(ViPipe, &pstParaBuf->clut_hsl);
 	CVI_ISP_SetCSCAttr(ViPipe, &pstParaBuf->csc);
 	CVI_ISP_SetVCAttr(ViPipe, &pstParaBuf->vc_motion);
 
@@ -747,7 +747,7 @@ static CVI_S32 isp_get_paramstruct(VI_PIPE ViPipe, ISP_Parameter_Structures *pst
 	CVI_ISP_GetAutoGammaAttr(ViPipe, &pstParaBuf->autoGamma);
 	CVI_ISP_GetDehazeAttr(ViPipe, &pstParaBuf->dehaze);
 	CVI_ISP_GetClutAttr(ViPipe, &pstParaBuf->clut);
-	CVI_ISP_GetClutSaturationAttr(ViPipe, &pstParaBuf->clut_saturation);
+	CVI_ISP_GetClutHslAttr(ViPipe, &pstParaBuf->clut_hsl);
 	CVI_ISP_GetCSCAttr(ViPipe, &pstParaBuf->csc);
 	CVI_ISP_GetVCAttr(ViPipe, &pstParaBuf->vc_motion);
 

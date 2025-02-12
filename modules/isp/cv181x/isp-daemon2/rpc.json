@@ -142,9 +142,9 @@
 				"SET": "CVI_ISP_SetClutAttr"
 			},
 			{
-				"STRUCT": "ISP_CLUT_SATURATION_ATTR_S",
-				"GET": "CVI_ISP_GetClutSaturationAttr",
-				"SET": "CVI_ISP_SetClutSaturationAttr"
+				"STRUCT": "ISP_CLUT_HSL_ATTR_S",
+				"GET": "CVI_ISP_GetClutHslAttr",
+				"SET": "CVI_ISP_SetClutHslAttr"
 			},
 			{
 				"STRUCT": "ISP_CSC_ATTR_S",

@@ -2620,7 +2620,7 @@ CVI_S32 CVI_ISP_GetClutAttr(VI_PIPE ViPipe, ISP_CLUT_ATTR_S *pstClutAttr)
 	return ret;
 }
 
-CVI_S32 CVI_ISP_SetClutSaturationAttr(VI_PIPE ViPipe, const ISP_CLUT_SATURATION_ATTR_S *pstClutSaturationAttr)
+CVI_S32 CVI_ISP_SetClutHslAttr(VI_PIPE ViPipe, const ISP_CLUT_HSL_ATTR_S *pstClutHslAttr)
 {
 	ISP_LOG_DEBUG("+\n");
 	if ((ViPipe < 0) || (ViPipe >= VI_MAX_PIPE_NUM)) {
@@ -2628,35 +2628,35 @@ CVI_S32 CVI_ISP_SetClutSaturationAttr(VI_PIPE ViPipe, const ISP_CLUT_SATURATION_
 		return -ENODEV;
 	}
 
-	if (pstClutSaturationAttr == CVI_NULL) {
+	if (pstClutHslAttr == CVI_NULL) {
 		return CVI_FAILURE;
 	}
 
 	CVI_S32 ret = CVI_SUCCESS;
 
-	ret = isp_clut_ctrl_set_clut_saturation_attr(ViPipe, pstClutSaturationAttr);
+	ret = isp_clut_ctrl_set_clut_hsl_attr(ViPipe, pstClutHslAttr);
 
 	return ret;
 }
 
-CVI_S32 CVI_ISP_GetClutSaturationAttr(VI_PIPE ViPipe, ISP_CLUT_SATURATION_ATTR_S *pstClutSaturationAttr)
+CVI_S32 CVI_ISP_GetClutHslAttr(VI_PIPE ViPipe, ISP_CLUT_HSL_ATTR_S *pstClutHslAttr)
 {
 	if ((ViPipe < 0) || (ViPipe >= VI_MAX_PIPE_NUM)) {
 		ISP_LOG_ERR("ViPipe %d value error\n", ViPipe);
 		return -ENODEV;
 	}
 
-	if (pstClutSaturationAttr == CVI_NULL) {
+	if (pstClutHslAttr == CVI_NULL) {
 		return CVI_FAILURE;
 	}
 
 	CVI_S32 ret = CVI_SUCCESS;
 
-	const ISP_CLUT_SATURATION_ATTR_S *pTemp = NULL;
+	const ISP_CLUT_HSL_ATTR_S *pTemp = NULL;
 
-	ret = isp_clut_ctrl_get_clut_saturation_attr(ViPipe, &pTemp);
+	ret = isp_clut_ctrl_get_clut_hsl_attr(ViPipe, &pTemp);
 	if (pTemp != NULL) {
-		memcpy(pstClutSaturationAttr, pTemp, sizeof(ISP_CLUT_SATURATION_ATTR_S));
+		memcpy(pstClutHslAttr, pTemp, sizeof(ISP_CLUT_HSL_ATTR_S));
 	}
 	return ret;
 }

@@ -2384,7 +2384,7 @@
 				"CONTENTS": {
 					"CONTENT": [
 						"ISP_CLUT_ATTR_S",
-						"ISP_CLUT_SATURATION_ATTR_S"
+						"ISP_CLUT_HSL_ATTR_S"
 					]
 				},
 				"LAYOUTS": {
@@ -2400,25 +2400,14 @@
 							]
 						},
 						{
-							"TITLE": "Saturation by Saturation",
+							"TITLE": "HSL Adjust",
 							"MEMBER": [
-								"ISP_CLUT_SATURATION_ATTR_S.Enable",
-								"ISP_CLUT_SATURATION_ATTR_S.enOpType",
-								"ISP_CLUT_SATURATION_ATTR_S.stManual.SatIn",
-								"ISP_CLUT_SATURATION_ATTR_S.stManual.SatOut",
-								"ISP_CLUT_SATURATION_ATTR_S.stAuto.SatIn",
-								"ISP_CLUT_SATURATION_ATTR_S.stAuto.SatOut"
-							],
-							"CURVE": [
-								{
-									"ALIAS": "SatCurve",
-									"POINTS": [
-										[
-											"ISP_CLUT_SATURATION_ATTR_S.stAuto.SatIn",
-											"ISP_CLUT_SATURATION_ATTR_S.stAuto.SatOut"
-										]
-									]
-								}
+								"ISP_CLUT_HSL_ATTR_S.Enable",
+								"ISP_CLUT_HSL_ATTR_S.Sigma",
+								"ISP_CLUT_HSL_ATTR_S.HByH",
+								"ISP_CLUT_HSL_ATTR_S.SByH",
+								"ISP_CLUT_HSL_ATTR_S.LByH",
+								"ISP_CLUT_HSL_ATTR_S.SByS"
 							]
 						}
 					]

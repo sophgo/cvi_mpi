@@ -208,7 +208,7 @@ struct isp_ca2_shared_buffer {
 
 struct isp_clut_shared_buffer {
 	ISP_CLUT_ATTR_S stCLUTAttr;
-	ISP_CLUT_SATURATION_ATTR_S stClutSaturationAttr;
+	ISP_CLUT_HSL_ATTR_S stClutHslAttr;
 	struct isp_clut_ctrl_runtime runtime;
 };
 

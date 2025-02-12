@@ -53,7 +53,7 @@ typedef struct {
 	ISP_AUTO_GAMMA_ATTR_S autoGamma;
 	ISP_DEHAZE_ATTR_S dehaze;
 	ISP_CLUT_ATTR_S clut;
-	ISP_CLUT_SATURATION_ATTR_S clut_saturation;
+	ISP_CLUT_HSL_ATTR_S clut_hsl;
 	ISP_CSC_ATTR_S csc;
 	ISP_VC_ATTR_S vc_motion;
 

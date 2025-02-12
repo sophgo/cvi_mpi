@@ -105,7 +105,7 @@ struct isp_ioctl_param {
 		CVI_U32 *ptr = out;\
 		ec1.id = _id;\
 		ec1.value = val;\
-		ec1.sdk_cfg.pipe = *out;\
+		ec1.sdk_cfg.pipe = ViPipe;\
 		if (ioctl(pstIspCtx->ispDevFd, VI_IOC_G_CTRL, &ec1) < 0) {\
 			ISP_IOCTL_ERR(pstIspCtx->ispDevFd, ec1);\
 			return -1;\

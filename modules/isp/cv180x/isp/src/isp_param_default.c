@@ -107,7 +107,7 @@ static CVI_VOID setYnr(VI_PIPE ViPipe);
 static CVI_VOID setYnrMotionNr(VI_PIPE ViPipe);
 static CVI_VOID setYnrFilter(VI_PIPE ViPipe);
 static CVI_VOID setClut(VI_PIPE ViPipe);
-static CVI_VOID setClutSaturation(VI_PIPE ViPipe);
+static CVI_VOID setClutHsl(VI_PIPE ViPipe);
 static CVI_VOID setBnr(VI_PIPE ViPipe);
 static CVI_VOID setBnrFilter(VI_PIPE ViPipe);
 static CVI_S32 setDisAttr(VI_PIPE ViPipe);
@@ -2573,7 +2573,7 @@ CVI_VOID setDehazeDefault(VI_PIPE ViPipe)
 CVI_VOID setClutDefault(VI_PIPE ViPipe)
 {
 	setClut(ViPipe);
-	setClutSaturation(ViPipe);
+	setClutHsl(ViPipe);
 }
 
 static CVI_VOID setClut(VI_PIPE ViPipe)
@@ -2604,38 +2604,25 @@ static CVI_VOID setClut(VI_PIPE ViPipe)
 	free(pattr);
 }
 
-static CVI_VOID setClutSaturation(VI_PIPE ViPipe)
+static CVI_VOID setClutHsl(VI_PIPE ViPipe)
 {
 	ISP_LOG_DEBUG("(%d)\n", ViPipe);
 
-	ISP_CLUT_SATURATION_ATTR_S attr = {0};
+	ISP_CLUT_HSL_ATTR_S attr = {0};
 
 	INIT_V(attr, Enable, 0);
-
-	INIT_A(attr, SatIn[0], 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+	INIT_V(attr, Sigma, 1);
+	INIT_V_ARRAY(attr, HByH, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 	);
-	INIT_A(attr, SatIn[1], 409,
-	409, 409, 409, 409, 409, 409, 409, 409, 409, 409, 409, 409, 409, 409, 409, 409
+	INIT_V_ARRAY(attr, SByH, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50,
+	50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50
 	);
-	INIT_A(attr, SatIn[2], 819,
-	819, 819, 819, 819, 819, 819, 819, 819, 819, 819, 819, 819, 819, 819, 819, 819
+	INIT_V_ARRAY(attr, LByH, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50,
+	50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50
 	);
-	INIT_A(attr, SatIn[3], 1228,
-	1228, 1228, 1228, 1228, 1228, 1228, 1228, 1228, 1228, 1228, 1228, 1228, 1228, 1228, 1228, 1228
-	);
-
-	INIT_A(attr, SatOut[0], 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-	);
-	INIT_A(attr, SatOut[1], 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-	);
-	INIT_A(attr, SatOut[2], 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-	);
-	INIT_A(attr, SatOut[3], 1228,
-	1228, 1228, 1228, 1228, 1228, 1228, 1228, 1228, 1228, 1228, 1228, 1228, 1228, 1228, 1228, 1228
+	INIT_V_ARRAY(attr, SByS,
+	50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50
 	);
 
 	switch (ViPipe) {
@@ -2649,7 +2636,7 @@ static CVI_VOID setClutSaturation(VI_PIPE ViPipe)
 	break;
 	}
 
-	isp_clut_ctrl_set_clut_saturation_attr(ViPipe, &attr);
+	isp_clut_ctrl_set_clut_hsl_attr(ViPipe, &attr);
 }
 
 CVI_VOID setCcmDefault(VI_PIPE ViPipe, CVI_U32 wdrEn)

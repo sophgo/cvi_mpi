@@ -57,7 +57,7 @@ void ISP_GAMMA_ATTR_S_JSON(int r_w_flag, JSON *j, char *key, ISP_GAMMA_ATTR_S *d
 void ISP_AUTO_GAMMA_ATTR_S_JSON(int r_w_flag, JSON *j, char *key, ISP_AUTO_GAMMA_ATTR_S *data);
 void ISP_DEHAZE_ATTR_S_JSON(int r_w_flag, JSON *j, char *key, ISP_DEHAZE_ATTR_S *data);
 void ISP_CLUT_ATTR_S_JSON(int r_w_flag, JSON *j, char *key, ISP_CLUT_ATTR_S *data);
-void ISP_CLUT_SATURATION_ATTR_S_JSON(int r_w_flag, JSON *j, char *key, ISP_CLUT_SATURATION_ATTR_S *data);
+void ISP_CLUT_HSL_ATTR_S_JSON(int r_w_flag, JSON *j, char *key, ISP_CLUT_HSL_ATTR_S *data);
 void ISP_CSC_ATTR_S_JSON(int r_w_flag, JSON *j, char *key, ISP_CSC_ATTR_S *data);
 void ISP_VC_ATTR_S_JSON(int r_w_flag, JSON *j, char *key, ISP_VC_ATTR_S *data);
 
