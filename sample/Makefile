@@ -1,10 +1,8 @@
-SUBDIRS := $(notdir $(basename $(shell find . -maxdepth 1 -type d)))
 ifeq ($(CHIP_ARCH), $(filter $(CHIP_ARCH), CV181X))
-	exclude_dirs = common
+	SUBDIRS := fastboot cipher vio datafifo vdecvo ipcm ive sensor_test ipcmsg vdec sample_ir_auto audio sample_panel venc region
 else ifeq ($(CHIP_ARCH), $(filter $(CHIP_ARCH), CV180X))
-	exclude_dirs = common vdecvo mipi_tx sample_panel overlay vio ive
+	SUBDIRS := fastboot cipher datafifo ipcm sensor_test ipcmsg vdec sample_ir_auto audio venc region
 endif
-SUBDIRS := $(filter-out $(exclude_dirs), $(SUBDIRS))
 
 all:
 	@echo "##############################"

@@ -1,4 +1,4 @@
-mw_dir=middleware
+mw_dir=cvi_mpi
 includedir=${mw_dir}/include
 internal_includedir=${mw_dir}/internal_include
 libdir=${mw_dir}/lib

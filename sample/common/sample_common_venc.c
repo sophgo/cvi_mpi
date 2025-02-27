@@ -247,7 +247,7 @@ CVI_VOID SAMPLE_COMM_VENC_InitChnInputCfg(chnInputCfg *pIc)
 
 	pIc->u32FrameQp = CVI_H26X_FRAME_QP_DEFAULT;
 	pIc->bTestUbrEn = CVI_H26X_TEST_UBR_EN_DEFAULT;
-	pIc->bEsBufQueueEn = CVI_H26X_ES_BUFFER_QUEUE_DEFAULT;
+	pIc->bEsBufQueueEn = 0;
 	pIc->bIsoSendFrmEn = CVI_H26X_ISO_SEND_FRAME_DEFAUL;
 	pIc->bSensorEn = CVI_H26X_SENSOR_EN_DEFAULT;
 
@@ -255,6 +255,9 @@ CVI_VOID SAMPLE_COMM_VENC_InitChnInputCfg(chnInputCfg *pIc)
 	pIc->bIntraPred = 0;
 	pIc->minQuality = 1;
 	pIc->maxQuality = 99;
+
+	pIc->u32MaxCachePacks = 0;
+	pIc->u32OutputPackCnt = 1;
 }
 
 CVI_S32 SAMPLE_COMM_VENC_SaveStream(PAYLOAD_TYPE_E enType,
@@ -319,6 +322,10 @@ CVI_S32 SAMPLE_COMM_VENC_SaveChannelStream(vencChnCtx *pvecc)
 			return s32Ret;
 		}
 
+		if (pIc->u32MaxCachePacks > stStat.u32CurPacks) {
+			stStat.u32CurPacks = pIc->u32MaxCachePacks;
+		}
+
 		stStream.pstPack =
 			(VENC_PACK_S *)malloc(sizeof(VENC_PACK_S) * stStat.u32CurPacks);
 		if (stStream.pstPack == NULL) {
@@ -326,7 +333,12 @@ CVI_S32 SAMPLE_COMM_VENC_SaveChannelStream(vencChnCtx *pvecc)
 			return s32Ret;
 		}
 RETRY_GET_STREAM:
-		s32Ret = API_COST_TIME_LOG(CVI_VENC_GetStream(VencChn, &stStream, pIc->getstream_timeout), "CVI_VENC_GetStream");
+		if (pIc->u32OutputPackCnt > 1) {
+			s32Ret = API_COST_TIME_LOG(CVI_VENC_GetStreamEx(VencChn, &stStream, pIc->getstream_timeout, pIc->u32OutputPackCnt), "CVI_VENC_GetStreamEx");
+		} else {
+			s32Ret = API_COST_TIME_LOG(CVI_VENC_GetStream(VencChn, &stStream, pIc->getstream_timeout), "CVI_VENC_GetStream");
+		}
+
 		if (s32Ret != CVI_SUCCESS) {
 			if (s32Ret == CVI_ERR_VENC_BUSY) {
 				CVI_VENC_WARN("CVI_VENC_GetStream, VencChn Retry= %d,s32Ret = 0x%X\n",
@@ -2130,6 +2142,7 @@ CVI_S32 SAMPLE_COMM_VENC_Start(
 {
 	CVI_S32 s32Ret;
 	VENC_RECV_PIC_PARAM_S stRecvParam;
+	CVI_U32 u32DataFifoLen = 11;
 
 	s32Ret = SAMPLE_COMM_VENC_Create(
 			pIc, VencChn, enType, enSize, enRcMode,
@@ -2149,6 +2162,25 @@ CVI_S32 SAMPLE_COMM_VENC_Start(
 		CVI_VENC_BIND("VPSS_Bind_VENC, vpss Grp = %d, Chn = %d, VencChn = %d\n",
 				pIc->vpssGrp, pIc->vpssChn, VencChn);
 		SAMPLE_COMM_VPSS_Bind_VENC(pIc->vpssGrp, pIc->vpssChn, VencChn);
+	}
+
+	if (pIc->u32MaxCachePacks > 0) {
+		u32DataFifoLen = pIc->u32MaxCachePacks;
+		s32Ret = CVI_VENC_SetDataFifoLen(VencChn, u32DataFifoLen);
+		if (s32Ret != CVI_SUCCESS) {
+			CVI_VENC_ERR("CVI_VENC_SetDataFifoLen failed with %d\n", s32Ret);
+			return CVI_FAILURE;
+		}
+
+		s32Ret = CVI_VENC_GetDataFifoLen(VencChn, &u32DataFifoLen);
+		if (s32Ret != CVI_SUCCESS) {
+			CVI_VENC_ERR("CVI_VENC_GetDataFifoLen failed with %d\n", s32Ret);
+			return CVI_FAILURE;
+		}
+
+		if (u32DataFifoLen != pIc->u32MaxCachePacks) {
+			CVI_VENC_ERR("u32DataFifoLen:%d not equal:%d\n", u32DataFifoLen, pIc->u32MaxCachePacks);
+		}
 	}
 
 	stRecvParam.s32RecvPicNum = pIc->num_frames;

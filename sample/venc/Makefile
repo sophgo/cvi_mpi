@@ -50,9 +50,10 @@ endif
 
 PKG_CONFIG_PATH = $(MW_PATH)/pkgconfig
 REQUIRES = cvi_common cvi_sample
-MW_LIBS = $(shell PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) pkg-config --libs --define-variable=mw_dir=$(MW_PATH) $(REQUIRES))
+MW_LIBS = $(shell PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) pkg-config --define-variable=mw_dir=$(MW_PATH) $(REQUIRES))
 
 LIBS = $(MW_LIBS)
+LIBS += -lvdec -lmisc -lmsg -lcvilink -lsys -lvi -lvpss -lvo  -lgdc -lvenc -lcvi_bin -lcvi_bin_isp -lisp -lae -laf -lawb
 ifeq ($(MULTI_PROCESS_SUPPORT), 1)
 DEFS += -DRPC_MULTI_PROCESS
 LIBS += -lnanomsg

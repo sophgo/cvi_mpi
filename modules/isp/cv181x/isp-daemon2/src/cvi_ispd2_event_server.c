@@ -273,8 +273,6 @@ static void CVI_ISPD2_ES_CB_SocketRead(cvi_uv_stream_t *pUVClientHandle, ssize_t
 
 		cvi_uv_close((cvi_uv_handle_t **)&pUVClientEx, CVI_ISPD2_ES_CB_Close);
 	}
-
-	free(pBuf->base);
 }
 
 // -----------------------------------------------------------------------------

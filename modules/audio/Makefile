@@ -252,13 +252,13 @@ AUDIO_SRCS += $(AUDIO_SDIR)/cvi_audio_pp_interface.c
 AUDIO_SRCS += $(AUDIO_SDIR)/sharebuffer.c
 AUDIO_SRCS += $(AUDIO_SDIR)/volume_ctrl.c
 AUDIO_SRCS += $(AUDIO_SDIR)/cvi_ai_internal.c
+AUDIO_SRCS += $(AUDIO_SDIR)/cvi_audio_dl_adp.c
 
 ifeq ($(USE_SPEED), yes)
 AUDIO_SRCS += $(AUDIO_SDIR)/cvi_audio_speed.c
 endif
 ifeq ($(MULTI_PROCESS_SUPPORT_AUDIO), yes)
 INCLUDES += -I $(AUDIO_SDIR)/audio_rpc
-INCLUDES += -I $(AUDIO_SDIR)/audio_rpc/nanomsg/include
 AUDIO_SRCS += $(AUDIO_SDIR)/audio_rpc/cvi_audio_rpc.c
 EXTRA_CFLAGS += -DRPC_MULTI_PROCESS_AUDIO
 LDLIBS += -lnanomsg
@@ -377,7 +377,6 @@ clean:
 	@make -C ./audio_resample clean
 
 clean_all: clean
-	@rm -rf $(AUDIO_ODIR)
 	@make -C ./fdk_aac_fake clean_all
 	@make -C ./sbc_codec clean_all
 	@make -C ./audio_codec clean_all
@@ -385,6 +384,10 @@ clean_all: clean
 	@make -C ./algo/SSP_Algorithm_20220128 clean_all
 	@make -C ./audio_dnvqe clean_all
 	@make -C ./audio_resample clean_all
+	@if [ -d "$(AUDIO_SDIR)" ]; then \
+		echo "rm -rf $(AUDIO_ODIR)"; \
+		rm -rf $(AUDIO_ODIR); \
+	fi
 
 prepare:
 	@echo [aduio Start] Timestamp is $(ts)

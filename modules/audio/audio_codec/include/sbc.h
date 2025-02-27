@@ -106,6 +106,7 @@ size_t sbc_get_codesize(sbc_t *sbc);
 const char *sbc_get_implementation_info(sbc_t *sbc);
 void sbc_finish(sbc_t *sbc);
 
+int cvi_sbcbuffer_init(void);
 int cvi_sbc_init(sbc_t *sbc, unsigned long flags);
 int cvi_sbc_encode(sbc_t *sbc, const void *input, int input_len, void *output);
 int cvi_sbc_decode(sbc_t *sbc, const void *input, int input_len, void *output);

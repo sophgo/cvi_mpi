@@ -77,6 +77,7 @@ CVI_S32 SAMPLE_PLAT_SYS_INIT(SIZE_S stSize)
 		stVbConf.astCommPool[0].u32BlkCnt	= 3;
 	stVbConf.astCommPool[0].enRemapMode	= VB_REMAP_MODE_CACHED;
 	SAMPLE_PRT("common pool[0] BlkSize %d\n", u32BlkSize);
+	SAMPLE_PRT("common pool[0] u32BlkCnt %d\n", stVbConf.astCommPool[0].u32BlkCnt);
 
 	s32Ret = SAMPLE_COMM_SYS_Init(&stVbConf);
 	if (s32Ret != CVI_SUCCESS) {

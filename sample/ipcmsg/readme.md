@@ -1,0 +1,9 @@
+sample ipcmsg 使用说明：
+sample ipcmsg包含大核sample_ipcmsg与小核sample_receiver两部分，使用步骤：
+1.在cvi_alios相应solution的package_yaml中配置CONFIG_APP_TEST为1
+2.在cvi_alios/components/cvi_test/package_yaml中配置CONFIG_APP_TEST为1
+3.编译得到烧录镜像及sample_ipcmsg可执行程序
+4.烧录并进入系统后挂载sd卡
+5.在alios小核端中执行ipcmsg_start
+6.在Linux大核端执行./sample_ipcmsg
+7.测试完毕后大核端输入q退出程序，小核端执行ipcmsg_stop

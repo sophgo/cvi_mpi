@@ -48,8 +48,8 @@ typedef enum _ARG_TYPE_ {
 typedef struct _optionExt_ {
 	struct option opt;
 	int type;
-	int64_t min;
-	int64_t max;
+	CVI_S64 min;
+	CVI_S64 max;
 	const char *help;
 } optionExt;
 
@@ -373,6 +373,11 @@ static optionExt venc_long_option_ext[] = {
 
 	{{"smartAiEn", optional_argument, NULL, 0}, ARG_INT, 0, 1,
 		"smartAiEn [0, 1], default = 0"},
+
+	{{"maxCachePacks", optional_argument, NULL, 0}, ARG_UINT,
+		0, 100, "maxCachePacks [0, 100], default = 0"},
+	{{"outputPackOnce", optional_argument, NULL, 0}, ARG_UINT,
+		1, 100, "outputPackOnce [1, 100], default = 1"},
 	{{NULL, 0, NULL, 0}, ARG_INT, 0, 0, ""}
 };
 
@@ -938,6 +943,10 @@ CVI_S32 parseEncArgv(sampleVenc *psv, chnInputCfg *pIc, CVI_S32 argc, char **arg
 				pIc->middle_min_percent = arg.uval;
 			} else if (!strcmp(long_options[idx].name, "cplxMinPercent")) {
 				pIc->complex_min_percent = arg.uval;
+			} else if (!strcmp(long_options[idx].name, "maxCachePacks")) {
+				pIc->u32MaxCachePacks = arg.uval;
+			} else if (!strcmp(long_options[idx].name, "outputPackOnce")) {
+				pIc->u32OutputPackCnt = arg.uval;
 			}else {
 				CVI_VENC_TRACE("not exist name = %s\n", long_options[idx].name);
 				print_help(argv);
@@ -1201,8 +1210,10 @@ CVI_S32 SAMPLE_VENC_START(sampleVenc *psv)
 		}
 
 		if (pcic->bThreadDisable == CVI_FALSE) {
-			for (CVI_S32 s32ChnIdx = 0; s32ChnIdx < pcic->numChn; s32ChnIdx++)
+			for (CVI_S32 s32ChnIdx = 0; s32ChnIdx < pcic->numChn; s32ChnIdx++) {
+				psv->chnCtx[s32ChnIdx].chnIc.u32OutputPackCnt = 1;
 				SAMPLE_VENC_StartGetStream(&psv->chnCtx[s32ChnIdx], s32ChnIdx);
+			}
 		}
 	} else {
 		CVI_VENC_ERR("codec = %s\n", pIc->codec);
@@ -1319,9 +1330,9 @@ static CVI_S32 checkArg(CVI_S32 entryIdx, SAMPLE_ARG *pArg)
 
 	if (venc_long_option_ext[entryIdx].type == ARG_INT) {
 		pArg->ival = strtoimax(optarg, NULL, 10);
-		if ((int64_t)(pArg->ival) < venc_long_option_ext[entryIdx].min ||
-		    (int64_t)(pArg->ival) > venc_long_option_ext[entryIdx].max) {
-			CVI_VENC_ERR("%s = %d, min = %"PRId64", max = %"PRId64"\n",
+		if ((CVI_S64)(pArg->ival) < venc_long_option_ext[entryIdx].min ||
+		    (CVI_S64)(pArg->ival) > venc_long_option_ext[entryIdx].max) {
+			CVI_VENC_ERR("%s = %d, min = %lld, max = %lld\n",
 					venc_long_option_ext[entryIdx].opt.name,
 					pArg->ival,
 					venc_long_option_ext[entryIdx].min,
@@ -1330,9 +1341,9 @@ static CVI_S32 checkArg(CVI_S32 entryIdx, SAMPLE_ARG *pArg)
 		}
 	} else if (venc_long_option_ext[entryIdx].type == ARG_UINT) {
 		pArg->uval = strtoumax(optarg, NULL, 10);
-		if ((int64_t)(pArg->uval) < venc_long_option_ext[entryIdx].min ||
-		    (int64_t)(pArg->uval) > venc_long_option_ext[entryIdx].max) {
-			CVI_VENC_ERR("%s = %u, min = %"PRId64", max = %"PRId64"\n",
+		if ((CVI_S64)(pArg->uval) < venc_long_option_ext[entryIdx].min ||
+		    (CVI_S64)(pArg->uval) > venc_long_option_ext[entryIdx].max) {
+			CVI_VENC_ERR("%s = %u, min = %lld, max = %lld\n",
 					venc_long_option_ext[entryIdx].opt.name,
 					pArg->uval,
 					venc_long_option_ext[entryIdx].min,
@@ -1848,6 +1859,8 @@ static CVI_VOID *SAMPLE_VENC_GetVencStreamProc(CVI_VOID *pArgs)
 
 	usleep(1000);
 
+	srand(time(NULL)); // 设置种子
+
 	pvecc->chnStat = CHN_STAT_START;
 	pvecc->nextChnStat = CHN_STAT_START;
 	pvecc->s32VencFd = -1;
@@ -1877,15 +1890,26 @@ static CVI_VOID *SAMPLE_VENC_GetVencStreamProc(CVI_VOID *pArgs)
 			break;
 		}
 
-		s32Ret = _SAMPLE_VENC_GetStream(pvecc);
-		if (s32Ret != CVI_SUCCESS) {
-			CVI_VENC_ERR("_SAMPLE_VENC_GetStream, %d\n", s32Ret);
-			break;
+		if ((pIc->u32OutputPackCnt == 1) ||
+			(pIc->u32OutputPackCnt > 1 && i%(rand()%pIc->u32OutputPackCnt + 1) == 0)) {
+			s32Ret = _SAMPLE_VENC_GetStream(pvecc);
+			if (s32Ret != CVI_SUCCESS) {
+				CVI_VENC_ERR("_SAMPLE_VENC_GetStream, %d\n", s32Ret);
+				break;
+			}
 		}
 
 		usleep(100);
 
 		i++;
+	}
+
+	// get remain packs
+	if (pIc->u32OutputPackCnt > 1) {
+		s32Ret = _SAMPLE_VENC_GetStream(pvecc);
+		if (s32Ret != CVI_SUCCESS) {
+			CVI_VENC_INFO("_SAMPLE_VENC_GetStream remain packs, %d\n", s32Ret);
+		}
 	}
 
 	CVI_VENC_FLOW("venc task%d end\n", pvecc->VencChn);

@@ -24,9 +24,6 @@ INCS += -I$(CURDIR)/include
 USE_CVIAUDIO_STATIC = no
 endif
 
-ifeq ($(USE_CVIAUDIO_STATIC), yes)
-SRCS = $(filter-out $(SDIR)/cvi_audio_dl_adp.c, $(wildcard $(SDIR)/*.c))
-endif
 OBJS = $(SRCS:.c=.o)
 DEPS = $(SRCS:.c=.d)
 
@@ -101,13 +98,10 @@ endif
 
 MP3_PLAYER_OBJ = ./cvi_mp3_player/cvi_mp3_player.o
 TEST_OBJ = cvi_sample_audio.o cvi_audio_parse_param.o
-ifeq ($(USE_CVIAUDIO_STATIC), no)
-TEST_OBJ += cvi_audio_dl_adp.o
-endif
 
 LDLIBS =
-LDLIBS += -lcvi_audio
 LDLIBS += -lcvi_vqe
+LDLIBS += -lcvi_audio
 LDLIBS += -lsbc
 LDLIBS += -lcvi_VoiceEngine
 LDLIBS += -lcvi_RES1
@@ -128,7 +122,6 @@ LDLIBS += -lvi -lvpss -lvo -lrgn -lgdc -lsys
 endif
 
 ifeq ($(SUPPORT_EXTERNAL_AAC), yes)
-TEST_OBJ += ./aac_sample/cvi_audio_aac_adp.o
 LDLIBS += -laacdec2
 LDLIBS += -laacsbrdec2
 LDLIBS += -laacenc2
@@ -150,8 +143,17 @@ MP3_EXTRA_LDFLAGS = -lcvi_mp3 -lmad -lcvi_audio -lm -lpthread  -ldl -lcvi_VoiceE
 ifeq ($(MULTI_PROCESS_SUPPORT_AUDIO), yes)
 DEFINES += -DRPC_MULTI_PROCESS
 DEFINES += -DRPC_MULTI_PROCESS_AUDIO
-DEFINES += -DCVIAUDIO_STATIC
-EXTRA_LDFLAGS += -lnanomsg
+ifeq ($(TARGET_MACHINE), aarch64-linux-gnu)
+EXTRA_LDFLAGS += -L $(MW_PATH)/3rdparty/nanomsg/lib_64
+NANOMSG_PATH = $(MW_PATH)/3rdparty/nanomsg/lib_64
+else ifeq ($(TARGET_MACHINE), riscv64-unknown-linux-musl)
+EXTRA_LDFLAGS += -L $(MW_PATH)/3rdparty/nanomsg/musl_riscv64
+NANOMSG_PATH = $(MW_PATH)/3rdparty/nanomsg/musl_riscv64
+else
+EXTRA_LDFLAGS += -L $(MW_PATH)/3rdparty/nanomsg/lib_32
+NANOMSG_PATH = $(MW_PATH)/3rdparty/nanomsg/lib_32
+endif
+EXTRA_LDFLAGS += -lanl -lnanomsg
 endif
 
 ifeq ($(SAMPLE_STATIC),1)
