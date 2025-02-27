@@ -1,20 +1,18 @@
 /*
  *
  * File Name: isp_algo_vec_test.h
- * Description: test utility for riscv_vector
+ * Description: test utility for vector
  *
  */
 
 #ifndef _ISP_ALGO_VEC_TEST_
 #define _ISP_ALGO_VEC_TEST_
 
-#ifdef __riscv_vector
 #include <stdbool.h>
 #include <time.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <riscv_vector.h>
 
 /**
  * @name TEST_REPORT_RUN_TIME(enable, desc, code_block)
@@ -27,7 +25,6 @@
  *		}
  *	});
  */
-
 #define TEST_REPORT_RUN_TIME(enable, desc, code_block) do { \
 	clock_t start_time = clock(); \
 	do { \
@@ -49,14 +46,13 @@
 		;	\
 } while (0)
 
-
-#define TEST_EQ_VALUE(enable, desc, golden, rvv) do { \
-	if ((golden) == (rvv)) { \
+#define TEST_EQ_VALUE(enable, desc, golden, vector) do { \
+	if ((golden) == (vector)) { \
 		if (enable) \
-			printf("[TEST] <%s> \t golden: %ld, rvv: %ld, success\n", desc, (long)golden, (long)rvv); \
+			printf("[TEST] <%s> \t golden: %ld, vector: %ld, success\n", desc, (long)golden, (long)vector); \
 	} else { \
 		if (enable) \
-			printf("[TEST] <%s> \t golden: %ld, rvv: %ld, failed\n", desc, (long)golden, (long)rvv); \
+			printf("[TEST] <%s> \t golden: %ld, vector: %ld, failed\n", desc, (long)golden, (long)vector); \
 		DEAD_LOOP; \
 	} \
 } while (0)
@@ -65,10 +61,10 @@
 #define TEST_EQ_ARRAY(enable, desc, g, r, len) do { \
 	if (memcmp((g), (r), (len) * sizeof((g)[0])) == 0) { \
 		if (enable) \
-			printf("[TEST] <%s> \t array golden = rvv, len: %ld, success\n", desc, (long)len); \
+			printf("[TEST] <%s> \t array golden = vector, len: %ld, success\n", desc, (long)len); \
 	} else { \
 		if (enable) \
-			printf("[TEST] <%s> \t array golden != rvv, len: %ld, failed\n", desc, (long)len); \
+			printf("[TEST] <%s> \t array golden != vector, len: %ld, failed\n", desc, (long)len); \
 		DEAD_LOOP; \
 	} \
 } while (0)
@@ -79,10 +75,10 @@
 	  && memcmp((g2), (r2), (len) * sizeof((g2)[0])) == 0 \
 	  && memcmp((g3), (r3), (len) * sizeof((g3)[0])) == 0) { \
 		if (enable) \
-			printf("[TEST] <%s> \t arrays golden = rvv, len: %ld, success\n", desc, (long)len); \
+			printf("[TEST] <%s> \t arrays golden = vector, len: %ld, success\n", desc, (long)len); \
 	} else { \
 		if (enable) \
-			printf("[TEST] <%s> \t arrays golden != rvv, len: %ld, failed\n", desc, (long)len); \
+			printf("[TEST] <%s> \t arrays golden != vector, len: %ld, failed\n", desc, (long)len); \
 		DEAD_LOOP; \
 	} \
 } while (0)
@@ -94,17 +90,18 @@
 			&& ((g2)[_i] != (r2)[_i] && (g2)[_i] != (r2)[_i]-1) \
 			&& ((g3)[_i] != (r3)[_i] && (g3)[_i] != (r3)[_i]-1)) { \
 			if (enable) \
-				printf("[TEST] <%s> \t golden = %d, rvv = %d\n", desc, (g1)[_i], (r1)[_i]); \
+				printf("[TEST] <%s> \t golden = %d, vector = %d\n", desc, (g1)[_i], (r1)[_i]); \
 			if (enable) \
-				printf("[TEST] <%s> \t arrays golden != rvv, len: %ld, failed\n", desc, (long)len); \
+				printf("[TEST] <%s> \t arrays golden != vector, len: %ld, failed\n", desc, (long)len); \
 			DEAD_LOOP; \
 		} \
 	} \
 	if (enable) \
-		printf("[TEST] <%s> \t arrays golden = rvv or golden = rvv-1, len: %ld, success\n", desc, (long)len); \
+		printf("[TEST] <%s> \t arrays golden = vector or golden = vector-1, len: %ld, success\n", desc, (long)len); \
 } while (0)
 
-
+#ifdef __riscv_vector
+#include <riscv_vector.h>
 /**
  * @name TEST_PRINT_i[SEW]m[LMUL] (desc, v, vl)
  * @name TEST_PRINT_u[SEW]m[LMUL] (desc, v, vl)
