@@ -840,13 +840,6 @@ CVI_S32 SAMPLE_COMM_VENC_Create(
 			goto ERR_SAMPLE_COMM_VENC_CREATE;
 		}
 
-		s32Ret = SAMPLE_COMM_VENC_SetSuperFrame(pIc, VencChn);
-		if (s32Ret != CVI_SUCCESS) {
-			CVI_VENC_ERR("SAMPLE_COMM_VENC_SetSuperFrame, %d\n", s32Ret);
-			CVI_VENC_DestroyChn(VencChn);
-			goto ERR_SAMPLE_COMM_VENC_CREATE;
-		}
-
 		s32Ret = SAMPLE_COMM_VENC_EnableSvc(pIc, VencChn);
 		if (s32Ret != CVI_SUCCESS) {
 			CVI_VENC_ERR("SAMPLE_COMM_VENC_EnableSvc, %d\n", s32Ret);
@@ -979,6 +972,15 @@ CVI_S32 SAMPLE_COMM_VENC_Create(
 		s32Ret = SAMPLE_COMM_VENC_SetH265Dblk(pIc, VencChn);
 		if (s32Ret != CVI_SUCCESS) {
 			CVI_VENC_ERR("SAMPLE_COMM_VENC_SetH265Dblk, %d\n", s32Ret);
+			goto ERR_SAMPLE_COMM_VENC_CREATE;
+		}
+	}
+
+	if (pIc->enSuperFrmMode) {
+		s32Ret = SAMPLE_COMM_VENC_SetSuperFrame(pIc, VencChn);
+		if (s32Ret != CVI_SUCCESS) {
+			CVI_VENC_ERR("SAMPLE_COMM_VENC_SetSuperFrame, %d\n", s32Ret);
+			CVI_VENC_DestroyChn(VencChn);
 			goto ERR_SAMPLE_COMM_VENC_CREATE;
 		}
 	}
@@ -1603,6 +1605,11 @@ static CVI_S32 SAMPLE_COMM_VENC_SetSuperFrame(
 		: SUPERFRM_NONE;
 	pstsf->u32SuperIFrmBitsThr = pIc->u32SuperIFrmBitsThr;
 	pstsf->u32SuperPFrmBitsThr = pIc->u32SuperPFrmBitsThr;
+
+	if (!strcmp(pIc->codec, "mjp") || !strcmp(pIc->codec, "jpg")) {
+		pstsf->u32ReEncodeTimes = 2;
+		pstsf->u32QualityLevel = 90;
+	}
 
 	s32Ret = API_COST_TIME_LOG(CVI_VENC_SetSuperFrameStrategy(VencChn, pstsf), "CVI_VENC_SetSuperFrameStrategy");
 	if (s32Ret != CVI_SUCCESS) {

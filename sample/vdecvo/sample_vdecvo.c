@@ -413,8 +413,13 @@ RETRY_GET_FRAME:
 				CVI_TRACE_LOG(CVI_DBG_ERR, "[%d] CVI_VDEC_GetFrame fail\n", pstVdecChn->VdecChn);
 				retry++;
 				if (s32Ret == CVI_ERR_VDEC_BUSY) {
-					CVI_TRACE_LOG(CVI_DBG_ERR, "get frame timeout ..in overlay ..retry\n");
-					goto RETRY_GET_FRAME;
+					if (!pstVdecCfg->astVdecParam[0].stop_thread) {
+						usleep(10000);
+						CVI_TRACE_LOG(CVI_DBG_ERR, "get frame timeout ..in overlay ..retry\n");
+						goto RETRY_GET_FRAME;
+					} else {
+						break;
+					}
 				}
 			}
 

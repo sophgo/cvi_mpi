@@ -1058,8 +1058,21 @@ CVI_S32 CVI_VENC_GetFrameLostStrategy(VENC_CHN VeChn, VENC_FRAMELOST_S *pstFrmLo
 
 CVI_S32 CVI_VENC_SetSuperFrameStrategy(VENC_CHN VeChn, const VENC_SUPERFRAME_CFG_S *pstSuperFrmParam)
 {
-	UNUSED_VARIABLE(VeChn);
-	UNUSED_VARIABLE(pstSuperFrmParam);
+	CVI_S32 s32Ret;
+	CVI_U32 u32ModFd = MODFD(CVI_ID_VENC, 0, VeChn);
+	MOD_CHECK_NULL_PTR(CVI_ID_VENC, pstSuperFrmParam);
+
+	CVI_VENC_API_IN;
+
+	s32Ret = CVI_MSG_SendSync(u32ModFd, MSG_CMD_VENC_SET_SUPERFRAME_STRATEGY, (CVI_VOID *)pstSuperFrmParam,
+				sizeof(VENC_CHN_PARAM_S), CVI_NULL);
+	if (s32Ret != CVI_SUCCESS) {
+		CVI_VENC_ERR("SetChnParam fail, chn:%d, ret:0x%x\n", VeChn, s32Ret);
+		return s32Ret;
+	}
+
+	CVI_VENC_API_OUT;
+
 	return CVI_SUCCESS;
 }
 
