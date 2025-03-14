@@ -78,6 +78,9 @@ typedef struct {
 	ISP_CA2_ATTR_S ca2;
 	ISP_YCONTRAST_ATTR_S ycontrast;
 
+	// TEAISP
+	TEAISP_PQ_ATTR_S teaisp_pq;
+
 	// other
 	ISP_CMOS_NOISE_CALIBRATION_S np;
 	ISP_MONO_ATTR_S mono;

@@ -86,6 +86,7 @@ static const struct isp_module_ctrl *mod[ISP_IQ_BLOCK_MAX] = {
 	[ISP_IQ_BLOCK_YEE] = &sharpen_mod,
 	[ISP_IQ_BLOCK_YCONTRAST] = &ycontrast_mod,
 	[ISP_IQ_BLOCK_MONO] = &mono_mod,
+	[ISP_IQ_BLOCK_TEAISP_PQ] = &teaisp_pq_mod,
 };
 #endif
 #else

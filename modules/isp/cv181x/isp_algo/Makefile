@@ -39,6 +39,7 @@ SRCS_C += $(SDIR)/isp_algo_utility.c
 SRCS_C += $(SDIR)/isp_algo_wb.c
 SRCS_C += $(SDIR)/isp_algo_ycontrast.c
 SRCS_C += $(SDIR)/isp_algo_ynr.c
+SRCS_C += $(SDIR)/isp_algo_teaisp_pq.c
 SRCS_C += $(SDIR)/isp_iir_api.c
 SRCS_C += $(SDIR)/isp_rvv_utility.c
 SRCS_C += $(SDIR)/pchip.c

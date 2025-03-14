@@ -605,7 +605,7 @@ static CVI_S32 isp_bin_checkBinVersion(CVI_U8 *addr, CVI_U32 binSize)
 
 	//check md5
 	if (strcmp(binMd5, ISP_BIN_MD5)) {
-		printf("pqbin md5 mismatch, mwMd5:%s != pqBinMd5:%s", ISP_BIN_MD5, binMd5);
+		printf("pqbin md5 mismatch, mwMd5:%s != pqBinMd5:%s\n", ISP_BIN_MD5, binMd5);
 		return CVI_SUCCESS;
 	}
 
@@ -694,6 +694,7 @@ static CVI_S32 isp_set_paramstruct(VI_PIPE ViPipe, ISP_Parameter_Structures *pst
 	CVI_ISP_SetCAAttr(ViPipe, &pstParaBuf->ca);
 	CVI_ISP_SetCA2Attr(ViPipe, &pstParaBuf->ca2);
 	CVI_ISP_SetYContrastAttr(ViPipe, &pstParaBuf->ycontrast);
+	CVI_TEAISP_PQ_SetAttr(ViPipe, &pstParaBuf->teaisp_pq);
 
 	// Other
 	CVI_ISP_SetNoiseProfileAttr(ViPipe, &pstParaBuf->np);
@@ -771,6 +772,7 @@ static CVI_S32 isp_get_paramstruct(VI_PIPE ViPipe, ISP_Parameter_Structures *pst
 	CVI_ISP_GetCAAttr(ViPipe, &pstParaBuf->ca);
 	CVI_ISP_GetCA2Attr(ViPipe, &pstParaBuf->ca2);
 	CVI_ISP_GetYContrastAttr(ViPipe, &pstParaBuf->ycontrast);
+	CVI_TEAISP_PQ_GetAttr(ViPipe, &pstParaBuf->teaisp_pq);
 
 	// other
 	CVI_ISP_GetNoiseProfileAttr(ViPipe, &pstParaBuf->np);

@@ -7,6 +7,11 @@
 				"SET": "CVI_SetTopInfo"
 			},
 			{
+				"STRUCT": "TEAISP_PQ_ATTR_S",
+				"GET": "CVI_TEAISP_PQ_GetAttr",
+				"SET": "CVI_TEAISP_PQ_SetAttr"
+			},
+			{
 				"STRUCT": "ISP_BLACK_LEVEL_ATTR_S",
 				"GET": "CVI_ISP_GetBlackLevelAttr",
 				"SET": "CVI_ISP_SetBlackLevelAttr"

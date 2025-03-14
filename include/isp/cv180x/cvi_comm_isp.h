@@ -2733,6 +2733,45 @@ typedef struct _ISP_VC_ATTR_S {
 	CVI_U8 MotionThreshold[ISP_AUTO_ISO_STRENGTH_NUM]; /*RW; Range:[0x0, 0xff] */
 } ISP_VC_ATTR_S;
 
+//-----------------------------------------------------------------------------
+//  TEAISP PQ
+//-----------------------------------------------------------------------------
+#define TEAISP_SCENE_NUM (5)
+typedef enum _TEAISP_PQ_SCENE {
+	SCENE_SNOW,
+	SCENE_FOG,
+	SCENE_BACKLIGHT,
+	SCENE_GRASS,
+	SCENE_COMMON
+} TEAISP_PQ_SCENE;
+
+typedef struct _TEAISP_PQ_SCENE_INFO {
+	TEAISP_PQ_SCENE scene;
+	CVI_U8 scene_score;
+} TEAISP_PQ_SCENE_INFO;
+
+typedef struct _TEAISP_PQ_MANUAL_ATTR_S {
+	CVI_U8 resv;
+} TEAISP_PQ_MANUAL_ATTR_S;
+
+typedef struct _TEAISP_PQ_AUTO_ATTR_S {
+	CVI_U8 resv;
+} TEAISP_PQ_AUTO_ATTR_S;
+
+typedef struct _TEAISP_PQ_ATTR_S {
+	CVI_BOOL Enable; /*RW; Range:[0x0, 0x1]*/
+	ISP_OP_TYPE_E enOpType;
+	CVI_U8 UpdateInterval; /*RW; Range:[0x1, 0xFF]*/
+	CVI_U8 TuningMode; /*RW; Range:[0x0, 0x5]*/
+
+	CVI_U8 SmoothThr; /*RW; Range:[0x0, 0xff]*/
+	CVI_BOOL SceneBypass[TEAISP_SCENE_NUM];
+	CVI_U8 SceneConfThres[TEAISP_SCENE_NUM];
+
+	TEAISP_PQ_AUTO_ATTR_S stAuto;
+	TEAISP_PQ_MANUAL_ATTR_S stManual;
+} TEAISP_PQ_ATTR_S;
+
 #ifdef __cplusplus
 #if __cplusplus
 }

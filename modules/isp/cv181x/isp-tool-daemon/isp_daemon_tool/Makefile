@@ -128,6 +128,8 @@ else
 	@cp $(TPU_SDK_PATH)/lib/*.so* install/lib/ai -rf
 	@rm install/lib/ai/libcvi_rtsp.so
 endif
+	@cp $(MW_PATH)/../tdl_sdk/install/lib/libcvi_tdl.so install/lib/ai
+
 
 	@for so in $(file); \
 	do \

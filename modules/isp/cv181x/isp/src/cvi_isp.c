@@ -3907,3 +3907,92 @@ CVI_S32 CVI_ISP_QueryWBInfo(VI_PIPE ViPipe, ISP_WB_INFO_S *pstWBInfo)
 
 	return CVI_SUCCESS;
 }
+
+//-----------------------------------------------------------------------------
+//  TEAISP.pq
+//-----------------------------------------------------------------------------
+CVI_S32 CVI_TEAISP_PQ_SetAttr(VI_PIPE ViPipe, const TEAISP_PQ_ATTR_S *pstTEAISPPQAttr)
+{
+	ISP_LOG_DEBUG("+\n");
+	CVI_S32 ret = CVI_SUCCESS;
+
+	if ((ViPipe < 0) || (ViPipe >= VI_MAX_PIPE_NUM)) {
+		ISP_LOG_ERR("ViPipe %d value error\n", ViPipe);
+		return -ENODEV;
+	}
+
+	if (pstTEAISPPQAttr == CVI_NULL)
+		return CVI_FAILURE;
+
+	ret = teaisp_pq_ctrl_set_pq_attr(ViPipe, pstTEAISPPQAttr);
+
+	return ret;
+}
+
+CVI_S32 CVI_TEAISP_PQ_GetAttr(VI_PIPE ViPipe, TEAISP_PQ_ATTR_S *pstTEAISPPQAttr)
+{
+	ISP_LOG_DEBUG("+\n");
+	CVI_S32 ret = CVI_SUCCESS;
+
+	if ((ViPipe < 0) || (ViPipe >= VI_MAX_PIPE_NUM)) {
+		ISP_LOG_ERR("ViPipe %d value error\n", ViPipe);
+		return -ENODEV;
+	}
+
+	if (pstTEAISPPQAttr == CVI_NULL)
+		return CVI_FAILURE;
+
+	const TEAISP_PQ_ATTR_S *pTemp = NULL;
+
+	ret = teaisp_pq_ctrl_get_pq_attr(ViPipe, &pTemp);
+	if (pTemp != NULL) {
+		memcpy(pstTEAISPPQAttr, pTemp, sizeof(TEAISP_PQ_ATTR_S));
+	}
+
+	return ret;
+}
+
+CVI_S32 CVI_TEAISP_PQ_SetSceneInfo(VI_PIPE ViPipe, const TEAISP_PQ_SCENE_INFO *pstTEAISPPQSceneInfo)
+{
+	ISP_LOG_DEBUG("+\n");
+	CVI_S32 ret = CVI_SUCCESS;
+
+	if ((ViPipe < 0) || (ViPipe >= VI_MAX_PIPE_NUM)) {
+		ISP_LOG_ERR("ViPipe %d value error\n", ViPipe);
+		return -ENODEV;
+	}
+
+	ret = teaisp_pq_ctrl_set_pq_scene(ViPipe, pstTEAISPPQSceneInfo);
+
+	return ret;
+}
+
+CVI_S32 CVI_TEAISP_PQ_GetSceneInfo(VI_PIPE ViPipe, TEAISP_PQ_SCENE_INFO *pstTEAISPPQSceneInfo)
+{
+	ISP_LOG_DEBUG("+\n");
+	CVI_S32 ret = CVI_SUCCESS;
+
+	if ((ViPipe < 0) || (ViPipe >= VI_MAX_PIPE_NUM)) {
+		ISP_LOG_ERR("ViPipe %d value error\n", ViPipe);
+		return -ENODEV;
+	}
+
+	ret = teaisp_pq_ctrl_get_pq_scene(ViPipe, pstTEAISPPQSceneInfo);
+
+	return ret;
+}
+
+CVI_S32 CVI_TEAISP_PQ_GetDetectSceneInfo(VI_PIPE ViPipe, TEAISP_PQ_SCENE_INFO *pstTEAISPPQSceneInfo)
+{
+	ISP_LOG_DEBUG("+\n");
+	CVI_S32 ret = CVI_SUCCESS;
+
+	if ((ViPipe < 0) || (ViPipe >= VI_MAX_PIPE_NUM)) {
+		ISP_LOG_ERR("ViPipe %d value error\n", ViPipe);
+		return -ENODEV;
+	}
+
+	ret = teaisp_pq_ctrl_get_pq_detect_scene(ViPipe, pstTEAISPPQSceneInfo);
+
+	return ret;
+}

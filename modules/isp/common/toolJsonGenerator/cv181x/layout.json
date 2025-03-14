@@ -45,6 +45,39 @@
 				}
 			},
 			{
+				"ID": "TEAISP.pq",
+				"READY": true,
+				"TYPE": "REG_API_MPI",
+				"CONTENTS": {
+					"CONTENT": [
+						"TEAISP_PQ_ATTR_S"
+					]
+				},
+				"LAYOUTS": {
+					"LAYOUT": [
+						{
+							"TITLE": "TEAISP.pq attr",
+							"MEMBER": [
+								"TEAISP_PQ_ATTR_S.Enable",
+								"TEAISP_PQ_ATTR_S.enOpType",
+								"TEAISP_PQ_ATTR_S.UpdateInterval",
+								"TEAISP_PQ_ATTR_S.SmoothThr",
+								"TEAISP_PQ_ATTR_S.TuningMode",
+								"TEAISP_PQ_ATTR_S.SceneBypass",
+								"TEAISP_PQ_ATTR_S.SceneConfThres"
+							]
+						},
+						{
+							"TITLE": "TEAISP.pq attr",
+							"MEMBER": [
+								"TEAISP_PQ_ATTR_S.stManual.resv",
+								"TEAISP_PQ_ATTR_S.stAuto.resv"
+							]
+						}
+					]
+				}
+			},
+			{
 				"ID": "BLC",
 				"READY": true,
 				"TYPE": "REG_API_MPI",

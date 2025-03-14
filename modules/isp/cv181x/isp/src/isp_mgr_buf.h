@@ -41,6 +41,7 @@
 #include "isp_mono_ctrl.h"
 #include "isp_ccm_ctrl.h"
 #include "isp_ynr_ctrl.h"
+#include "teaisp_pq_ctrl.h"
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -240,6 +241,11 @@ struct isp_ynr_shared_buffer {
 struct isp_mono_shared_buffer {
 	ISP_MONO_ATTR_S stMonoAttr;
 	struct isp_mono_ctrl_runtime runtime;
+};
+
+struct teaisp_pq_shared_buffer {
+	TEAISP_PQ_ATTR_S stTEAISPPQAttr;
+	struct teaisp_pq_ctrl_runtime runtime;
 };
 
 CVI_S32 isp_mgr_buf_init(VI_PIPE ViPipe);

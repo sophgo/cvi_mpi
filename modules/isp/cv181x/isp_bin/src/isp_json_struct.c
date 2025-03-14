@@ -2980,6 +2980,45 @@ void ISP_YCONTRAST_ATTR_S_JSON(int r_w_flag, JSON *j, char *key, ISP_YCONTRAST_A
 }
 
 // -----------------------------------------------------------------------------
+// ISP structure - TEAISP PQ
+// -----------------------------------------------------------------------------
+static void TEAISP_PQ_MANUAL_ATTR_S_JSON(int r_w_flag, JSON *j, char *key, TEAISP_PQ_MANUAL_ATTR_S *data)
+{
+	JSON_START(r_w_flag);
+
+	JSON(r_w_flag, CVI_U8, resv);
+
+	JSON_END(r_w_flag);
+}
+
+// -----------------------------------------------------------------------------
+static void TEAISP_PQ_AUTO_ATTR_S_JSON(int r_w_flag, JSON *j, char *key, TEAISP_PQ_AUTO_ATTR_S *data)
+{
+	JSON_START(r_w_flag);
+
+	JSON(r_w_flag, CVI_U8, resv);
+
+	JSON_END(r_w_flag);
+}
+
+// -----------------------------------------------------------------------------
+void TEAISP_PQ_ATTR_S_JSON(int r_w_flag, JSON *j, char *key, TEAISP_PQ_ATTR_S *data)
+{
+	JSON_START(r_w_flag);
+
+	JSON(r_w_flag, CVI_BOOL, Enable);
+	JSON(r_w_flag, ISP_OP_TYPE_E, enOpType);
+	JSON(r_w_flag, CVI_U8, UpdateInterval);
+	JSON(r_w_flag, CVI_U8, TuningMode);
+	JSON(r_w_flag, CVI_U8, SmoothThr);
+	JSON_A(r_w_flag, CVI_BOOL, SceneBypass, TEAISP_SCENE_NUM);
+	JSON_A(r_w_flag, CVI_U8, SceneConfThres, TEAISP_SCENE_NUM);
+	JSON(r_w_flag, TEAISP_PQ_MANUAL_ATTR_S, stManual);
+	JSON(r_w_flag, TEAISP_PQ_AUTO_ATTR_S, stAuto);
+
+	JSON_END(r_w_flag);
+}
+// -----------------------------------------------------------------------------
 // ISP Other
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------

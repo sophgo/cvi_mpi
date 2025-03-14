@@ -867,4 +867,15 @@ CVI_S32 CVI_ISPD2_CBFunc_ISP_GetCA2Attr(TJSONRpcContentIn *ptContentIn,
 	CVI_ISP_GET_API_EX(CA2, ISP_CA2_ATTR_S);
 }
 
+CVI_S32 CVI_ISPD2_CBFunc_TEAISP_PQ_SetAttr(TJSONRpcContentIn *ptContentIn,
+	TJSONRpcContentOut *ptContentOut, JSONObject *pJsonResponse)
+{
+	CVI_ISP_SET_API(CVI_TEAISP_PQ_SetAttr, CVI_TEAISP_PQ_GetAttr, TEAISP_PQ_ATTR_S);
+}
+
+CVI_S32 CVI_ISPD2_CBFunc_TEAISP_PQ_GetAttr(TJSONRpcContentIn *ptContentIn,
+	TJSONRpcContentOut *ptContentOut, JSONObject *pJsonResponse)
+{
+	CVI_ISP_GET_API(CVI_TEAISP_PQ_GetAttr, TEAISP_PQ_ATTR_S);
+}
 // -----------------------------------------------------------------------------

@@ -315,6 +315,16 @@ CVI_S32 CVI_ISP_IrAutoRunOnce(ISP_DEV IspDev, ISP_IR_AUTO_ATTR_S *pstIrAttr);
 CVI_S32 CVI_ISP_SetSmartInfo(VI_PIPE ViPipe, const ISP_SMART_INFO_S *pstSmartInfo, CVI_U8 TimeOut);
 CVI_S32 CVI_ISP_GetSmartInfo(VI_PIPE ViPipe, ISP_SMART_INFO_S *pstSmartInfo);
 
+//-----------------------------------------------------------------------------
+//  TEAISP PQ
+//-----------------------------------------------------------------------------
+CVI_S32 CVI_TEAISP_PQ_SetAttr(VI_PIPE ViPipe, const TEAISP_PQ_ATTR_S *pstTEAISPPQAttr);
+CVI_S32 CVI_TEAISP_PQ_GetAttr(VI_PIPE ViPipe, TEAISP_PQ_ATTR_S *pstTEAISPPQAttr);
+
+CVI_S32 CVI_TEAISP_PQ_SetSceneInfo(VI_PIPE ViPipe, const TEAISP_PQ_SCENE_INFO *pstTEAISPPQSceneInfo);
+CVI_S32 CVI_TEAISP_PQ_GetSceneInfo(VI_PIPE ViPipe, TEAISP_PQ_SCENE_INFO *pstTEAISPPQSceneInfo);
+CVI_S32 CVI_TEAISP_PQ_GetDetectSceneInfo(VI_PIPE ViPipe, TEAISP_PQ_SCENE_INFO *pstTEAISPPQSceneInfo);
+
 #ifdef __cplusplus
 #if __cplusplus
 }

@@ -299,6 +299,10 @@ CVI_S32 CVI_ISPD2_CBFunc_ISP_SetPubAttr(TJSONRpcContentIn *ptIn,
 CVI_S32 CVI_ISPD2_CBFunc_ISP_GetPubAttr(TJSONRpcContentIn *ptIn,
 	TJSONRpcContentOut *ptOut, JSONObject *pJsonRes);
 
+CVI_S32 CVI_ISPD2_CBFunc_TEAISP_PQ_SetAttr(TJSONRpcContentIn *ptIn,
+	TJSONRpcContentOut *ptOut, JSONObject *pJsonRes);
+CVI_S32 CVI_ISPD2_CBFunc_TEAISP_PQ_GetAttr(TJSONRpcContentIn *ptIn,
+	TJSONRpcContentOut *ptOut, JSONObject *pJsonRes);
 // AE
 CVI_S32 CVI_ISPD2_CBFunc_ISP_SetExposureAttr(TJSONRpcContentIn *ptIn,
 	TJSONRpcContentOut *ptOut, JSONObject *pJsonRes);

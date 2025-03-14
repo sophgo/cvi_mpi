@@ -84,6 +84,7 @@ static CVI_S32 setNoiseProfile(VI_PIPE ViPipe);
 static CVI_S32 setDisDefault(VI_PIPE ViPipe);
 static void setVCDefault(VI_PIPE ViPipe);
 static void setCscDefault(VI_PIPE ViPipe);
+static CVI_VOID setTEAISPPQ(VI_PIPE ViPipe);
 
 static CVI_S32 setIspIqParamDefault(VI_PIPE ViPipe, CVI_U32 wdrEn);
 static CVI_VOID setDemosaicDemoire(VI_PIPE ViPipe);
@@ -133,6 +134,7 @@ static CVI_S32 setIspIqParamDefault(VI_PIPE ViPipe, CVI_U32 wdrEn)
 #else
 	// setBlcDefault(ViPipe);
 	//setRlscDefault(ViPipe);
+	setTEAISPPQ(ViPipe);
 	setGammaDefault(ViPipe, wdrEn);
 	setAutoGammaDefault(ViPipe);
 	setDemosaicDefault(ViPipe);
@@ -169,6 +171,23 @@ static CVI_S32 setIspIqParamDefault(VI_PIPE ViPipe, CVI_U32 wdrEn)
 	setCscDefault(ViPipe);
 #endif
 	return 0;
+}
+
+static CVI_VOID setTEAISPPQ(VI_PIPE ViPipe)
+{
+	ISP_LOG_DEBUG("(%d)\n", ViPipe);
+
+	TEAISP_PQ_ATTR_S attr = {0};
+
+	INIT_V(attr, Enable, 0);
+	INIT_V(attr, enOpType, 0);
+	INIT_V(attr, UpdateInterval, 1);
+	INIT_V(attr, SmoothThr, 1);
+
+	INIT_V_ARRAY(attr, SceneBypass, 0, 0, 0, 0, 0);
+	INIT_V_ARRAY(attr, SceneConfThres, 80, 80, 80, 80, 80);
+
+	teaisp_pq_ctrl_set_pq_attr(ViPipe, &attr);
 }
 
 #if 0

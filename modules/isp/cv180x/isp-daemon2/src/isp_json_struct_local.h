@@ -84,6 +84,7 @@ void ISP_CA_ATTR_S_JSON(int r_w_flag, JSON *j, char *key, ISP_CA_ATTR_S *data);
 void ISP_CA2_ATTR_S_JSON(int r_w_flag, JSON *j, char *key, ISP_CA2_ATTR_S *data);
 void ISP_YCONTRAST_ATTR_S_JSON(int r_w_flag, JSON *j, char *key, ISP_YCONTRAST_ATTR_S *data);
 
+void TEAISP_PQ_ATTR_S_JSON(int r_w_flag, JSON *j, char *key, TEAISP_PQ_ATTR_S *data);
 // -----------------------------------------------------------------------------
 // ISP Other
 // -----------------------------------------------------------------------------

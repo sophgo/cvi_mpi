@@ -56,6 +56,7 @@ SRCS_C += $(SDIR)/isp_tun_buf_ctrl.c
 SRCS_C += $(SDIR)/isp_wb_ctrl.c
 SRCS_C += $(SDIR)/isp_ycontrast_ctrl.c
 SRCS_C += $(SDIR)/isp_ynr_ctrl.c
+SRCS_C += $(SDIR)/teaisp_pq_ctrl.c
 SRCS_C += $(SDIR)/../../../common/clog/clog.c
 #
 ODIR    := $(CURDIR)/obj
