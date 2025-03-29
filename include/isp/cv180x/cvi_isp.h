@@ -13,6 +13,7 @@
 #include "cvi_comm_isp.h"
 #include "cvi_comm_3a.h"
 #include "cvi_comm_sns.h"
+#include "cvi_sns_ctrl.h"
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -26,6 +27,8 @@ CVI_S32 CVI_ISP_MemInit(VI_PIPE ViPipe);
 CVI_S32 CVI_ISP_Run(VI_PIPE ViPipe);
 CVI_S32 CVI_ISP_RunOnce(VI_PIPE ViPipe);
 CVI_S32 CVI_ISP_Exit(VI_PIPE ViPipe);
+CVI_S32 CVI_ISP_SnsInit(VI_PIPE ViPipe, ISP_SNS_CFG_S *pstSnsCfg,
+				ISP_SNS_OBJ_S *pSnsObj, int WorkMode);
 
 /* Each Param set / get Operation */
 CVI_S32 CVI_ISP_SetPubAttr(VI_PIPE ViPipe, const ISP_PUB_ATTR_S *pstPubAttr);
@@ -292,6 +295,7 @@ CVI_S32 CVI_MIPI_SetSensorReset(CVI_S32 devno, CVI_U32 reset);
 CVI_S32 CVI_MIPI_SetMipiAttr(CVI_S32 ViPipe, const CVI_VOID *devAttr);
 CVI_S32 CVI_MIPI_SetClkEdge(CVI_S32 devno, CVI_U32 is_up);
 CVI_S32 CVI_MIPI_SetSnsMclk(SNS_MCLK_S *mclk);
+CVI_S32 CVI_MIPI_SensorGpioInit(CVI_S32 devno, void *sns_gpio);
 
 CVI_S32 CVI_ISP_QueryInnerStateInfo(VI_PIPE ViPipe, ISP_INNER_STATE_INFO_S *pstInnerStateInfo);
 CVI_S32 CVI_ISP_GetVDTimeOut(VI_PIPE ViPipe, ISP_VD_TYPE_E enIspVDType, CVI_U32 u32MilliSec);

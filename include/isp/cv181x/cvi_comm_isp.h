@@ -2772,6 +2772,21 @@ typedef struct _TEAISP_PQ_ATTR_S {
 	TEAISP_PQ_MANUAL_ATTR_S stManual;
 } TEAISP_PQ_ATTR_S;
 
+/*Sensor config information*/
+typedef struct _ISP_SNS_CFG_S {
+	SIZE_S stSnsSize;
+	CVI_FLOAT f32FrameRate;
+	WDR_MODE_E enWDRMode;
+	CVI_BOOL bHwSync;
+	CVI_S32 S32MipiDevno;
+	CVI_U8 u8Mclk;
+	CVI_BOOL bMclkEn;
+	CVI_S16 lane_id[5];
+	CVI_CHAR pn_swap[5];
+	ISP_SNS_COMMBUS_U busInfo;
+	CVI_S32 I2cAddr;
+} ISP_SNS_CFG_S;
+
 #ifdef __cplusplus
 #if __cplusplus
 }

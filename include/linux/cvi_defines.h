@@ -16,6 +16,10 @@ extern "C" {
 #endif
 #endif /* __cplusplus */
 
+#ifndef __CV180X__
+	#define __CV180X__
+#endif
+
 #define IS_CHIP_CV181X(x) (((x) == E_CHIPID_CV1820A) || ((x) == E_CHIPID_CV1821A) \
                         || ((x) == E_CHIPID_CV1822A) || ((x) == E_CHIPID_CV1823A) \
                         || ((x) == E_CHIPID_CV1825A) || ((x) == E_CHIPID_CV1826A) \
