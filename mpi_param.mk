@@ -11,6 +11,7 @@ export MW_PATH	:= $(ROOT_DIR)
 export MW_INC 	:= $(MW_PATH)/include
 export MW_LIB 	:= $(MW_PATH)/lib
 export MW_3RD_LIB := $(MW_PATH)/lib/3rd
+export MPI_INSTALL_DIR ?= $(MW_PATH)/install
 #
 ## GCC COMPILER ##
 CC := $(CROSS_COMPILE)gcc
