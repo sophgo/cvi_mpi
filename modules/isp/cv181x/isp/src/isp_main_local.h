@@ -84,6 +84,7 @@ typedef struct _ISP_CTX_S {
 
 	ISP_FRAME_INFO_S frameInfo;
 	ISP_STATISTICS_CFG_S stsCfgInfo;
+	ISP_AWB_RATIO_ATTR_S stRatioAttr;
 
 	pthread_mutex_t ispEventLock;
 	pthread_cond_t ispEventCond[ISP_VD_MAX];
@@ -197,6 +198,7 @@ CVI_S32 isp_flow_event_siganl(VI_PIPE ViPipe, ISP_VD_TYPE_E eventType);
 extern int open_device(const char *dev_name, CVI_S32 *fd);
 extern void AWB_BufInit(CVI_U8 sID);
 extern void AE_BufInit(CVI_U8 sID);
+extern void AF_BufInit(CVI_U8 sID);
 
 #ifdef __cplusplus
 #if __cplusplus

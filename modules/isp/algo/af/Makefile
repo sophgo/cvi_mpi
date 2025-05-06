@@ -6,18 +6,28 @@ endif
 #
 SDIR	:= $(CURDIR)
 SRCS_C	:= $(SDIR)/cvi_af.c
+SRCS_C	+= $(SDIR)/af_buf.c
+SRCS_C	+= $(SDIR)/afalgo.c
 #
 ODIR    := $(CURDIR)/obj
 OBJS	:= $(SRCS_C:$(SDIR)/%.c=$(ODIR)/%.$(TARGET_MACHINE).$(CHIP_ARCH_L).o)
 DEPS	:= $(SRCS_C:$(SDIR)/%.c=$(ODIR)/%.$(TARGET_MACHINE).$(CHIP_ARCH_L).d)
 #
-INCS = -I$(MW_INC) -I$(ISP_INC) -I$(SYS_INC) -I../ -I$(MW_INTERNAL_INC)
+INCS = -I$(MW_INC) -I$(ISP_INC) -I$(SYS_INC) -I$(MSG_INC) -I../ -I$(MW_INTERNAL_INC)
 
 ifneq ($(findstring $(CHIP_ARCH), CV181X cv181x),)
 INCS += -I../../cv181x/isp/inc
+INCS += -I../../cv181x/isp/src
+INCS += -I../../cv181x/isp_algo/inc
+INCS += -I../ae
 else ifneq ($(findstring $(CHIP_ARCH), CV180X cv180x),)
 INCS += -I../../cv180x/isp/inc
+INCS += -I../../cv180x/isp/src
+INCS += -I../../cv180x/isp_algo/inc
+INCS += -I../ae
 endif
+
+INCS += -I../../common_isp_ipc
 
 TARGET_A = $(MW_LIB)/libaf.a
 TARGET_SO = $(MW_LIB)/libaf.so

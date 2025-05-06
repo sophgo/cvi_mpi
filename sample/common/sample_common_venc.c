@@ -1050,6 +1050,9 @@ static CVI_S32 SAMPLE_COMM_VENC_SetChnAttr(
 	pstVencChnAttr->stVencAttr.u32Profile = u32Profile;
 	pstVencChnAttr->stVencAttr.bByFrame = CVI_TRUE; // get stream mode is slice mode or
 													// frame mode ?
+	if (enType == PT_JPEG) {
+		pstVencChnAttr->stVencAttr.stAttrJpege.bReuseInputBuf = pIc->bReuseInputBuf;
+	}
 
 	if (pstGopAttr->enGopMode == VENC_GOPMODE_NORMALP) {
 		pstGopAttr->stNormalP.s32IPQpDelta = pIc->s32IPQpDelta;

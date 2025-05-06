@@ -99,6 +99,8 @@ typedef struct {
 	ISP_AWB_Calibration_Gain_S WBCalib;
 	ISP_AWB_Calibration_Gain_S_EX WBCalibEx;
 	ISP_STATISTICS_CFG_S StatCfg;
+
+	ISP_FOCUS_ATTR_S FocusAttr;
 } ISP_3A_Parameter_Structures;
 
 #ifdef __cplusplus

@@ -647,7 +647,7 @@ def parseStruct(str):
     pattern = re.compile('struct\s*\w+\s*\{[^\}\{\#]*\}[^\}\{\#\/\*]*\;', re.DOTALL)
     return pattern.findall(str)
 def parseEnum(str):
-    pattern = re.compile('enum[^\{\#]*\{[^\}\#]*\}[^\}\{\#\/\*]*\;', re.DOTALL)
+    pattern = re.compile('enum[^\{\}\#]*\{[^\}\#]*\}[^\}\{\#\/\*]*\;', re.DOTALL)
     return pattern.findall(str)
 def SaveEnumJson2File(fp, enumStrs):
     startLine = """

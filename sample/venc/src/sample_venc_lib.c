@@ -378,6 +378,8 @@ static optionExt venc_long_option_ext[] = {
 		0, 100, "maxCachePacks [0, 100], default = 0"},
 	{{"outputPackOnce", optional_argument, NULL, 0}, ARG_UINT,
 		1, 100, "outputPackOnce [1, 100], default = 1"},
+	{{"reuseInput", optional_argument, NULL, 0}, ARG_INT,	  0,   1,
+		"0: disable, 1: enable reuse input buffer as bitstream buffer when buffer full(jpeg only)"},
 	{{NULL, 0, NULL, 0}, ARG_INT, 0, 0, ""}
 };
 
@@ -947,6 +949,8 @@ CVI_S32 parseEncArgv(sampleVenc *psv, chnInputCfg *pIc, CVI_S32 argc, char **arg
 				pIc->u32MaxCachePacks = arg.uval;
 			} else if (!strcmp(long_options[idx].name, "outputPackOnce")) {
 				pIc->u32OutputPackCnt = arg.uval;
+			} else if (!strcmp(long_options[idx].name, "reuseInput")) {
+				pIc->bReuseInputBuf = arg.uval;
 			}else {
 				CVI_VENC_TRACE("not exist name = %s\n", long_options[idx].name);
 				print_help(argv);

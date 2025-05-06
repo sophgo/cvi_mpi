@@ -694,6 +694,8 @@ typedef struct _chnInputCfg_ {
 
 	CVI_U32 u32MaxCachePacks;
 	CVI_U32 u32OutputPackCnt;
+
+	CVI_BOOL bReuseInputBuf;
 } chnInputCfg;
 
 typedef enum _CHN_STATE_ {
@@ -816,6 +818,22 @@ CVI_S32 SAMPLE_COMM_VDEC_Bind_VENC(VDEC_CHN VdecChn, VENC_CHN VencChn);
 CVI_S32 SAMPLE_COMM_VDEC_UnBind_VENC(VDEC_CHN VdecChn, VENC_CHN VencChn);
 CVI_S32 SAMPLE_COMM_VDEC_Bind_VO(VDEC_CHN VdecChn, VO_LAYER VoLayer, VO_CHN VoChn);
 CVI_S32 SAMPLE_COMM_VDEC_UnBind_VO(VDEC_CHN VdecChn, VO_LAYER VoLayer, VO_CHN VoChn);
+
+#define ENABLE_AF_LIB (0)
+//The customer can deisgin the control of the motor by themself,
+//and sophgo also provides the public practice for customer reference
+//please contact sophgo get motor ko source code
+//design it please flow cb func format
+//cb sample start
+CVI_S32 SAMPLE_COMM_ISP_Motor_SetFocusInCb(VI_PIPE ViPipe, CVI_U8 step);
+CVI_S32 SAMPLE_COMM_ISP_Motor_SetFocusOutCb(VI_PIPE ViPipe, CVI_U8 step);
+CVI_S32 SAMPLE_COMM_ISP_Motor_SetZoomSpeedCb(VI_PIPE ViPipe, CVI_U8 speed);
+CVI_S32 SAMPLE_COMM_ISP_Motor_SetFocusSpeedCb(VI_PIPE ViPipe, CVI_U8 speed);
+CVI_S32 SAMPLE_COMM_ISP_Motor_SetZoomInCb(VI_PIPE ViPipe, CVI_U8 step);
+CVI_S32 SAMPLE_COMM_ISP_Motor_SetZoomOutCb(VI_PIPE ViPipe, CVI_U8 step);
+CVI_S32 SAMPLE_COMM_ISP_Motor_SetZoomAndFocusCb(VI_PIPE ViPipe, AF_DIRECTION eDirz, AF_DIRECTION eDirf, CVI_U8 zoomStep, CVI_U8 focusStep);
+CVI_S32 SAMPLE_COMM_ISP_Motor_GetLensInfoCb(VI_PIPE ViPipe, ISP_AF_LEN_INFO_S *info);
+//cb sample end
 
 CVI_S32 SAMPLE_COMM_ISP_Run(CVI_U8 IspDev);
 CVI_VOID SAMPLE_COMM_ISP_Stop(CVI_U8 IspDev);

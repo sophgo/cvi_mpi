@@ -31,6 +31,7 @@
 #include "cvi_isp.h"
 #include "cvi_ae.h"
 #include "cvi_awb.h"
+#include "cvi_af.h"
 #include "cvi_comm_isp.h"
 #include "isp_main_local.h"
 #include "isp_defines.h"
@@ -149,6 +150,7 @@ CVI_S32 CVI_ISP_Init(VI_PIPE ViPipe)
 
 	AE_BufInit(ViPipe);
 	AWB_BufInit(ViPipe);
+	AF_BufInit(ViPipe);
 
 	/*set env variable to make libbin be able to get sensor name.*/
 	set_sensorname_to_environment(ViPipe);
@@ -393,6 +395,47 @@ CVI_S32 CVI_ISP_GetPubAttr(VI_PIPE ViPipe, ISP_PUB_ATTR_S *pstPubAttr)
 	pstPubAttr->stWndRect.u32Height = pstIspCtx->stSysRect.u32Height;
 	pstPubAttr->f32FrameRate = pstIspCtx->stSnsImageMode.f32Fps;
 	pstPubAttr->u8SnsMode = pstIspCtx->stSnsImageMode.u8SnsMode;
+
+	return CVI_SUCCESS;
+}
+
+CVI_S32 CVI_ISP_SetAWBRatioAttr(VI_PIPE ViPipe, const ISP_AWB_RATIO_ATTR_S *pstAWBRatioAttr)
+{
+	ISP_LOG_INFO("+\n");
+	if ((ViPipe < 0) || (ViPipe >= VI_MAX_PIPE_NUM)) {
+		ISP_LOG_ERR("ViPipe %d value error\n", ViPipe);
+		return -ENODEV;
+	}
+
+	if (pstAWBRatioAttr == CVI_NULL) {
+		return CVI_FAILURE;
+	}
+
+	ISP_CTX_S *pstIspCtx = NULL;
+
+	ISP_GET_CTX(ViPipe, pstIspCtx);
+
+	memcpy(&pstIspCtx->stRatioAttr, pstAWBRatioAttr, sizeof(ISP_AWB_RATIO_ATTR_S));
+
+	return CVI_SUCCESS;
+}
+
+CVI_S32 CVI_ISP_GetAWBRatioAttr(VI_PIPE ViPipe, ISP_AWB_RATIO_ATTR_S *pstAWBRatioAttr)
+{
+	if ((ViPipe < 0) || (ViPipe >= VI_MAX_PIPE_NUM)) {
+		ISP_LOG_ERR("ViPipe %d value error\n", ViPipe);
+		return -ENODEV;
+	}
+
+	if (pstAWBRatioAttr == CVI_NULL) {
+		return CVI_FAILURE;
+	}
+
+	ISP_CTX_S *pstIspCtx = NULL;
+
+	ISP_GET_CTX(ViPipe, pstIspCtx);
+
+	memcpy(pstAWBRatioAttr, &pstIspCtx->stRatioAttr, sizeof(ISP_AWB_RATIO_ATTR_S));
 
 	return CVI_SUCCESS;
 }

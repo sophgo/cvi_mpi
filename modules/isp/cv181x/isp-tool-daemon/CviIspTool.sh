@@ -88,8 +88,12 @@ elif [ -d "/sys/module/cv180x_vcodec/" ];then
 echo 0x20001 > /sys/module/cv180x_vcodec/parameters/vcodec_mask
 fi
 # enable remap
+if [ -f "/sys/module/cvi_vc_driver/parameters/addrRemapEn" ]; then
 echo 1 > /sys/module/cvi_vc_driver/parameters/addrRemapEn
+fi
+if [ -f "/sys/module/cvi_vc_driver/parameters/ARExtraLine" ]; then
 echo 256 > /sys/module/cvi_vc_driver/parameters/ARExtraLine
+fi
 
 if [ "$HOST" ]; then
     if [ "$GIGABIT" == "true" ]; then
