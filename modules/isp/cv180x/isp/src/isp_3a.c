@@ -618,7 +618,7 @@ CVI_S32 isp_3aLib_exit(VI_PIPE ViPipe, AAA_LIB_TYPE_E type)
 		if (pAlgo[ViPipe * MAX_REGISTER_ALG_LIB_NUM + activeIdx].algoFunc.afFunc.pfn_af_exit != NULL)
 			pAlgo[ViPipe * MAX_REGISTER_ALG_LIB_NUM + activeIdx].algoFunc.afFunc.pfn_af_exit(ViPipe);
 		else {
-			ISP_LOG_ERR("type %d registered awb lib can't init\n", type);
+			ISP_LOG_ERR("type %d registered af lib can't init\n", type);
 			return -EPERM;
 		}
 	}

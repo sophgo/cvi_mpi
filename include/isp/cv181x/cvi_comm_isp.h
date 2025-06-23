@@ -1081,10 +1081,10 @@ typedef enum _AF_MANUAL_TYPE {
 } AF_MANUAL_TYPE;
 
 typedef struct _ISP_FOCUS_MANUAL_ATTR_S {
-	AF_MANUAL_TYPE enFocusOpType;
-	AF_DIRECTION enFocusDir;
-	CVI_U16 u16FocusStep; /*RW; Range:[0x0, 0x400]*/
-	CVI_U16 u16FocusPos; /*RW; Range:[0x0, 0x8000]*/
+	AF_MANUAL_TYPE enOpType;
+	AF_DIRECTION enManualDir;
+	CVI_U16 u16ManualStep; /*RW; Range:[0x0, 0x400]*/
+	CVI_U16 u16ManualPos; /*RW; Range:[0x0, 0x8000]*/
 } ISP_FOCUS_MANUAL_ATTR_S;
 
 typedef struct _ISP_FOCUS_ATTR_S {

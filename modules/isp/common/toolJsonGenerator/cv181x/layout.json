@@ -2080,10 +2080,10 @@
 						{
 							"TITLE": "Manual Attr",
 							"MEMBER": [
-								"ISP_FOCUS_ATTR_S.stManual.enFocusOpType",
-								"ISP_FOCUS_ATTR_S.stManual.enFocusDir",
-								"ISP_FOCUS_ATTR_S.stManual.u16FocusStep",
-								"ISP_FOCUS_ATTR_S.stManual.u16FocusPos"
+								"ISP_FOCUS_ATTR_S.stManual.enOpType",
+								"ISP_FOCUS_ATTR_S.stManual.enManualDir",
+								"ISP_FOCUS_ATTR_S.stManual.u16ManualStep",
+								"ISP_FOCUS_ATTR_S.stManual.u16ManualPos"
 							]
 						}
 					]

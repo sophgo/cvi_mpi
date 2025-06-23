@@ -120,6 +120,10 @@ CVI_S32 isp_3aBinAttr_get_param(VI_PIPE ViPipe, FILE *fp)
 	CVI_ISP_GetStatisticsConfig(ViPipe, &stStatCfg);
 	fwrite(&stStatCfg, sizeof(ISP_STATISTICS_CFG_S), 1, fp);
 
+	ISP_FOCUS_ATTR_S stFocus = { 0 };
+
+	CVI_ISP_GetAFAttr(ViPipe, &stFocus);
+	fwrite(&stFocus, sizeof(ISP_FOCUS_ATTR_S), 1, fp);
 	return CVI_SUCCESS;
 }
 

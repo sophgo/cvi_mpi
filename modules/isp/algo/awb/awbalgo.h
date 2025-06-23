@@ -438,8 +438,6 @@ void AWB_DumpDbgBin(CVI_U8 sID);
 CVI_U32 AWB_GetDbgBinSize(void);
 void AWB_GetAlgoVer(CVI_U16 *pVer, CVI_U16 *pSubVer);
 void AWB_Delay1ms(CVI_U32 ms);
-void *AWB_Malloc(size_t size);
-void AWB_Free(void *ptr);
 void AWB_GetGrayWorldWB(CVI_U8 sID, CVI_U16 *pRgain, CVI_U16 *pBgain);
 void AWB_SetAwbSimMode(CVI_BOOL bMode);
 CVI_BOOL AWB_GetAwbSimMode(void);
