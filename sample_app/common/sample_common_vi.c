@@ -217,7 +217,7 @@ CVI_S32 SAMPLE_COMM_VI_INI_INIT(SAMPLE_VI_CONFIG_S *pstViConfig, SNS_INI_CFG_S *
 
 		u32BlkSize = COMMON_GetPicBufferSize(pDevInfo->stSize.u32Width, pDevInfo->stSize.u32Height,
 				VI_PIXEL_FORMAT, DATA_BITWIDTH_8, COMPRESS_MODE_NONE, DEFAULT_ALIGN);
-		u32BlkRotSize = COMMON_GetPicBufferSize(pDevInfo->stSize.u32Width, pDevInfo->stSize.u32Height,
+		u32BlkRotSize = COMMON_GetPicBufferSize(pDevInfo->stSize.u32Height, pDevInfo->stSize.u32Width,
 				VI_PIXEL_FORMAT, DATA_BITWIDTH_8, COMPRESS_MODE_NONE, DEFAULT_ALIGN);
 		u32BlkSize = u32BlkSize > u32BlkRotSize ? u32BlkSize : u32BlkRotSize;
 
@@ -742,6 +742,12 @@ CVI_S32 SAMPLE_COMM_VI_GetSizeBySensor(CVI_SNS_TYPE_E enMode, PIC_SIZE_E *penSiz
 	if (sns_cfg.u32ImageWigth[dev_num] == 2880) {
 		if (sns_cfg.u32ImageHeight[dev_num] == 1620) {
 			*penSize = PIC_2880x1620;
+			return s32Ret;
+		}
+	}
+	if (sns_cfg.u32ImageWigth[dev_num] == 3200) {
+		if (sns_cfg.u32ImageHeight[dev_num] == 1800) {
+			*penSize = PIC_3200x1800;
 			return s32Ret;
 		}
 	}

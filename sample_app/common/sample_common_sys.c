@@ -765,6 +765,10 @@ CVI_S32 SAMPLE_COMM_SYS_GetPicSize(PIC_SIZE_E enPicSize, SIZE_S *pstSize)
 		pstSize->u32Width  = 2880;
 		pstSize->u32Height = 1620;
 		break;
+	case PIC_3200x1800:
+		pstSize->u32Width  = 3200;
+		pstSize->u32Height = 1800;
+		break;
 	case PIC_3844x1124:
 		pstSize->u32Width  = 3844;
 		pstSize->u32Height = 1124;

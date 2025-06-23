@@ -7,6 +7,8 @@
 #include <unistd.h>
 #include <time.h>
 #include <sys/param.h>
+#include <pthread.h>
+#include <sys/prctl.h>
 #include <inttypes.h>
 
 #include <fcntl.h>		/* low-level i/o */
@@ -23,10 +25,21 @@
 #include "cvi_math.h"
 #include "cvi_buffer.h"
 #include "cvi_sensor.h"
+#include "cvi_isp.h"
+#include "cvi_ae.h"
+
 
 #include "ae_test.h"
 #include "sample_sensor.h"
 #include <signal.h>
+
+#ifdef SUPPORT_ISP_PQTOOL
+#include <dlfcn.h>
+static CVI_BOOL g_ISPDaemon = CVI_FALSE;
+static void *g_ISPDHandle;
+#define ISPD_LIBNAME "libcvi_ispd2.so"
+#define ISPD_CONNECT_PORT 5566
+#endif //
 
 #ifndef UNUSED
 #define UNUSED(x) ((void)(x))
@@ -34,6 +47,12 @@
 
 static TEST_VI_CONFIG_S	g_stViConfig;
 SENSOR_CFG_S g_stSensorCfg;
+static CVI_U32 g_au32IspSnsId[VI_MAX_DEV_NUM] = { 0 };
+// static CVI_BOOL g_ISPDaemon = CVI_FALSE;
+static pthread_t g_IspPid[VI_MAX_PIPE_NUM];
+
+ISP_PUB_ATTR_S ISP_PUB_ATTR_SAMPLE =
+						{ { 0, 0, 1920, 1080 }, { 1920, 1080 }, 30, BAYER_RGGB, WDR_MODE_NONE, 0, 4, 2};
 
 static long diff_in_us(struct timespec t1, struct timespec t2)
 {
@@ -52,6 +71,9 @@ static long diff_in_us(struct timespec t1, struct timespec t2)
 void _PLAT_ERR_Exit(void)
 {
 	CVI_S32 s32Ret = CVI_SUCCESS;
+	CVI_U32 u32SnsId;
+	ALG_LIB_S stAeLib;
+	ALG_LIB_S stAwbLib;
 	int i, j;
 
 	if (g_stViConfig.s32WorkingViNum != 0) {
@@ -86,6 +108,53 @@ void _PLAT_ERR_Exit(void)
 			}
 			CVI_VI_UnRegChnFlipMirrorCallBack(0, g_stViConfig.astViInfo[i].stDevInfo.ViDev);
 			CVI_VI_UnRegPmCallBack(g_stViConfig.astViInfo[i].stDevInfo.ViDev);
+		//isp exit
+			if (g_IspPid[i]) {
+				s32Ret = CVI_ISP_Exit(i);
+				if (s32Ret != CVI_SUCCESS) {
+					printf("CVI_ISP_Exit fail with %#x!\n", s32Ret);
+					return;
+				}
+				pthread_join(g_IspPid[i], NULL);
+				g_IspPid[i] = 0;
+				u32SnsId = g_au32IspSnsId[i];
+
+				if (u32SnsId > VI_MAX_PIPE_NUM) {
+					printf("%s: invalid sensor id: %d\n", __func__, u32SnsId);
+					return;
+				}
+
+				s32Ret = CVI_SNS_UnRegCallback(u32SnsId, i);
+				if (s32Ret!= CVI_SUCCESS) {
+					printf("CVI_SNS_UnRegCallback error id: %d s32Ret %d\n", i, s32Ret);
+				}
+
+				stAeLib.s32Id = i;
+				strncpy(stAeLib.acLibName, CVI_AE_LIB_NAME, sizeof(stAeLib.acLibName));
+				s32Ret = CVI_AE_UnRegister(i, &stAeLib);
+				if (s32Ret) {
+					printf("AE Algo unRegister failed!, error: %d\n",	s32Ret);
+					return;
+				}
+
+				stAwbLib.s32Id = i;
+				strncpy(stAwbLib.acLibName, CVI_AWB_LIB_NAME, sizeof(stAwbLib.acLibName));
+				s32Ret = CVI_AWB_UnRegister(i, &stAwbLib);
+				if (s32Ret) {
+					printf("AWB Algo unRegister failed!, error: %d\n",	s32Ret);
+					return;
+				}
+#if ENABLE_AF_LIB
+				ALG_LIB_S stAfLib;
+				stAfLib.s32Id = i;
+				strncpy(stAfLib.acLibName, CVI_AF_LIB_NAME, sizeof(stAfLib.acLibName));
+				s32Ret = CVI_AF_UnRegister(i, &stAfLib);
+				if (s32Ret) {
+					printf("AF Algo unRegister failed!, error: %d\n",	s32Ret);
+					return;
+				}
+#endif
+			}
 		}
 	}
 	CVI_VB_Exit();
@@ -101,6 +170,33 @@ static void sys_handle_signal(int nSignal, siginfo_t *si, void *arg)
 	_PLAT_ERR_Exit();
 
 	exit(1);
+}
+
+
+static CVI_VOID *ISP_Thread(void *arg)
+{
+	CVI_S32 s32Ret = 0;
+	CVI_U8 IspDev = *(CVI_U8 *)arg;
+	char szThreadName[20];
+
+	free(arg);
+	snprintf(szThreadName, sizeof(szThreadName), "ISP%d_RUN", IspDev);
+	prctl(PR_SET_NAME, szThreadName, 0, 0, 0);
+
+	if (IspDev > 0) {
+		printf("ISP Dev %d return\n", IspDev);
+		return NULL;
+	}
+
+	// TODO: HGJ
+	//CVI_SYS_RegisterThermalCallback(callback_FPS);
+
+	printf("ISP Dev %d running!\n", IspDev);
+	s32Ret = CVI_ISP_Run(IspDev);
+	if (s32Ret != 0)
+		printf("CVI_ISP_Run failed with %#x!\n", s32Ret);
+
+	return NULL;
 }
 
 CVI_S32 sys_vi_init(SENSOR_CFG_S *sensor_cfg)
@@ -409,6 +505,147 @@ CVI_S32 sys_vi_init(SENSOR_CFG_S *sensor_cfg)
 		}
 	}
 	//todo: ISP enable
+	/************************************************
+	 * Set ISP init
+	 ************************************************/
+	ISP_PUB_ATTR_S stPubAttr;
+	ISP_BIND_ATTR_S stBindAttr;
+	ALG_LIB_S stAeLib;
+	ALG_LIB_S stAwbLib;
+	SIZE_S stSize;
+	VI_PIPE ViPipe = 0;
+	for (i = 0; i < stSnsIniCfg->devNum; i++) {
+		ViPipe = i;
+		memset(&stBindAttr, 0, sizeof(ISP_BIND_ATTR_S));
+		memset(&stPubAttr, 0, sizeof(ISP_PUB_ATTR_S));
+
+		stAeLib.s32Id = ViPipe;
+		strncpy(stAeLib.acLibName, CVI_AE_LIB_NAME, sizeof(stAeLib.acLibName));
+		s32Ret = CVI_AE_Register(ViPipe, &stAeLib);
+		if (s32Ret != CVI_SUCCESS) {
+			CVI_TRACE_LOG(CVI_DBG_ERR, "AE Algo register failed!, error: %d\n",	s32Ret);
+			return s32Ret;
+		}
+
+		stAwbLib.s32Id = ViPipe;
+		strncpy(stAwbLib.acLibName, CVI_AWB_LIB_NAME, sizeof(stAwbLib.acLibName));
+		s32Ret = CVI_AWB_Register(ViPipe, &stAwbLib);
+		if (s32Ret != CVI_SUCCESS) {
+			CVI_TRACE_LOG(CVI_DBG_ERR, "AWB Algo register failed!, error: %d\n",	s32Ret);
+			return s32Ret;
+		}
+#if ENABLE_AF_LIB
+		ALG_LIB_S stAfLib;
+		stAfLib.s32Id = ViPipe;
+		strncpy(stAfLib.acLibName, CVI_AF_LIB_NAME, sizeof(stAfLib.acLibName));
+		s32Ret = CVI_AF_Register(ViPipe, &stAfLib);
+
+		if (s32Ret != CVI_SUCCESS) {
+			printf("AF Algo register failed!, error: %d\n", s32Ret);
+			return s32Ret;
+		}
+#endif
+
+		snprintf(stBindAttr.stAeLib.acLibName, sizeof(CVI_AE_LIB_NAME), "%s", CVI_AE_LIB_NAME);
+		stBindAttr.stAeLib.s32Id = ViPipe;
+		stBindAttr.sensorId = 0;
+		snprintf(stBindAttr.stAwbLib.acLibName, sizeof(CVI_AWB_LIB_NAME), "%s", CVI_AWB_LIB_NAME);
+		stBindAttr.stAwbLib.s32Id = ViPipe;
+#if ENABLE_AF_LIB
+		snprintf(stBindAttr.stAfLib.acLibName, sizeof(CVI_AF_LIB_NAME), "%s", CVI_AF_LIB_NAME);
+		stBindAttr.stAfLib.s32Id = ViPipe;
+#endif
+
+		s32Ret = CVI_ISP_SetBindAttr(ViPipe, &stBindAttr);
+		if (s32Ret != CVI_SUCCESS) {
+			CVI_TRACE_LOG(CVI_DBG_ERR, "Bind Algo failed with %#x!\n", s32Ret);
+		}
+		s32Ret = CVI_ISP_MemInit(ViPipe);
+		if (s32Ret != CVI_SUCCESS) {
+			CVI_TRACE_LOG(CVI_DBG_ERR, "Init Ext memory failed with %#x!\n", s32Ret);
+			return s32Ret;
+		}
+
+		memcpy(&stPubAttr, &ISP_PUB_ATTR_SAMPLE, sizeof(ISP_PUB_ATTR_S));
+
+		stSize.u32Width = stSnsCfg->u32ImageWigth[ViPipe];
+		stSize.u32Height = stSnsCfg->u32ImageHeight[ViPipe];
+
+		stPubAttr.stSnsSize.u32Width = stSize.u32Width;
+		stPubAttr.stSnsSize.u32Height = stSize.u32Height;
+		stPubAttr.stWndRect.u32Width = stSize.u32Width;
+		stPubAttr.stWndRect.u32Height = stSize.u32Height;
+
+		stPubAttr.enWDRMode = stSnsCfg->enWDRMode[ViPipe];
+		stPubAttr.enBayer = (ISP_BAYER_FORMAT_E)stSnsCfg->enBayerFormat[ViPipe];
+		stPubAttr.f32FrameRate = stSnsCfg->f32FrameRate[ViPipe];
+		stPubAttr.u8LaneNum = stSnsCfg->u8LaneNumber[ViPipe];
+		stPubAttr.u8EnableMaster = stSnsCfg->u8EnMasterMode[ViPipe];
+
+		s32Ret = CVI_ISP_SetPubAttr(ViPipe, &stPubAttr);
+		if (s32Ret != CVI_SUCCESS) {
+			CVI_TRACE_LOG(CVI_DBG_ERR, "SetPubAttr failed with %#x!\n", s32Ret);
+			return s32Ret;
+		}
+		s32Ret = CVI_ISP_Init(ViPipe);
+		if (s32Ret != CVI_SUCCESS) {
+			CVI_TRACE_LOG(CVI_DBG_ERR, "ISP Init failed with %#x!\n", s32Ret);
+			return s32Ret;
+		}
+	}
+
+	CVI_U8 *arg = malloc(sizeof(*arg));
+	struct sched_param param;
+	pthread_attr_t attr;
+	for (int i = 0; i < stSnsIniCfg->devNum; i++) {
+		ViPipe = i;
+
+		if (arg == NULL) {
+			CVI_TRACE_LOG(CVI_DBG_ERR, "malloc failed\n");
+			return CVI_FAILURE;
+		}
+
+		*arg = ViPipe;
+		param.sched_priority = 80;
+
+		pthread_attr_init(&attr);
+		pthread_attr_setschedpolicy(&attr, SCHED_RR);
+		pthread_attr_setschedparam(&attr, &param);
+		pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
+		s32Ret = pthread_create(&g_IspPid[ViPipe], &attr, ISP_Thread, arg);
+		if (s32Ret != 0) {
+			CVI_TRACE_LOG(CVI_DBG_ERR, "create isp running thread failed!, error: %d, %s\r\n",
+						s32Ret, strerror(s32Ret));
+			return CVI_FAILURE;
+		}
+
+#ifdef SUPPORT_ISP_PQTOOL
+		if (!g_ISPDaemon) {
+			g_ISPDHandle = dlopen(ISPD_LIBNAME, RTLD_NOW);
+
+			if (g_ISPDHandle) {
+				char *error = NULL;
+				void (*daemon_init)(unsigned int port);
+
+				printf("Load dynamic library %s success\n", ISPD_LIBNAME);
+
+				dlerror();
+				daemon_init = dlsym(g_ISPDHandle, "isp_daemon2_init");
+				error = dlerror();
+				if (error == NULL) {
+					(*daemon_init)(ISPD_CONNECT_PORT);
+					g_ISPDaemon = CVI_TRUE;
+				} else {
+					printf("Run daemon initial fail\n");
+					dlclose(g_ISPDHandle);
+				}
+			} else {
+				printf("Load dynamic library %s fail\n", ISPD_LIBNAME);
+			}
+		}
+#endif //
+	}
+
 	/************************************************
 	 * Set sensor init
 	 ************************************************/
@@ -735,19 +972,69 @@ CVI_S32 sys_vi_deinit(void)
 {
 	CVI_S32 s32Ret = CVI_SUCCESS;
 	CVI_S32 s32ViNum;
+	CVI_U32 u32SnsId;
 	CVI_S32 i;
 	TEST_VI_INFO_S stViInfo;
 	VI_CHN              ViChn;
 	VI_PIPE             ViPipe = 0;
 	VI_VPSS_MODE_E      enMastPipeMode;
 	VI_DEV ViDev;
-
-	//todo:add isp deinit func
+	ALG_LIB_S stAeLib;
+	ALG_LIB_S stAwbLib;
 
 	for (i = 0; i < g_stViConfig.s32WorkingViNum - 1; i++) {
 		s32ViNum  = g_stViConfig.as32WorkingViId[i];
 		stViInfo = g_stViConfig.astViInfo[s32ViNum];
 
+	/************************************************
+	 *  ISP  stop
+	 ************************************************/
+		if (g_IspPid[i]) {
+			s32Ret = CVI_ISP_Exit(i);
+			if (s32Ret != CVI_SUCCESS) {
+				printf("CVI_ISP_Exit fail with %#x!\n", s32Ret);
+				return s32Ret;
+			}
+			pthread_join(g_IspPid[i], NULL);
+			g_IspPid[i] = 0;
+			u32SnsId = g_au32IspSnsId[i];
+
+			if (u32SnsId > VI_MAX_PIPE_NUM) {
+				printf("%s: invalid sensor id: %d\n", __func__, u32SnsId);
+				return CVI_FAILURE;
+			}
+
+			s32Ret = CVI_SNS_UnRegCallback(u32SnsId, i);
+			if (s32Ret!= CVI_SUCCESS) {
+				printf("CVI_SNS_UnRegCallback error id: %d s32Ret %d\n", i, s32Ret);
+			}
+
+			stAeLib.s32Id = i;
+			strncpy(stAeLib.acLibName, CVI_AE_LIB_NAME, sizeof(stAeLib.acLibName));
+			s32Ret = CVI_AE_UnRegister(i, &stAeLib);
+			if (s32Ret) {
+				printf("AE Algo unRegister failed!, error: %d\n",	s32Ret);
+				return s32Ret;
+			}
+
+			stAwbLib.s32Id = i;
+			strncpy(stAwbLib.acLibName, CVI_AWB_LIB_NAME, sizeof(stAwbLib.acLibName));
+			s32Ret = CVI_AWB_UnRegister(i, &stAwbLib);
+			if (s32Ret) {
+				printf("AWB Algo unRegister failed!, error: %d\n",	s32Ret);
+				return s32Ret;
+			}
+#if ENABLE_AF_LIB
+			ALG_LIB_S stAfLib;
+			stAfLib.s32Id = i;
+			strncpy(stAfLib.acLibName, CVI_AF_LIB_NAME, sizeof(stAfLib.acLibName));
+			s32Ret = CVI_AF_UnRegister(i, &stAfLib);
+			if (s32Ret) {
+				printf("AF Algo unRegister failed!, error: %d\n",	s32Ret);
+				return s32Ret;
+			}
+#endif
+		}
 	/************************************************
 	 *  VI chn stop
 	 ************************************************/

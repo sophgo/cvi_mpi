@@ -98,7 +98,7 @@ CVI_S32 SAMPLE_VENC_SaveOneChannelStream(VENC_CHN VencChn, FILE *fp)
 		stStream.pstPack = CVI_NULL;
 		return CVI_FAILURE;
 	}
-	SAMPLE_SBM_PRT("get chn:%d count:%d\n", VencChn, stStream.u32PackCount);
+	//SAMPLE_SBM_PRT("get chn:%d count:%d\n", VencChn, stStream.u32PackCount);
 	for (CVI_U32 i = 0; i < stStream.u32PackCount; i++) {
 		fwrite(stStream.pstPack[i].pu8Addr, 1, stStream.pstPack[i].u32Len, fp);
 	}
@@ -240,17 +240,9 @@ CVI_S32 SAMPLE_VENC_StopGetStream(CVI_VOID)
 
 static void SAMPLE_VENC_ExitProcess(CVI_VOID)
 {
-	CVI_CHAR ch;
-
-	while (1) {
-		SAMPLE_SBM_PRT("\npress 'q' to exit this sample.\n");
-		while ((ch = (char)getchar()) == '\n') {
-		};
-		if (ch == 'q') {
-			break;
-		}
-
-		printf("input invalid! please try again.\n");
+	SAMPLE_SBM_PRT("\npress 'ctrl + c' to exit this sample.\n");
+	while (!gSampleVencExit) {
+		sleep(1);
 	}
 
 	SAMPLE_VENC_StopGetStream();
@@ -499,11 +491,6 @@ static CVI_S32 SAMPLE_Snsr_Parser(SENSOR_CFG_S *cfg)
 	if (s32Ret == CVI_FAILURE) {
 		SAMPLE_SBM_PRT("[ERROR] parse ini failed, default use patgen\n");
 	} else {
-		if (cfg->sns_ini_cfg.devNum > 1) {
-			SAMPLE_SBM_PRT("[ERROR] only support 1 dev\n");
-			return CVI_FAILURE;
-		}
-
 		s32Ret = CVI_SNS_GetConfigInfo(cfg);
 		if (s32Ret == CVI_FAILURE) {
 			SAMPLE_SBM_PRT("[ERROR] get sns cfg failed\n");
@@ -535,65 +522,86 @@ CVI_S32 SAMPLE_Snsr_Setup(SENSOR_CFG_S *cfg)
 	/************************************************
 	 * Set sns reset, probe; Set MIPI attr
 	 ************************************************/
-	s32Ret = CVI_MIPI_SetSensorReset(mipiDev, cfg->sns_ini_cfg.s32RstPort[s32SnsId],
+	for (s32SnsId = 0; s32SnsId < cfg->sns_ini_cfg.devNum; s32SnsId++) {
+		ViDev = s32SnsId;
+		mipiDev = cfg->sns_ini_cfg.MipiDev[s32SnsId];
+		s32Ret = CVI_MIPI_SetSensorReset(mipiDev, cfg->sns_ini_cfg.s32RstPort[s32SnsId],
 						cfg->sns_ini_cfg.s32RstPin[s32SnsId],
 						cfg->sns_ini_cfg.s32RstPol[s32SnsId], 1);
-	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("[ERROR] sensor_%d reset failed!\n", ViDev);
-		return s32Ret;
+		if (s32Ret != CVI_SUCCESS) {
+			SAMPLE_SBM_PRT("[ERROR] sensor_%d reset failed!\n", ViDev);
+			return s32Ret;
+		}
 	}
 
-	s32Ret = CVI_MIPI_SetMipiReset(mipiDev, 1);
-	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("[ERROR] mipi dev_%d reset failed!\n", ViDev);
-		return s32Ret;
+	for (s32SnsId = 0; s32SnsId < cfg->sns_ini_cfg.devNum; s32SnsId++) {
+		ViDev = s32SnsId;
+		mipiDev = cfg->sns_ini_cfg.MipiDev[s32SnsId];
+		s32Ret = CVI_MIPI_SetMipiReset(mipiDev, 1);
+		if (s32Ret != CVI_SUCCESS) {
+			SAMPLE_SBM_PRT("[ERROR] mipi dev_%d reset failed!\n", ViDev);
+			return s32Ret;
+		}
 	}
 
-	if (CVI_SNS_GetSnsRxAttr(ViDev, &stDevAttr) != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("[ERROR] get mipi dev_%d attr failed!\n", ViDev);
-		return CVI_FAILURE;
+	for (s32SnsId = 0; s32SnsId < cfg->sns_ini_cfg.devNum; s32SnsId++) {
+		ViDev = s32SnsId;
+		mipiDev = cfg->sns_ini_cfg.MipiDev[s32SnsId];
+		if (CVI_SNS_GetSnsRxAttr(ViDev, &stDevAttr) != CVI_SUCCESS) {
+			SAMPLE_SBM_PRT("[ERROR] get mipi dev_%d attr failed!\n", ViDev);
+			return CVI_FAILURE;
+		}
+
+		if (stDevAttr.input_mode == INPUT_MODE_MIPI) {
+			stDevAttr.mipi_attr.dphy.enable = cfg->sns_ini_cfg.bHsettlen[s32SnsId];
+			stDevAttr.mipi_attr.dphy.hs_settle = cfg->sns_ini_cfg.u8Hsettle[s32SnsId];
+		}
+
+		if (stDevAttr.input_mode == INPUT_MODE_MIPI ||
+			stDevAttr.input_mode == INPUT_MODE_SUBLVDS ||
+			stDevAttr.input_mode == INPUT_MODE_HISPI) {
+			stDevAttr.cif_mode = cfg->sns_ini_cfg.enSnsMode;
+		}
+
+		s32Ret = CVI_MIPI_SetMipiAttr(ViDev, (CVI_VOID *)&stDevAttr);
+		if (s32Ret != CVI_SUCCESS) {
+			SAMPLE_SBM_PRT("[ERROR] set mipi dev_%d attr failed!\n", ViDev);
+			return s32Ret;
+		}
 	}
 
-	if (stDevAttr.input_mode == INPUT_MODE_MIPI) {
-		stDevAttr.mipi_attr.dphy.enable = cfg->sns_ini_cfg.bHsettlen[s32SnsId];
-		stDevAttr.mipi_attr.dphy.hs_settle = cfg->sns_ini_cfg.u8Hsettle[s32SnsId];
-	}
-
-	if (stDevAttr.input_mode == INPUT_MODE_MIPI ||
-		stDevAttr.input_mode == INPUT_MODE_SUBLVDS ||
-		stDevAttr.input_mode == INPUT_MODE_HISPI) {
-		stDevAttr.cif_mode = cfg->sns_ini_cfg.enSnsMode;
-	}
-
-	s32Ret = CVI_MIPI_SetMipiAttr(ViDev, (CVI_VOID *)&stDevAttr);
-	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("[ERROR] set mipi dev_%d attr failed!\n", ViDev);
-		return s32Ret;
-	}
-
-	s32Ret = CVI_MIPI_SetSensorClock(mipiDev, 1);
-	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("[ERROR] sensor %d clock enable failed!\n", ViDev);
-		return s32Ret;
+	for (s32SnsId = 0; s32SnsId < cfg->sns_ini_cfg.devNum; s32SnsId++) {
+		ViDev = s32SnsId;
+		mipiDev = cfg->sns_ini_cfg.MipiDev[s32SnsId];
+		s32Ret = CVI_MIPI_SetSensorClock(mipiDev, 1);
+		if (s32Ret != CVI_SUCCESS) {
+			SAMPLE_SBM_PRT("[ERROR] sensor %d clock enable failed!\n", ViDev);
+			return s32Ret;
+		}
 	}
 
 	//Wait for the clock to stabilize before setting XCLR, eg. 500ns(IMX327)
 	usleep(200 * 1000);
-
-	s32Ret = CVI_MIPI_SetSensorReset(mipiDev, cfg->sns_ini_cfg.s32RstPort[s32SnsId],
-						cfg->sns_ini_cfg.s32RstPin[s32SnsId],
-						cfg->sns_ini_cfg.s32RstPol[s32SnsId], 0);
-	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("[ERROR] sensor_%d unreset failed!\n", ViDev);
-		return s32Ret;
+	for (s32SnsId = 0; s32SnsId < cfg->sns_ini_cfg.devNum; s32SnsId++) {
+		ViDev = s32SnsId;
+		mipiDev = cfg->sns_ini_cfg.MipiDev[s32SnsId];
+		s32Ret = CVI_MIPI_SetSensorReset(mipiDev, cfg->sns_ini_cfg.s32RstPort[s32SnsId],
+							cfg->sns_ini_cfg.s32RstPin[s32SnsId],
+							cfg->sns_ini_cfg.s32RstPol[s32SnsId], 0);
+		if (s32Ret != CVI_SUCCESS) {
+			SAMPLE_SBM_PRT("[ERROR] sensor_%d unreset failed!\n", ViDev);
+			return s32Ret;
+		}
 	}
 
 	//Communication start after reset, eg. 20us(IMX327)
 	usleep(200 * 1000);
-
-	if (CVI_SNS_SetSnsProbe(ViDev) != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("[ERROR] sensor_%d probe failed!\n", ViDev);
-		return CVI_FAILURE;
+	for (s32SnsId = 0; s32SnsId < cfg->sns_ini_cfg.devNum; s32SnsId++) {
+		ViDev = s32SnsId;
+		if (CVI_SNS_SetSnsProbe(ViDev) != CVI_SUCCESS) {
+			SAMPLE_SBM_PRT("[ERROR] sensor_%d probe failed!\n", ViDev);
+			return CVI_FAILURE;
+		}
 	}
 
 	return s32Ret;
@@ -611,141 +619,167 @@ CVI_S32 SAMPLE_VI_Setup(CVI_BOOL isPatgen, SENSOR_CFG_S *cfg, SIZE_S *pstSize)
 	VI_CHN_ATTR_S stChnAttr;
 	VI_DEV_BIND_PIPE_S  stViDevBindAttr;
 
-	if (isPatgen) {
-		stViDevAttr.snrFps = 25;
-		stViDevAttr.stSize.u32Width = pstSize->u32Width;
-		stViDevAttr.stSize.u32Height = pstSize->u32Height;
-		stViDevAttr.enIntfMode = VI_MODE_MIPI;
-		stViDevAttr.enInputDataType = VI_DATA_TYPE_RGB;
-		stViDevAttr.enDataSeq = VI_DATA_SEQ_VUVU;
-		stViDevAttr.stWDRAttr.enWDRMode = WDR_MODE_NONE;
-		stViDevAttr.enWorkMode = VI_WORK_MODE_1Multiplex;
-		stViDevBindAttr.MipiDev = 0;
-	} else {
-		stViDevAttr.stSize.u32Width = cfg->sns_cfg.u32ImageWigth[s32SnsId];
-		stViDevAttr.stSize.u32Height = cfg->sns_cfg.u32ImageHeight[s32SnsId];
-		stViDevAttr.enIntfMode = (VI_INTF_MODE_E)cfg->sns_cfg.enInterFaceMode[s32SnsId];
-		stViDevAttr.enInputDataType = (VI_DATA_TYPE_E)cfg->sns_cfg.enFormatMode[s32SnsId];
-		stViDevAttr.enDataSeq = (VI_YUV_DATA_SEQ_E)cfg->sns_cfg.enYuvFormat[s32SnsId];
-		stViDevAttr.stWDRAttr.enWDRMode = cfg->sns_cfg.enWDRMode[s32SnsId];
-		stViDevAttr.enWorkMode = (VI_WORK_MODE_E)cfg->sns_cfg.enChnMode[s32SnsId];
-		stViDevBindAttr.MipiDev = cfg->sns_ini_cfg.MipiDev[s32SnsId];
-	}
+	for (s32SnsId = 0; s32SnsId < cfg->sns_ini_cfg.devNum; s32SnsId++) {
+		ViDev = s32SnsId;
+		ViPipe = s32SnsId;
+		if (isPatgen) {
+			stViDevAttr.snrFps = 25;
+			stViDevAttr.stSize.u32Width = pstSize->u32Width;
+			stViDevAttr.stSize.u32Height = pstSize->u32Height;
+			stViDevAttr.enIntfMode = VI_MODE_MIPI;
+			stViDevAttr.enInputDataType = VI_DATA_TYPE_RGB;
+			stViDevAttr.enDataSeq = VI_DATA_SEQ_VUVU;
+			stViDevAttr.stWDRAttr.enWDRMode = WDR_MODE_NONE;
+			stViDevAttr.enWorkMode = VI_WORK_MODE_1Multiplex;
+			stViDevBindAttr.MipiDev = 0;
+		} else {
+			stViDevAttr.stSize.u32Width = cfg->sns_cfg.u32ImageWigth[s32SnsId];
+			stViDevAttr.stSize.u32Height = cfg->sns_cfg.u32ImageHeight[s32SnsId];
+			stViDevAttr.enIntfMode = (VI_INTF_MODE_E)cfg->sns_cfg.enInterFaceMode[s32SnsId];
+			stViDevAttr.enInputDataType = (VI_DATA_TYPE_E)cfg->sns_cfg.enFormatMode[s32SnsId];
+			stViDevAttr.enDataSeq = (VI_YUV_DATA_SEQ_E)cfg->sns_cfg.enYuvFormat[s32SnsId];
+			stViDevAttr.stWDRAttr.enWDRMode = cfg->sns_cfg.enWDRMode[s32SnsId];
+			stViDevAttr.enWorkMode = (VI_WORK_MODE_E)cfg->sns_cfg.enChnMode[s32SnsId];
+			stViDevBindAttr.MipiDev = cfg->sns_ini_cfg.MipiDev[s32SnsId];
+		}
 
-	//ini vi
-	stViDevBindAttr.PipeId[0] = ViPipe;
-	stViDevBindAttr.u32Num = 1;
-	s32Ret = CVI_VI_SetDevBindAttr(ViDev, &stViDevBindAttr);
-	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VI_SetDevBindAttr failed with %#x!\n", s32Ret);
-		return s32Ret;
-	}
-
-	if (isPatgen) {
-		s32Ret = CVI_VI_EnablePatgen(ViDev);
+		//ini vi
+		stViDevBindAttr.PipeId[0] = ViPipe;
+		stViDevBindAttr.u32Num = 1;
+		s32Ret = CVI_VI_SetDevBindAttr(ViDev, &stViDevBindAttr);
 		if (s32Ret != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("set patgen failed\n");
+			SAMPLE_SBM_PRT("CVI_VI_SetDevBindAttr failed with %#x!\n", s32Ret);
+			return s32Ret;
+		}
+
+		if (isPatgen) {
+			s32Ret = CVI_VI_EnablePatgen(ViDev);
+			if (s32Ret != CVI_SUCCESS) {
+				SAMPLE_SBM_PRT("set patgen failed\n");
+				return s32Ret;
+			}
+		}
+
+		s32Ret = CVI_VI_SetDevAttr(ViDev, &stViDevAttr);
+		if (s32Ret != CVI_SUCCESS) {
+			SAMPLE_SBM_PRT("CVI_VI_SetDevAttr failed with %#x!\n", s32Ret);
+			return s32Ret;
+		}
+
+		s32Ret = CVI_VI_EnableDev(ViDev);
+		if (s32Ret != CVI_SUCCESS) {
+			SAMPLE_SBM_PRT("CVI_VI_EnableDev failed with %#x!\n", s32Ret);
 			return s32Ret;
 		}
 	}
 
-	s32Ret = CVI_VI_SetDevAttr(ViDev, &stViDevAttr);
-	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VI_SetDevAttr failed with %#x!\n", s32Ret);
-		return s32Ret;
-	}
+	for (s32SnsId = 0; s32SnsId < cfg->sns_ini_cfg.devNum; s32SnsId++) {
+		ViPipe = s32SnsId;
 
-	s32Ret = CVI_VI_EnableDev(ViDev);
-	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VI_EnableDev failed with %#x!\n", s32Ret);
-		return s32Ret;
-	}
+		stPipeAttr.u32MaxW = isPatgen ? pstSize->u32Width : cfg->sns_cfg.u32ImageWigth[s32SnsId];
+		stPipeAttr.u32MaxH = isPatgen ? pstSize->u32Height : cfg->sns_cfg.u32ImageHeight[s32SnsId];
+		stPipeAttr.enPixFmt = PIXEL_FORMAT_RGB_BAYER_12BPP;
+		stPipeAttr.enBitWidth = DATA_BITWIDTH_12;
+		stPipeAttr.stFrameRate.s32SrcFrameRate = -1;
+		stPipeAttr.stFrameRate.s32DstFrameRate = -1;
+		stPipeAttr.bNrEn = CVI_TRUE;
+		stPipeAttr.bYuvBypassPath = CVI_FALSE;
 
-	stPipeAttr.u32MaxW = isPatgen ? pstSize->u32Width : cfg->sns_cfg.u32ImageWigth[s32SnsId];
-	stPipeAttr.u32MaxH = isPatgen ? pstSize->u32Height : cfg->sns_cfg.u32ImageHeight[s32SnsId];
-	stPipeAttr.enPixFmt = PIXEL_FORMAT_RGB_BAYER_12BPP;
-	stPipeAttr.enBitWidth = DATA_BITWIDTH_12;
-	stPipeAttr.stFrameRate.s32SrcFrameRate = -1;
-	stPipeAttr.stFrameRate.s32DstFrameRate = -1;
-	stPipeAttr.bNrEn = CVI_TRUE;
-	stPipeAttr.bYuvBypassPath = CVI_FALSE;
-
-	s32Ret = CVI_VI_CreatePipe(ViPipe, &stPipeAttr);
-	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VI_CreatePipe failed with %#x!\n", s32Ret);
-		return s32Ret;
-	}
-
-	s32Ret = CVI_VI_StartPipe(ViPipe);
-	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VI_StartPipe failed with %#x!\n", s32Ret);
-		return s32Ret;
-	}
-
-	if (!isPatgen) {
-		s32Ret = CVI_SNS_SetSnsInit(ViDev);
+		s32Ret = CVI_VI_CreatePipe(ViPipe, &stPipeAttr);
 		if (s32Ret != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("[ERROR] sensor_%d init failed!\n", ViDev);
+			SAMPLE_SBM_PRT("CVI_VI_CreatePipe failed with %#x!\n", s32Ret);
+			return s32Ret;
+		}
+
+		s32Ret = CVI_VI_StartPipe(ViPipe);
+		if (s32Ret != CVI_SUCCESS) {
+			SAMPLE_SBM_PRT("CVI_VI_StartPipe failed with %#x!\n", s32Ret);
 			return s32Ret;
 		}
 	}
 
-	stChnAttr.stSize.u32Width = isPatgen ? pstSize->u32Width : cfg->sns_cfg.u32ImageWigth[s32SnsId];
-	stChnAttr.stSize.u32Height = isPatgen ? pstSize->u32Height : cfg->sns_cfg.u32ImageHeight[s32SnsId];
-	stChnAttr.enDynamicRange = DYNAMIC_RANGE_SDR8;
-	stChnAttr.enVideoFormat  = VIDEO_FORMAT_LINEAR;
-	stChnAttr.enCompressMode = COMPRESS_MODE_NONE;
-	stChnAttr.enPixelFormat = PIXEL_FORMAT_NV12;
-	stChnAttr.u32Depth = 1;
-	stChnAttr.u32BindVbPool = -1;
-	/* fill the sensor orientation */
-	stChnAttr.bMirror = false;
-	stChnAttr.bFlip = false;
-
-	s32Ret = CVI_VI_SetChnAttr(ViPipe, ViChn, &stChnAttr);
-	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VI_SetChnAttr failed with %#x!\n", s32Ret);
-		return CVI_FAILURE;
+	for (s32SnsId = 0; s32SnsId < cfg->sns_ini_cfg.devNum; s32SnsId++) {
+		ViDev = s32SnsId;
+		if (!isPatgen) {
+			s32Ret = CVI_SNS_SetSnsInit(ViDev);
+			if (s32Ret != CVI_SUCCESS) {
+				SAMPLE_SBM_PRT("[ERROR] sensor_%d init failed!\n", ViDev);
+				return s32Ret;
+			}
+		}
 	}
 
-	s32Ret = CVI_VI_EnableChn(ViPipe, ViChn);
-	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VI_EnableChn failed with %#x!\n", s32Ret);
-		return CVI_FAILURE;
+	for (s32SnsId = 0; s32SnsId < cfg->sns_ini_cfg.devNum; s32SnsId++) {
+		ViPipe = s32SnsId;
+		ViDev = s32SnsId;
+		stChnAttr.stSize.u32Width = isPatgen ? pstSize->u32Width : cfg->sns_cfg.u32ImageWigth[s32SnsId];
+		stChnAttr.stSize.u32Height = isPatgen ? pstSize->u32Height : cfg->sns_cfg.u32ImageHeight[s32SnsId];
+		stChnAttr.enDynamicRange = DYNAMIC_RANGE_SDR8;
+		stChnAttr.enVideoFormat  = VIDEO_FORMAT_LINEAR;
+		stChnAttr.enCompressMode = COMPRESS_MODE_NONE;
+		stChnAttr.enPixelFormat = PIXEL_FORMAT_NV12;
+		stChnAttr.u32Depth = 1;
+		stChnAttr.u32BindVbPool = -1;
+		/* fill the sensor orientation */
+		stChnAttr.bMirror = false;
+		stChnAttr.bFlip = false;
+
+		s32Ret = CVI_VI_SetChnAttr(ViPipe, ViChn, &stChnAttr);
+		if (s32Ret != CVI_SUCCESS) {
+			SAMPLE_SBM_PRT("CVI_VI_SetChnAttr failed with %#x!\n", s32Ret);
+			return CVI_FAILURE;
+		}
+
+		s32Ret = CVI_VI_EnableChn(ViPipe, ViChn);
+		if (s32Ret != CVI_SUCCESS) {
+			SAMPLE_SBM_PRT("CVI_VI_EnableChn failed with %#x!\n", s32Ret);
+			return CVI_FAILURE;
+		}
 	}
 
 	return CVI_SUCCESS;
 }
 
-static CVI_S32 SAMPLE_VI_Destory(CVI_VOID)
+static CVI_S32 SAMPLE_VI_Destory(SENSOR_CFG_S *cfg)
 {
 	CVI_S32 s32Ret = CVI_SUCCESS;
 	VI_PIPE ViPipe = 0;
 	VI_CHN ViChn = 0;
 	VI_DEV ViDev = 0;
+	CVI_S32 s32SnsId = 0;
 
-	s32Ret = CVI_VI_DisableChn(ViPipe, ViChn);
-	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VI_DisableChn failed with %#x!\n", s32Ret);
-		return s32Ret;
+	for (s32SnsId = 0; s32SnsId < cfg->sns_ini_cfg.devNum; s32SnsId++) {
+		ViPipe = s32SnsId;
+		s32Ret = CVI_VI_DisableChn(ViPipe, ViChn);
+		if (s32Ret != CVI_SUCCESS) {
+			SAMPLE_SBM_PRT("CVI_VI_DisableChn failed with %#x!\n", s32Ret);
+			return s32Ret;
+		}
 	}
 
-	s32Ret = CVI_VI_StopPipe(ViPipe);
-	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VI_StopPipe failed with %#x!\n", s32Ret);
-		return s32Ret;
+	for (s32SnsId = 0; s32SnsId < cfg->sns_ini_cfg.devNum; s32SnsId++) {
+		ViPipe = s32SnsId;
+
+		s32Ret = CVI_VI_StopPipe(ViPipe);
+		if (s32Ret != CVI_SUCCESS) {
+			SAMPLE_SBM_PRT("CVI_VI_DisablePipe failed with %#x!\n", s32Ret);
+			return s32Ret;
+		}
+
+		s32Ret = CVI_VI_DestroyPipe(ViPipe);
+		if (s32Ret != CVI_SUCCESS) {
+			SAMPLE_SBM_PRT("CVI_VI_DestroyPipe failed with %#x!\n", s32Ret);
+			return s32Ret;
+		}
 	}
 
-	s32Ret = CVI_VI_DestroyPipe(ViPipe);
-	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VI_DestroyPipe failed with %#x!\n", s32Ret);
-		return s32Ret;
-	}
-
-	s32Ret = CVI_VI_DisableDev(ViDev);
-	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VI_DisableDev failed with %#x!\n", s32Ret);
-		return s32Ret;
+	for (s32SnsId = 0; s32SnsId < cfg->sns_ini_cfg.devNum; s32SnsId++) {
+		ViDev = s32SnsId;
+		s32Ret = CVI_VI_DisableDev(ViDev);
+		if (s32Ret != CVI_SUCCESS) {
+			SAMPLE_SBM_PRT("CVI_VI_DisableDev failed with %#x!\n", s32Ret);
+			return s32Ret;
+		}
 	}
 
 	return s32Ret;
@@ -1156,6 +1190,7 @@ CVI_S32 SAMPLE_SBM_Online(CVI_VOID)
 	if (s32Ret != CVI_SUCCESS) {
 		SAMPLE_SBM_PRT("Use Patgen\n");
 		bPatgen = CVI_TRUE;
+		sensor_cfg.sns_ini_cfg.devNum = 1;
 	} else {
 		stSize.u32Width = sensor_cfg.sns_cfg.u32ImageWigth[0];
 		stSize.u32Height = sensor_cfg.sns_cfg.u32ImageHeight[0];
@@ -1290,7 +1325,7 @@ CVI_S32 SAMPLE_SBM_Online(CVI_VOID)
 
 	SAMPLE_VENC_ExitProcess();
 	CVI_SYS_UnBind(&stSrcChn, &stDestChn);
-	SAMPLE_VI_Destory();
+	SAMPLE_VI_Destory(&sensor_cfg);
 	CVI_VPSS_StopGrp(VpssGrp);
 	CVI_VPSS_DisableChn(VpssGrp, VpssChn);
 	CVI_VPSS_DestroyGrp(VpssGrp);
@@ -1309,7 +1344,7 @@ exit3:
 	CVI_VPSS_DisableChn(VpssGrp, VpssChn);
 exit2:
 	CVI_VPSS_DestroyGrp(VpssGrp);
-	SAMPLE_VI_Destory();
+	SAMPLE_VI_Destory(&sensor_cfg);
 exit1:
 	CVI_VB_Exit();
 exit0:
@@ -1604,7 +1639,7 @@ CVI_S32 SAMPLE_SBM_FRM_Online(CVI_VOID)
 	CVI_SYS_UnBind(&stSrcChn1, &stDestChn1);
 	CVI_SYS_UnBind(&stSrcChn, &stDestChn);
 
-	SAMPLE_VI_Destory();
+	SAMPLE_VI_Destory(&sensor_cfg);
 
 	CVI_RGN_DetachFromChn(s32Handle1, &stChn0);
 	CVI_RGN_Destroy(s32Handle1);
@@ -1646,7 +1681,7 @@ exit3:
 	CVI_VPSS_DisableChn(VpssGrp, VpssChn1);
 exit2:
 	CVI_VPSS_DestroyGrp(VpssGrp);
-	SAMPLE_VI_Destory();
+	SAMPLE_VI_Destory(&sensor_cfg);
 exit1:
 	CVI_VB_Exit();
 exit0:
@@ -1660,6 +1695,276 @@ exit0:
 }
 
 
+CVI_S32 SAMPLE_DOUBLE_SBM(CVI_VOID)
+{
+	CVI_S32 i, s32Ret = CVI_SUCCESS;
+	VB_CONFIG_S stVbConf;
+	CVI_U32 u32BlkSize;
+	PIXEL_FORMAT_E enPixelFormat = PIXEL_FORMAT_NV12;
+	SIZE_S stSize[2] = {{1920, 1080}, {1920, 1080}};
+	CVI_CHAR *pFileNameOut1 = "chn0.h264";
+	CVI_CHAR *pFileNameOut2 = "chn1.h264";
+	FILE *fpOutput1 = NULL;
+	FILE *fpOutput2 = NULL;
+	VI_VPSS_MODE_S stVIVPSSMode;
+	SENSOR_CFG_S sensor_cfg;
+	CVI_BOOL bPatgen = CVI_FALSE;
+
+	fpOutput1 = fopen(pFileNameOut1, "wb");
+	if (fpOutput1 == NULL) {
+		SAMPLE_SBM_PRT("can't open file %s\n", pFileNameOut1);
+		return CVI_FAILURE;
+	}
+	fpOutput2 = fopen(pFileNameOut2, "wb");
+	if (fpOutput2 == NULL) {
+		SAMPLE_SBM_PRT("can't open file %s\n", pFileNameOut2);
+		fclose(fpOutput1);
+		return CVI_FAILURE;
+	}
+
+	/************************************************
+	 * step0:  Init SYS and common VB
+	 ************************************************/
+	s32Ret = CVI_SYS_Init();
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_SBM_PRT("CVI_SYS_Init failed!\n");
+		fclose(fpOutput1);
+		fclose(fpOutput2);
+		return CVI_FAILURE;
+	}
+
+	memset(&stVbConf, 0, sizeof(VB_CONFIG_S));
+	stVbConf.u32MaxPoolCnt = 1;
+
+	//dummy vb
+	u32BlkSize = COMMON_GetPicBufferSize(64, 64,
+		enPixelFormat, DATA_BITWIDTH_8, COMPRESS_MODE_NONE, DEFAULT_ALIGN);
+	stVbConf.astCommPool[0].u32BlkSize	= u32BlkSize;
+	stVbConf.astCommPool[0].u32BlkCnt	= 1;
+	stVbConf.astCommPool[0].enRemapMode = VB_REMAP_MODE_CACHED;
+
+	s32Ret = CVI_VB_SetConfig(&stVbConf);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_SBM_PRT("CVI_VB_SetConf failed!\n");
+		goto exit0;
+	}
+
+	s32Ret = CVI_VB_Init();
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_SBM_PRT("CVI_VB_Init failed!\n");
+		goto exit0;
+	}
+
+	/************************************************
+	 * step1: sensor config
+	 ************************************************/
+	memset(&sensor_cfg, 0, sizeof(SENSOR_CFG_S));
+	s32Ret = SAMPLE_Snsr_Parser(&sensor_cfg);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_SBM_PRT("Use Patgen\n");
+		bPatgen = CVI_TRUE;
+	} else {
+		stSize[0].u32Width = sensor_cfg.sns_cfg.u32ImageWigth[0];
+		stSize[0].u32Height = sensor_cfg.sns_cfg.u32ImageHeight[0];
+		stSize[1].u32Width = sensor_cfg.sns_cfg.u32ImageWigth[1];
+		stSize[1].u32Height = sensor_cfg.sns_cfg.u32ImageHeight[1];
+	}
+
+	/************************************************
+	 * Config vpss online mode
+	 ************************************************/
+	stVIVPSSMode.aenMode[0] = stVIVPSSMode.aenMode[1] = VI_OFFLINE_VPSS_ONLINE;
+
+	s32Ret = CVI_SYS_SetVIVPSSMode(&stVIVPSSMode);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_SBM_PRT("CVI_SYS_SetVIVPSSMode failed with %#x\n", s32Ret);
+		goto exit1;
+	}
+
+	/************************************************
+	 * step2:  Init VI
+	 ************************************************/
+	if (!bPatgen) {
+		s32Ret = SAMPLE_Snsr_Setup(&sensor_cfg);
+		if (s32Ret != CVI_SUCCESS) {
+			SAMPLE_SBM_PRT("SAMPLE_Snsr_Setup failed!\n");
+			goto exit1;
+		}
+	}
+
+	s32Ret = SAMPLE_VI_Setup(bPatgen, &sensor_cfg, &stSize[0]);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_SBM_PRT("SAMPLE_VI_Setup failed!\n");
+		goto exit1;
+	}
+
+	/************************************************
+	 * step3:  Init VPSS
+	 ************************************************/
+	VPSS_GRP		   VpssGrp		  = 0;
+	VPSS_CHN		   VpssChn		  = VPSS_CHN0;
+	VPSS_GRP_ATTR_S    stVpssGrpAttr  = {0};
+	VPSS_CHN_ATTR_S    stVpssChnAttr  = {0};
+	VPSS_CHN_BUF_WRAP_S stVpssChnBufWrap;
+	VPSS_MODE_S stVPSSMode;
+
+	stVPSSMode.enMode = VPSS_MODE_DUAL;
+	stVPSSMode.aenInput[0] = VPSS_INPUT_MEM;
+	stVPSSMode.aenInput[1] = VPSS_INPUT_ISP;
+
+	s32Ret = CVI_VPSS_SetMode(&stVPSSMode);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_SBM_PRT("CVI_VPSS_SetMode failed with %#x!\n", s32Ret);
+		goto exit2;
+	}
+
+	for (i = 0; i < 2; i++) {
+		VpssGrp = i;
+
+		stVpssGrpAttr.u32MaxW						= stSize[i].u32Width;
+		stVpssGrpAttr.u32MaxH						= stSize[i].u32Height;
+		stVpssGrpAttr.enPixelFormat					= enPixelFormat;
+		stVpssGrpAttr.stFrameRate.s32SrcFrameRate	= -1;
+		stVpssGrpAttr.stFrameRate.s32DstFrameRate	= -1;
+		stVpssGrpAttr.u8VpssDev						= 1;
+
+		s32Ret = CVI_VPSS_CreateGrp(VpssGrp, &stVpssGrpAttr);
+		if (s32Ret != CVI_SUCCESS) {
+			SAMPLE_SBM_PRT("CVI_VPSS_CreateGrp(grp:%d) failed with %#x!\n", VpssGrp, s32Ret);
+			goto exit3;
+		}
+
+		stVpssChnAttr.u32Width						= stSize[i].u32Width;
+		stVpssChnAttr.u32Height						= stSize[i].u32Height;
+		stVpssChnAttr.enVideoFormat					= VIDEO_FORMAT_LINEAR;
+		stVpssChnAttr.enPixelFormat					= enPixelFormat;
+		stVpssChnAttr.stFrameRate.s32SrcFrameRate	= -1;
+		stVpssChnAttr.stFrameRate.s32DstFrameRate	= -1;
+		stVpssChnAttr.u32Depth						= 0;
+		stVpssChnAttr.bMirror						= CVI_FALSE;
+		stVpssChnAttr.bFlip							= CVI_FALSE;
+		stVpssChnAttr.stAspectRatio.enMode			= ASPECT_RATIO_NONE;
+		stVpssChnAttr.stNormalize.bEnable			= CVI_FALSE;
+
+		s32Ret = CVI_VPSS_SetChnAttr(VpssGrp, VpssChn, &stVpssChnAttr);
+		if (s32Ret != CVI_SUCCESS) {
+			SAMPLE_SBM_PRT("CVI_VPSS_SetChnAttr failed with %#x\n", s32Ret);
+			goto exit3;
+		}
+
+		stVpssChnBufWrap.bEnable = CVI_TRUE;
+		stVpssChnBufWrap.u32BufLine = 64;
+		stVpssChnBufWrap.u32WrapBufferSize = 5;
+
+		s32Ret = CVI_VPSS_SetChnBufWrapAttr(VpssGrp, VpssChn, &stVpssChnBufWrap);
+		if (s32Ret != CVI_SUCCESS) {
+			SAMPLE_SBM_PRT("CVI_VPSS_SetChnBufWrapAttr failed with %#x\n", s32Ret);
+			goto exit3;
+		}
+
+		s32Ret = CVI_VPSS_EnableChn(VpssGrp, VpssChn);
+		if (s32Ret != CVI_SUCCESS) {
+			SAMPLE_SBM_PRT("CVI_VPSS_EnableChn failed with %#x\n", s32Ret);
+			goto exit3;
+		}
+
+		/*start vpss*/
+		s32Ret = CVI_VPSS_StartGrp(VpssGrp);
+		if (s32Ret != CVI_SUCCESS) {
+			SAMPLE_SBM_PRT("CVI_VPSS_StartGrp failed with %#x\n", s32Ret);
+			goto exit3;
+		}
+	}
+	/************************************************
+	 * step4:  Init VENC
+	 ************************************************/
+	PAYLOAD_TYPE_E enType = PT_H264;
+	VENC_CHN VencChn[2] = { 0, 1 };
+	MMF_CHN_S stSrcChn = {CVI_ID_VPSS, 0, 0};
+	MMF_CHN_S stDestChn = {CVI_ID_VENC, 0, VencChn[0]};
+	CVI_S32 MaxChnNum = 2;
+	MMF_CHN_S stSrcChn1 = {CVI_ID_VPSS, 1, 0};
+	MMF_CHN_S stDestChn1 = {CVI_ID_VENC, 0, VencChn[1]};
+
+
+	gPara.Fp[0] = fpOutput1;
+	gPara.Fp[1] = fpOutput2;
+
+	s32Ret = CVI_SYS_Bind(&stSrcChn, &stDestChn);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_SBM_PRT("CVI_SYS_Bind failed with %#x\n", s32Ret);
+		goto exit3;
+	}
+
+	s32Ret = CVI_SYS_Bind(&stSrcChn1, &stDestChn1);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_SBM_PRT("CVI_SYS_Bind failed with %#x\n", s32Ret);
+		goto exit4;
+	}
+
+	s32Ret = SAMPLE_VENC_ChnSetup(VencChn[0], &stSize[0], enType);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_SBM_PRT("SAMPLE_VENC_ChnSetup failed. s32Ret: 0x%x !\n", s32Ret);
+		goto exit5;
+	}
+	s32Ret = SAMPLE_VENC_ChnSetup(VencChn[1], &stSize[1], enType);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_SBM_PRT("SAMPLE_VENC_ChnSetup failed. s32Ret: 0x%x !\n", s32Ret);
+		goto exit6;
+	}
+
+	s32Ret = SAMPLE_VENC_StartGetStream((CVI_S32 *)&VencChn, MaxChnNum);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_SBM_PRT("SAMPLE_VENC_StartGetStream failed. s32Ret: 0x%x !\n", s32Ret);
+		goto exit7;
+	}
+
+	SAMPLE_VENC_ExitProcess();
+	CVI_SYS_UnBind(&stSrcChn1, &stDestChn1);
+	CVI_SYS_UnBind(&stSrcChn, &stDestChn);
+
+	SAMPLE_VI_Destory(&sensor_cfg);
+
+	for (i = 0; i < 2; i++) {
+		CVI_VPSS_StopGrp(i);
+		CVI_VPSS_DisableChn(i, VpssChn);
+		CVI_VPSS_DestroyGrp(i);
+	}
+	CVI_VENC_StopRecvFrame(VencChn[1]);
+	CVI_VENC_StopRecvFrame(VencChn[0]);
+	CVI_VENC_DestroyChn(VencChn[1]);
+	CVI_VENC_DestroyChn(VencChn[0]);
+	goto exit1;
+
+exit7:
+	CVI_VENC_DestroyChn(VencChn[1]);
+exit6:
+	CVI_VENC_DestroyChn(VencChn[0]);
+exit5:
+	CVI_SYS_UnBind(&stSrcChn1, &stDestChn1);
+exit4:
+	CVI_SYS_UnBind(&stSrcChn, &stDestChn);
+exit3:
+	for (i = 0; i < 2; i++) {
+		CVI_VPSS_StopGrp(i);
+		CVI_VPSS_DisableChn(i, VpssChn);
+		CVI_VPSS_DestroyGrp(i);
+	}
+exit2:
+	SAMPLE_VI_Destory(&sensor_cfg);
+exit1:
+	CVI_VB_Exit();
+exit0:
+	CVI_SYS_Exit();
+
+	if (fpOutput1)
+		fclose(fpOutput1);
+	if (fpOutput2)
+		fclose(fpOutput2);
+
+	return s32Ret;
+}
+
 CVI_VOID SAMPLE_SBM_HandleSig(CVI_S32 signo)
 {
 	signal(SIGINT, SIG_IGN);
@@ -1670,7 +1975,6 @@ CVI_VOID SAMPLE_SBM_HandleSig(CVI_S32 signo)
 		gSampleVencExit = CVI_TRUE;
 		SAMPLE_SBM_PRT("Program termination abnormally\n");
 	}
-	exit(-1);
 }
 
 CVI_VOID SAMPLE_SBM_Usage(CVI_CHAR *sPrgNm)
@@ -1680,6 +1984,7 @@ CVI_VOID SAMPLE_SBM_Usage(CVI_CHAR *sPrgNm)
 	printf("\t 0)read file, vpss-venc sbm\n");
 	printf("\t 1)vi-vpss online, vpss-venc sbm\n");
 	printf("\t 2)vi-vpss online, vpss-venc sbm + frame mode\n");
+	printf("\t 3)double sbm\n");
 }
 
 CVI_S32 main(CVI_S32 argc, CVI_CHAR *argv[])
@@ -1710,6 +2015,9 @@ CVI_S32 main(CVI_S32 argc, CVI_CHAR *argv[])
 		break;
 	case 2:
 		s32Ret = SAMPLE_SBM_FRM_Online();
+		break;
+	case 3:
+		s32Ret = SAMPLE_DOUBLE_SBM();
 		break;
 	default:
 		SAMPLE_SBM_PRT("the index %d is invaild!\n", s32Index);

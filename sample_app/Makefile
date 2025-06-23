@@ -8,6 +8,10 @@ endif
 
 SAMPLE_APP = sbm vio vpss venc region gfbg tde sensor panel vdec audio
 
+ifeq ($(OS_TYPE), DUAL_OS)
+SAMPLE_APP += fastboot
+endif
+
 all:
 	@echo "#################################"
 	@echo "#                               #"

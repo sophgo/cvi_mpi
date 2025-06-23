@@ -49,7 +49,7 @@ CVI_S32 SAMPLE_VIO_VB_CFG(CVI_S32 vb_weigth, CVI_S32 vb_height, CVI_S32 vb_cnt, 
 
 	u32BlkSize = COMMON_GetPicBufferSize(vb_weigth, vb_height,
 			VI_PIXEL_FORMAT, DATA_BITWIDTH_8, COMPRESS_MODE_NONE, DEFAULT_ALIGN);
-	u32BlkRotSize = COMMON_GetPicBufferSize(vb_weigth, vb_height,
+	u32BlkRotSize = COMMON_GetPicBufferSize(vb_height, vb_weigth,
 			VI_PIXEL_FORMAT, DATA_BITWIDTH_8, COMPRESS_MODE_NONE, DEFAULT_ALIGN);
 	u32BlkSize = u32BlkSize > u32BlkRotSize ? u32BlkSize : u32BlkRotSize;
 

@@ -18,7 +18,7 @@ TARGET = sample_sensor
 ifeq ($(OS_TYPE), DUAL_OS)
 LIBS += -lvi -lvpss -lsys -lini -lsensor -lisp -lawb -lae -laf
 else
-LIBS = -lvi -lvpss -lini -lsns_full -lsensor -lgdc -lsys -lisp -lawb -lae -laf -lisp_algo
+LIBS = -lvi -lini -lsns_full -lsensor -lgdc -lsys -lisp -lawb -lae -laf -lisp_algo -lcvi_bin -lvo -lvpss
 endif
 
 EXTRA_CFLAGS += $(INCS)
