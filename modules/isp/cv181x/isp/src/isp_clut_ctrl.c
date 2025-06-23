@@ -53,13 +53,15 @@ static CVI_S32 isp_clut_ctrl_check_clut_attr_valid(const ISP_CLUT_ATTR_S *pstCLU
 	return ret;
 }
 
-static CVI_S32 isp_clut_ctrl_check_clut_saturation_attr_valid(const ISP_CLUT_SATURATION_ATTR_S *pstClutSaturationAttr)
+static CVI_S32 isp_clut_ctrl_check_clut_hsl_attr_valid(const ISP_CLUT_HSL_ATTR_S *pstClutHslAttr)
 {
 	CVI_S32 ret = CVI_SUCCESS;
 
-	// CHECK_VALID_CONST(pstClutSaturationAttr, Enable, CVI_FALSE, CVI_TRUE);
-	CHECK_VALID_AUTO_ISO_2D(pstClutSaturationAttr, SatIn, 4, 0x0, 0x2000);
-	CHECK_VALID_AUTO_ISO_2D(pstClutSaturationAttr, SatOut, 4, 0x0, 0x2000);
+	// CHECK_VALID_CONST(pstClutHslAttr, Enable, CVI_FALSE, CVI_TRUE);
+	CHECK_VALID_ARRAY_1D(pstClutHslAttr, HByH, ISP_CLUT_HUE_LENGTH, -0x1e, 0x1e);
+	CHECK_VALID_ARRAY_1D(pstClutHslAttr, SByH, ISP_CLUT_HUE_LENGTH, 0x0, 0x64);
+	CHECK_VALID_ARRAY_1D(pstClutHslAttr, LByH, ISP_CLUT_HUE_LENGTH, 0x0, 0x64);
+	CHECK_VALID_ARRAY_1D(pstClutHslAttr, SByS, ISP_CLUT_SAT_LENGTH, 0x0, 0x64);
 
 	return ret;
 }
@@ -104,15 +106,15 @@ CVI_S32 isp_clut_ctrl_set_clut_attr(VI_PIPE ViPipe, const ISP_CLUT_ATTR_S *pstCL
 	isp_clut_ctrl_get_clut_attr(ViPipe, &p);
 	memcpy((CVI_VOID *) p, pstCLUTAttr, sizeof(*pstCLUTAttr));
 
-	runtime->preprocess_table_updated = CVI_TRUE;
+	runtime->preprocess_updated = CVI_TRUE;
 
 	return CVI_SUCCESS;
 }
 
-CVI_S32 isp_clut_ctrl_get_clut_saturation_attr(VI_PIPE ViPipe,
-	const ISP_CLUT_SATURATION_ATTR_S **pstClutSaturationAttr)
+CVI_S32 isp_clut_ctrl_get_clut_hsl_attr(VI_PIPE ViPipe,
+	const ISP_CLUT_HSL_ATTR_S **pstClutHslAttr)
 {
-	if (pstClutSaturationAttr == CVI_NULL) {
+	if (pstClutHslAttr == CVI_NULL) {
 		return CVI_FAILURE;
 	}
 
@@ -120,15 +122,15 @@ CVI_S32 isp_clut_ctrl_get_clut_saturation_attr(VI_PIPE ViPipe,
 	struct isp_clut_shared_buffer *shared_buffer = CVI_NULL;
 
 	isp_mgr_buf_get_addr(ViPipe, ISP_IQ_BLOCK_CLUT, (CVI_VOID *) &shared_buffer);
-	*pstClutSaturationAttr = &shared_buffer->stClutSaturationAttr;
+	*pstClutHslAttr = &shared_buffer->stClutHslAttr;
 
 	return ret;
 }
 
-CVI_S32 isp_clut_ctrl_set_clut_saturation_attr(VI_PIPE ViPipe,
-	const ISP_CLUT_SATURATION_ATTR_S *pstClutSaturationAttr)
+CVI_S32 isp_clut_ctrl_set_clut_hsl_attr(VI_PIPE ViPipe,
+	const ISP_CLUT_HSL_ATTR_S *pstClutHslAttr)
 {
-	if (pstClutSaturationAttr == CVI_NULL) {
+	if (pstClutHslAttr == CVI_NULL) {
 		return CVI_FAILURE;
 	}
 
@@ -139,16 +141,16 @@ CVI_S32 isp_clut_ctrl_set_clut_saturation_attr(VI_PIPE ViPipe,
 		return CVI_FAILURE;
 	}
 
-	ret = isp_clut_ctrl_check_clut_saturation_attr_valid(pstClutSaturationAttr);
+	ret = isp_clut_ctrl_check_clut_hsl_attr_valid(pstClutHslAttr);
 	if (ret != CVI_SUCCESS)
 		return ret;
 
-	const ISP_CLUT_SATURATION_ATTR_S *p = CVI_NULL;
+	const ISP_CLUT_HSL_ATTR_S *p = CVI_NULL;
 
-	isp_clut_ctrl_get_clut_saturation_attr(ViPipe, &p);
-	memcpy((CVI_VOID *) p, pstClutSaturationAttr, sizeof(*pstClutSaturationAttr));
+	isp_clut_ctrl_get_clut_hsl_attr(ViPipe, &p);
+	memcpy((CVI_VOID *) p, pstClutHslAttr, sizeof(*pstClutHslAttr));
 
-	runtime->preprocess_lut_updated = CVI_TRUE;
+	runtime->preprocess_updated = CVI_TRUE;
 
 	return CVI_SUCCESS;
 }

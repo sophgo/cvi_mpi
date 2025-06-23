@@ -799,17 +799,17 @@ CVI_S32 CVI_ISPD2_CBFunc_ISP_GetClutAttr(TJSONRpcContentIn *ptContentIn,
 }
 
 // -----------------------------------------------------------------------------
-CVI_S32 CVI_ISPD2_CBFunc_ISP_SetClutSaturationAttr(TJSONRpcContentIn *ptContentIn,
+CVI_S32 CVI_ISPD2_CBFunc_ISP_SetClutHslAttr(TJSONRpcContentIn *ptContentIn,
 	TJSONRpcContentOut *ptContentOut, JSONObject *pJsonResponse)
 {
-	CVI_ISP_SET_API_EX(ClutSaturation, ISP_CLUT_SATURATION_ATTR_S);
+	CVI_ISP_SET_API_EX(ClutHsl, ISP_CLUT_HSL_ATTR_S);
 }
 
 // -----------------------------------------------------------------------------
-CVI_S32 CVI_ISPD2_CBFunc_ISP_GetClutSaturationAttr(TJSONRpcContentIn *ptContentIn,
+CVI_S32 CVI_ISPD2_CBFunc_ISP_GetClutHslAttr(TJSONRpcContentIn *ptContentIn,
 	TJSONRpcContentOut *ptContentOut, JSONObject *pJsonResponse)
 {
-	CVI_ISP_GET_API_EX(ClutSaturation, ISP_CLUT_SATURATION_ATTR_S);
+	CVI_ISP_GET_API_EX(ClutHsl, ISP_CLUT_HSL_ATTR_S);
 }
 
 // -----------------------------------------------------------------------------

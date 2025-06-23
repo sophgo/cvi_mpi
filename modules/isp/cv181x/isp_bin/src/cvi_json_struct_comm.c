@@ -6,6 +6,7 @@
  *
  */
 #if CONFIG_PQBIN_USE_JSON || CONFIG_PQTOOL_SUPPORT
+#include <errno.h>
 #include "cvi_json_struct_comm.h"
 #include "string.h"
 #include "stdbool.h"
@@ -70,6 +71,12 @@ void JSON_PRINT_ERR_NOT_EXIST(char *name)
 		__LINE__, param_point, name);
 }
 
+void JSON_PRINT_ERR_DATA_TYPE(char *name)
+{
+	CVI_TRACE_JSON(CVI_DBG_ERR, "JSON_READ_ERR:DATA_TYPE %d(L) %s%s\n",
+		__LINE__, param_point, name);
+}
+
 cvi_json_bool cvi_json_object_object_get_ex2(struct cvi_json_object *obj, const char *key,
 					struct cvi_json_object **value)
 {
@@ -90,7 +97,12 @@ void CVI_BOOL_JSON(int r_w_flag, JSON *j, char *key, CVI_BOOL *value)
 	if (r_w_flag == R_FLAG) {
 		if (cvi_json_object_object_get_ex2(j, key, &obj)) {
 			int temp;
+			cvi_json_type cvi_type = cvi_json_object_get_type(obj);
 
+			if (cvi_type != cvi_json_type_int) {
+				JSON_PRINT_ERR_DATA_TYPE(key);
+				return;
+			}
 			temp = cvi_json_object_get_int(obj);
 			JSON_CHECK_RANGE(key, &temp, 0, 1);
 			*value = temp;
@@ -114,6 +126,12 @@ void CVI_U8_JSON(int r_w_flag, JSON *j, char *key, CVI_U8 *value)
 	if (r_w_flag == R_FLAG) {
 		if (cvi_json_object_object_get_ex2(j, key, &obj)) {
 			int temp;
+			cvi_json_type cvi_type = cvi_json_object_get_type(obj);
+
+			if (cvi_type != cvi_json_type_int) {
+				JSON_PRINT_ERR_DATA_TYPE(key);
+				return;
+			}
 
 			temp = cvi_json_object_get_int(obj);
 			JSON_CHECK_RANGE(key, &temp, 0, CVI_U8_MAX);
@@ -138,6 +156,12 @@ void CVI_S8_JSON(int r_w_flag, JSON *j, char *key, CVI_S8 *value)
 	if (r_w_flag == R_FLAG) {
 		if (cvi_json_object_object_get_ex2(j, key, &obj)) {
 			int temp;
+			cvi_json_type cvi_type = cvi_json_object_get_type(obj);
+
+			if (cvi_type != cvi_json_type_int) {
+				JSON_PRINT_ERR_DATA_TYPE(key);
+				return;
+			}
 
 			temp = cvi_json_object_get_int(obj);
 			JSON_CHECK_RANGE(key, &temp, CVI_S8_MIN, CVI_S8_MAX);
@@ -162,6 +186,12 @@ void CVI_U16_JSON(int r_w_flag, JSON *j, char *key, CVI_U16 *value)
 	if (r_w_flag == R_FLAG) {
 		if (cvi_json_object_object_get_ex2(j, key, &obj)) {
 			int temp;
+			cvi_json_type cvi_type = cvi_json_object_get_type(obj);
+
+			if (cvi_type != cvi_json_type_int) {
+				JSON_PRINT_ERR_DATA_TYPE(key);
+				return;
+			}
 
 			temp = cvi_json_object_get_int(obj);
 			JSON_CHECK_RANGE(key, &temp, 0, CVI_U16_MAX);
@@ -186,7 +216,12 @@ void CVI_S16_JSON(int r_w_flag, JSON *j, char *key, CVI_S16 *value)
 	if (r_w_flag == R_FLAG) {
 		if (cvi_json_object_object_get_ex2(j, key, &obj)) {
 			int temp;
+			cvi_json_type cvi_type = cvi_json_object_get_type(obj);
 
+			if (cvi_type != cvi_json_type_int) {
+				JSON_PRINT_ERR_DATA_TYPE(key);
+				return;
+			}
 			temp = cvi_json_object_get_int(obj);
 			JSON_CHECK_RANGE(key, &temp, CVI_S16_MIN, CVI_S16_MAX);
 			*value = temp;
@@ -210,7 +245,12 @@ void CVI_U32_JSON(int r_w_flag, JSON *j, char *key, CVI_U32 *value)
 	if (r_w_flag == R_FLAG) {
 		if (cvi_json_object_object_get_ex2(j, key, &obj)) {
 			long long temp;
+			cvi_json_type cvi_type = cvi_json_object_get_type(obj);
 
+			if (cvi_type != cvi_json_type_int) {
+				JSON_PRINT_ERR_DATA_TYPE(key);
+				return;
+			}
 			temp = cvi_json_object_get_int64(obj);
 			JSON_CHECK_RANGE_OF_32(key, &temp, 0, CVI_U32_MAX);
 			*value = temp;
@@ -234,6 +274,12 @@ void CVI_S32_JSON(int r_w_flag, JSON *j, char *key, CVI_S32 *value)
 	if (r_w_flag == R_FLAG) {
 		if (cvi_json_object_object_get_ex2(j, key, &obj)) {
 			long long temp;
+			cvi_json_type cvi_type = cvi_json_object_get_type(obj);
+
+			if (cvi_type != cvi_json_type_int) {
+				JSON_PRINT_ERR_DATA_TYPE(key);
+				return;
+			}
 
 			temp = cvi_json_object_get_int64(obj);
 			JSON_CHECK_RANGE_OF_32(key, &temp, CVI_S32_MIN, CVI_S32_MAX);
@@ -258,7 +304,12 @@ void CVI_U64_JSON(int r_w_flag, JSON *j, char *key, CVI_U64 *value)
 	if (r_w_flag == R_FLAG) {
 		if (cvi_json_object_object_get_ex2(j, key, &obj)) {
 			unsigned long long temp;
+			cvi_json_type cvi_type = cvi_json_object_get_type(obj);
 
+			if (cvi_type != cvi_json_type_int) {
+				JSON_PRINT_ERR_DATA_TYPE(key);
+				return;
+			}
 			temp = cvi_json_object_get_uint64(obj);
 			JSON_CHECK_RANGE_OF_U64(key, &temp, 0, CVI_U32_MAX);
 			*value = temp;
@@ -282,8 +333,20 @@ void CVI_FLOAT_JSON(int r_w_flag, JSON *j, char *key, CVI_FLOAT *value)
 	if (r_w_flag == R_FLAG) {
 		if (cvi_json_object_object_get_ex2(j, key, &obj)) {
 			double temp;
+			cvi_json_type cvi_type = cvi_json_object_get_type(obj);
 
+			if (cvi_type != cvi_json_type_double &&
+				cvi_type != cvi_json_type_string &&
+				cvi_type != cvi_json_type_int) {
+				JSON_PRINT_ERR_DATA_TYPE(key);
+				return;
+			}
+			errno = 0;
 			temp = cvi_json_object_get_double(obj);
+			if (errno != 0) {
+				JSON_PRINT_ERR_DATA_TYPE(key);
+				return;
+			}
 			JSON_CHECK_RANGE_OF_DOUBLE(key, &temp, CVI_FLOAT_MIN, CVI_FLOAT_MAX);
 			*value = temp;
 		} else {

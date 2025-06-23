@@ -53,6 +53,7 @@ optional panel mode support list:
  ILI9881C
  ILI9881D
  JD9366AB
+ JD9165BA
  NT35521
  OTA7290B_1920
  OTA7290B

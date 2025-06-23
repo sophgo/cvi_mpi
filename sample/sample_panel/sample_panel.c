@@ -21,6 +21,7 @@
 #include "dsi_ili9881c.h"
 #include "dsi_ili9881d.h"
 #include "dsi_jd9366ab.h"
+#include "dsi_jd9165ba.h"
 #include "dsi_nt35521.h"
 #include "dsi_ota7290b.h"
 #include "dsi_ota7290b_1920.h"
@@ -62,6 +63,7 @@ typedef enum {
 	DSI_PANEL_ILI9881C,
 	DSI_PANEL_ILI9881D,
 	DSI_PANEL_JD9366AB,
+	DSI_PANEL_JD9165BA,
 	DSI_PANEL_NT35521,
 	DSI_PANEL_OTA7290B_1920,
 	DSI_PANEL_OTA7290B,
@@ -119,6 +121,7 @@ static char *s_panel_model_type_arr[] = {
 	"ILI9881C",
 	"ILI9881D",
 	"JD9366AB",
+	"JD9165BA",
 	"NT35521",
 	"OTA7290B_1920",
 	"OTA7290B",
@@ -425,6 +428,13 @@ void SAMPLE_SET_PANEL_DESC(void)
 		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_jd9366ab_800x1280;
 		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_jd9366ab_800x1280;
 		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_jd9366ab_800x1280);
+		break;
+	case DSI_PANEL_JD9165BA:
+		g_panel_desc.panel_type = PANEL_MODE_DSI;
+		g_panel_desc.stdsicfg.dev_cfg = &dev_cfg_jd9165ba_1024x600;
+		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_jd9165ba_1024x600;
+		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_jd9165ba_1024x600;
+		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_jd9165ba_1024x600);
 		break;
 	case DSI_PANEL_NT35521:
 		g_panel_desc.panel_type = PANEL_MODE_DSI;

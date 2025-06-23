@@ -819,7 +819,8 @@ CVI_S32 SAMPLE_COMM_VDEC_UnBind_VENC(VDEC_CHN VdecChn, VENC_CHN VencChn);
 CVI_S32 SAMPLE_COMM_VDEC_Bind_VO(VDEC_CHN VdecChn, VO_LAYER VoLayer, VO_CHN VoChn);
 CVI_S32 SAMPLE_COMM_VDEC_UnBind_VO(VDEC_CHN VdecChn, VO_LAYER VoLayer, VO_CHN VoChn);
 
-#define ENABLE_AF_LIB (0)
+// #define ENABLE_AF_LIB (0)
+
 //The customer can deisgin the control of the motor by themself,
 //and sophgo also provides the public practice for customer reference
 //please contact sophgo get motor ko source code

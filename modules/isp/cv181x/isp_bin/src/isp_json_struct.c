@@ -1893,12 +1893,12 @@ char *ISP_CLUT_ATTR_S_READ_JSON(ISP_CLUT_ATTR_S *pAttr, const char *json_str)
 
 void ISP_CLUT_ATTR_S_JSON(int r_w_flag, JSON *j, char *key, ISP_CLUT_ATTR_S *data)
 {
-
-	if (r_w_flag == R_FLAG){
+	if (r_w_flag == R_FLAG) {
 		JSON_START(r_w_flag);
 
-		if(cvi_json_object_is_type(obj,cvi_json_type_string)){
+		if (cvi_json_object_is_type(obj, cvi_json_type_string)) {
 			const char *json_str = cvi_json_object_get_string(obj);
+
 			ISP_CLUT_ATTR_S_READ_JSON(data, json_str);
 		} else {
 			JSON(r_w_flag, CVI_BOOL, Enable);
@@ -1919,45 +1919,23 @@ void ISP_CLUT_ATTR_S_JSON(int r_w_flag, JSON *j, char *key, ISP_CLUT_ATTR_S *dat
 		memset(json_str, 0, max_size);
 		int json_len = ISP_CLUT_ATTR_S_WRITE_JSON(data, json_str);
 		JSON *json_obj = cvi_json_object_new_string_len(json_str, json_len);
+
 		cvi_json_object_object_add(j, key, json_obj);
 		free(json_str);
 	}
 }
 
-
 // -----------------------------------------------------------------------------
-static void ISP_CLUT_SATURATION_MANUAL_ATTR_S_JSON(int r_w_flag, JSON *j, char *key,
-	ISP_CLUT_SATURATION_MANUAL_ATTR_S *data)
-{
-	JSON_START(r_w_flag);
-
-	JSON_A(r_w_flag, CVI_U16, SatIn, 4);
-	JSON_A(r_w_flag, CVI_U16, SatOut, 4);
-
-	JSON_END(r_w_flag);
-}
-
-// -----------------------------------------------------------------------------
-static void ISP_CLUT_SATURATION_AUTO_ATTR_S_JSON(int r_w_flag, JSON *j, char *key,
-	ISP_CLUT_SATURATION_AUTO_ATTR_S *data)
-{
-	JSON_START(r_w_flag);
-
-	JSON_A(r_w_flag, CVI_U16, SatIn, 4 * ISP_AUTO_ISO_STRENGTH_NUM);
-	JSON_A(r_w_flag, CVI_U16, SatOut, 4 * ISP_AUTO_ISO_STRENGTH_NUM);
-
-	JSON_END(r_w_flag);
-}
-
-// -----------------------------------------------------------------------------
-void ISP_CLUT_SATURATION_ATTR_S_JSON(int r_w_flag, JSON *j, char *key, ISP_CLUT_SATURATION_ATTR_S *data)
+void ISP_CLUT_HSL_ATTR_S_JSON(int r_w_flag, JSON *j, char *key, ISP_CLUT_HSL_ATTR_S *data)
 {
 	JSON_START(r_w_flag);
 
 	JSON(r_w_flag, CVI_BOOL, Enable);
-	JSON(r_w_flag, ISP_OP_TYPE_E, enOpType);
-	JSON(r_w_flag, ISP_CLUT_SATURATION_MANUAL_ATTR_S, stManual);
-	JSON(r_w_flag, ISP_CLUT_SATURATION_AUTO_ATTR_S, stAuto);
+	JSON(r_w_flag, CVI_FLOAT, Sigma);
+	JSON_A(r_w_flag, CVI_S16, HByH, ISP_CLUT_HUE_LENGTH);
+	JSON_A(r_w_flag, CVI_U16, SByH, ISP_CLUT_HUE_LENGTH);
+	JSON_A(r_w_flag, CVI_U16, LByH, ISP_CLUT_HUE_LENGTH);
+	JSON_A(r_w_flag, CVI_U16, SByS, ISP_CLUT_SAT_LENGTH);
 
 	JSON_END(r_w_flag);
 }
@@ -3080,7 +3058,7 @@ void ISP_PARAMETER_BUFFER_JSON(int r_w_flag, JSON *j, char *key_word, ISP_Parame
 		JSON(r_w_flag, ISP_CLUT_ATTR_S, clut);
 		break;
 	case 5:
-		JSON(r_w_flag, ISP_CLUT_SATURATION_ATTR_S, clut_saturation);
+		JSON(r_w_flag, ISP_CLUT_HSL_ATTR_S, clut_hsl);
 		JSON(r_w_flag, ISP_CSC_ATTR_S, csc);
 		JSON(r_w_flag, ISP_VC_ATTR_S, vc_motion);
 

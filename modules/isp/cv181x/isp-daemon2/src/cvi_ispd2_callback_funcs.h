@@ -269,9 +269,9 @@ CVI_S32 CVI_ISPD2_CBFunc_ISP_SetClutAttr(TJSONRpcContentIn *ptIn,
 	TJSONRpcContentOut *ptOut, JSONObject *pJsonRes);
 CVI_S32 CVI_ISPD2_CBFunc_ISP_GetClutAttr(TJSONRpcContentIn *ptIn,
 	TJSONRpcContentOut *ptOut, JSONObject *pJsonRes);
-CVI_S32 CVI_ISPD2_CBFunc_ISP_SetClutSaturationAttr(TJSONRpcContentIn *ptIn,
+CVI_S32 CVI_ISPD2_CBFunc_ISP_SetClutHslAttr(TJSONRpcContentIn *ptIn,
 	TJSONRpcContentOut *ptOut, JSONObject *pJsonRes);
-CVI_S32 CVI_ISPD2_CBFunc_ISP_GetClutSaturationAttr(TJSONRpcContentIn *ptIn,
+CVI_S32 CVI_ISPD2_CBFunc_ISP_GetClutHslAttr(TJSONRpcContentIn *ptIn,
 	TJSONRpcContentOut *ptOut, JSONObject *pJsonRes);
 CVI_S32 CVI_ISPD2_CBFunc_ISP_SetVCAttr(TJSONRpcContentIn *ptIn,
 	TJSONRpcContentOut *ptOut, JSONObject *pJsonRes);
@@ -353,6 +353,12 @@ CVI_S32 CVI_ISPD2_CBFunc_ISP_SetWBCalibration(TJSONRpcContentIn *ptIn,
 CVI_S32 CVI_ISPD2_CBFunc_ISP_GetWBCalibration(TJSONRpcContentIn *ptIn,
 	TJSONRpcContentOut *ptOut, JSONObject *pJsonRes);
 CVI_S32 CVI_ISPD2_CBFunc_ISP_QueryWBInfo(TJSONRpcContentIn *ptIn,
+	TJSONRpcContentOut *ptOut, JSONObject *pJsonRes);
+
+//AF
+CVI_S32 CVI_ISPD2_CBFunc_ISP_SetAFAttr(TJSONRpcContentIn *ptIn,
+	TJSONRpcContentOut *ptOut, JSONObject *pJsonRes);
+CVI_S32 CVI_ISPD2_CBFunc_ISP_GetAFAttr(TJSONRpcContentIn *ptIn,
 	TJSONRpcContentOut *ptOut, JSONObject *pJsonRes);
 
 // VI
