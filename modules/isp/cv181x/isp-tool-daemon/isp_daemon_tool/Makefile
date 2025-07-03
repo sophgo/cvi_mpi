@@ -43,9 +43,11 @@ SDK_VER := glibc_riscv64
 endif
 AI_SDK_PATH = $(OUTPUT_DIR)/tpu_$(SDK_VER)/cvitek_ai_sdk
 TPU_SDK_PATH = $(OUTPUT_DIR)/tpu_$(SDK_VER)/cvitek_tpu_sdk
+TDL_SDK_PATH = $(TOP_DIR)/tdl_sdk/install/
 
 AI_SDK_PATH_EXIST = $(shell if [ -d $(AI_SDK_PATH) ]; then echo "exist"; else echo "noexist"; fi)
 TPU_SDK_PATH_EXIST = $(shell if [ -d $(TPU_SDK_PATH) ]; then echo "exist"; else echo "noexist"; fi)
+TDL_SDK_PATH_EXIST = $(shell if [ -d $(TDL_SDK_PATH) ]; then echo "exist"; else echo "noexist"; fi)
 
 TARGET = isp_tool_daemon
 OUT_TARBALL = isp_tool_daemon.tar.gz
@@ -133,7 +135,15 @@ else
 	@cp $(TPU_SDK_PATH)/lib/*.so* install/lib/ai -rf
 	@rm install/lib/ai/libcvi_rtsp.so
 endif
-	@cp $(MW_PATH)/../tdl_sdk/install/lib/libcvi_tdl.so install/lib/ai
+
+ifeq "$(TDL_SDK_PATH_EXIST)" "noexist"
+	$(info cvitek_ai_sdk not exist, please export TPU_REL=1 run build_all !!)
+else
+	@cp -Lrf $(TDL_SDK_PATH)/$(CHIP_ARCH)/lib/libtdl.so* install/lib/ai
+	@cp -Lrf $(TDL_SDK_PATH)/$(CHIP_ARCH)/sample/3rd/opencv/lib/libopencv_core.so* install/lib
+	@cp -Lrf $(TDL_SDK_PATH)/$(CHIP_ARCH)/sample/3rd/opencv/lib/libopencv_imgcodecs.so* install/lib
+	@cp -Lrf $(TDL_SDK_PATH)/$(CHIP_ARCH)/sample/3rd/opencv/lib/libopencv_imgproc.so* install/lib
+endif
 
 
 	@for so in $(file); \
