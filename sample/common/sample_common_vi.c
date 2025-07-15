@@ -222,6 +222,103 @@ CVI_S32 SAMPLE_COMM_VI_UnresetMipi(SAMPLE_VI_CONFIG_S *pstViConfig)
 	return s32Ret;
 }
 
+CVI_S32 SAMPLE_COMM_GetSnsI2cInfo(const ISP_SNS_OBJ_S *pstSnsObj, SAMPLE_SNS_TYPE_E enSnsType, SNS_I2C_INFO *stSnsI2cInfo)
+{
+	int i;
+	int suspendAddr[5] = {0}, suspendData[5] = {0};
+	int resumedAddr[5] = {0}, resumedData[5] = {0};
+	if (pstSnsObj == CVI_NULL) {
+		CVI_TRACE_LOG(CVI_DBG_ERR, "fail to find pstSnsObj\n");
+		return CVI_FAILURE;
+	}
+	switch (enSnsType) {
+	case CVSENS_CV2003_MIPI_2M_1080P_30FPS_10BIT:
+		stSnsI2cInfo->i2c_base_info.i2c_dev = 1;
+		stSnsI2cInfo->i2c_base_info.dev_addr = 0x35;
+		stSnsI2cInfo->i2c_base_info.addr_bytes = 2;
+		stSnsI2cInfo->i2c_base_info.data_bytes = 1;
+		stSnsI2cInfo->i2c_base_info.suspend_seq_length = 1;
+		stSnsI2cInfo->i2c_base_info.resume_seq_length = 2;
+
+		suspendAddr[0] = 0x3000;
+		suspendData[0] = 0x1;
+		for (i = 0; i < stSnsI2cInfo->i2c_base_info.suspend_seq_length; i++) {
+			stSnsI2cInfo->sns_suspend_info[i].addr = suspendAddr[i];
+			stSnsI2cInfo->sns_suspend_info[i].data = suspendData[i];
+		}
+
+		resumedAddr[0] = 0x3000;
+		resumedData[0] = 0x1;
+		resumedAddr[1] = 0x3000;
+		resumedData[1] = 0x0;
+		for (i = 0; i < stSnsI2cInfo->i2c_base_info.resume_seq_length; i++) {
+			stSnsI2cInfo->sns_resume_info[i].addr = resumedAddr[i];
+			stSnsI2cInfo->sns_resume_info[i].data = resumedData[i];
+		}
+		return CVI_SUCCESS;
+	case GCORE_GC2053_MIPI_2M_30FPS_10BIT:
+		stSnsI2cInfo->i2c_base_info.i2c_dev = 1;
+		stSnsI2cInfo->i2c_base_info.dev_addr = 0x37;
+		stSnsI2cInfo->i2c_base_info.addr_bytes = 1;
+		stSnsI2cInfo->i2c_base_info.data_bytes = 1;
+		stSnsI2cInfo->i2c_base_info.suspend_seq_length = 4;
+		stSnsI2cInfo->i2c_base_info.resume_seq_length = 4;
+
+		suspendAddr[0] = 0x3e;
+		suspendData[0] = 0x00;
+		suspendAddr[1] = 0xf7;
+		suspendData[1] = 0x00;
+		suspendAddr[2] = 0xfc;
+		suspendData[2] = 0x01;
+		suspendAddr[3] = 0xf9;
+		suspendData[3] = 0x83;
+		for (i = 0; i < stSnsI2cInfo->i2c_base_info.suspend_seq_length; i++) {
+			stSnsI2cInfo->sns_suspend_info[i].addr = suspendAddr[i];
+			stSnsI2cInfo->sns_suspend_info[i].data = suspendData[i];
+		}
+
+		resumedAddr[0] = 0xf9;
+		resumedData[0] = 0x82;
+		resumedAddr[1] = 0xf7;
+		resumedData[1] = 0x01;
+		resumedAddr[2] = 0xfc;
+		resumedData[2] = 0x8e;
+		resumedAddr[3] = 0x3e;
+		resumedData[3] = 0x91;
+		for (i = 0; i < stSnsI2cInfo->i2c_base_info.resume_seq_length; i++) {
+			stSnsI2cInfo->sns_resume_info[i].addr = resumedAddr[i];
+			stSnsI2cInfo->sns_resume_info[i].data = resumedData[i];
+		}
+		return CVI_SUCCESS;
+	case GCORE_GC4653_MIPI_4M_30FPS_10BIT:
+		stSnsI2cInfo->i2c_base_info.i2c_dev = 2;
+		stSnsI2cInfo->i2c_base_info.dev_addr = 0x29;
+		stSnsI2cInfo->i2c_base_info.addr_bytes = 2;
+		stSnsI2cInfo->i2c_base_info.data_bytes = 1;
+		stSnsI2cInfo->i2c_base_info.suspend_seq_length = 1;
+		stSnsI2cInfo->i2c_base_info.resume_seq_length = 1;
+
+		suspendAddr[0] = 0x0100;
+		suspendData[0] = 0x00;
+		for (i = 0; i < stSnsI2cInfo->i2c_base_info.suspend_seq_length; i++) {
+			stSnsI2cInfo->sns_suspend_info[i].addr = suspendAddr[i];
+			stSnsI2cInfo->sns_suspend_info[i].data = suspendData[i];
+		}
+
+		resumedAddr[0] = 0x0100;
+		resumedData[0] = 0x09;
+		for (i = 0; i < stSnsI2cInfo->i2c_base_info.resume_seq_length; i++) {
+			stSnsI2cInfo->sns_resume_info[i].addr = resumedAddr[i];
+			stSnsI2cInfo->sns_resume_info[i].data = resumedData[i];
+		}
+		return CVI_SUCCESS;
+	default:
+		CVI_TRACE_LOG(CVI_DBG_WARN, "fail to get sensor i2c info!\n");
+		return CVI_SUCCESS;
+	}
+
+}
+
 CVI_S32 SAMPLE_COMM_VI_SetMipiAttr(SAMPLE_VI_CONFIG_S *pstViConfig)
 {
 	CVI_S32 s32Ret = 0, i;
@@ -230,6 +327,7 @@ CVI_S32 SAMPLE_COMM_VI_SetMipiAttr(SAMPLE_VI_CONFIG_S *pstViConfig)
 	SNS_COMBO_DEV_ATTR_S stDevAttr;
 	SAMPLE_VI_INFO_S *pstViInfo = CVI_NULL;
 	SAMPLE_SNS_TYPE_E enSnsType;
+	SNS_I2C_INFO stSnsI2cInfo;
 
 	const ISP_SNS_OBJ_S *pstSnsObj;
 
@@ -245,8 +343,10 @@ CVI_S32 SAMPLE_COMM_VI_SetMipiAttr(SAMPLE_VI_CONFIG_S *pstViConfig)
 		pstSnsObj = (ISP_SNS_OBJ_S *)SAMPLE_COMM_ISP_GetSnsObj(u32SnsId);
 		pstSnsObj->pfnGetRxAttr(ViPipe, &stDevAttr);
 		CVI_MIPI_SetMipiAttr(ViPipe, (CVI_VOID *)&stDevAttr);
-	}
 
+		SAMPLE_COMM_GetSnsI2cInfo(pstSnsObj, enSnsType, &stSnsI2cInfo);
+		CVI_MIPI_Set_SnsI2cInfo(ViPipe, (CVI_VOID *)&stSnsI2cInfo);
+	}
 	return s32Ret;
 }
 

@@ -17,6 +17,7 @@ extern "C" {
 
 typedef struct combo_dev_attr_s SNS_COMBO_DEV_ATTR_S;
 typedef struct mclk_pll_s SNS_MCLK_ATTR_S;
+typedef struct sns_i2c_info SNS_I2C_INFO;
 
 typedef struct _SNS_ATTR_S {
 	CVI_U16	u16Min;			/* Current MIN exposure of sensor */
@@ -207,6 +208,8 @@ extern ISP_SNS_OBJ_S stSnsSC223A_1L_Obj;
 extern ISP_SNS_OBJ_S stSnsSC4210_Obj;
 extern ISP_SNS_OBJ_S stSnsSC4336_Obj;
 extern ISP_SNS_OBJ_S stSnsSC4336P_Obj;
+extern ISP_SNS_OBJ_S stSnsSC4336P_1L_Obj;
+extern ISP_SNS_OBJ_S stSnsSC4336P1_1L_Obj;
 extern ISP_SNS_OBJ_S stSnsSC5336_2L_Obj;
 extern ISP_SNS_OBJ_S stSnsSC8238_Obj;
 extern ISP_SNS_OBJ_S stSnsF23_Obj;

@@ -206,3 +206,29 @@ CVI_S32 CVI_MIPI_SensorGpioInit(CVI_S32 devno, void *sns_gpio)
 
 	return s32Ret;
 }
+
+CVI_S32 CVI_MIPI_Set_SnsI2cInfo(CVI_S32 ViPipe,  const CVI_VOID *stSnsI2cInfo)
+{
+	if ((ViPipe < 0) || (ViPipe >= VI_MAX_PIPE_NUM)) {
+		ISP_LOG_ERR("ViPipe %d value error\n", ViPipe);
+		return -ENODEV;
+	}
+
+	CVI_S32 s32Ret = 0;
+
+	SNS_I2C_INFO *snsi2cinfo;
+
+	if (fd_mipi < 0) {
+		s32Ret = mipi_open_dev();
+		if (s32Ret != CVI_SUCCESS)
+			return s32Ret;
+	}
+
+	snsi2cinfo = (SNS_I2C_INFO *)stSnsI2cInfo;
+
+	if (ioctl(fd_mipi, CVI_MIPI_SET_SNS_I2C_INFO, (void *)(uintptr_t)snsi2cinfo) < 0) {
+		ISP_LOG_ERR("CVI_MIPI_SET_SNS_I2C_INFO NG\n");
+		return errno;
+	}
+	return s32Ret;
+}

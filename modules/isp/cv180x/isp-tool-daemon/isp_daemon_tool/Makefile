@@ -139,7 +139,7 @@ endif
 ifeq "$(TDL_SDK_PATH_EXIST)" "noexist"
 	$(info cvitek_ai_sdk not exist, please export TPU_REL=1 run build_all !!)
 else
-	@cp -Lrf $(TDL_SDK_PATH)/$(CHIP_ARCH)/lib/libtdl.so* install/lib/ai
+	@cp -Lrf $(TDL_SDK_PATH)/$(CHIP_ARCH)/lib/libtdl_core.so* install/lib/ai
 	@cp -Lrf $(TDL_SDK_PATH)/$(CHIP_ARCH)/sample/3rd/opencv/lib/libopencv_core.so* install/lib
 	@cp -Lrf $(TDL_SDK_PATH)/$(CHIP_ARCH)/sample/3rd/opencv/lib/libopencv_imgcodecs.so* install/lib
 	@cp -Lrf $(TDL_SDK_PATH)/$(CHIP_ARCH)/sample/3rd/opencv/lib/libopencv_imgproc.so* install/lib

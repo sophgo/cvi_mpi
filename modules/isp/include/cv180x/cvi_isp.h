@@ -304,6 +304,7 @@ CVI_S32 CVI_MIPI_SetMipiAttr(CVI_S32 ViPipe, const CVI_VOID *devAttr);
 CVI_S32 CVI_MIPI_SetClkEdge(CVI_S32 devno, CVI_U32 is_up);
 CVI_S32 CVI_MIPI_SetSnsMclk(SNS_MCLK_S *mclk);
 CVI_S32 CVI_MIPI_SensorGpioInit(CVI_S32 devno, void *sns_gpio);
+CVI_S32 CVI_MIPI_Set_SnsI2cInfo(CVI_S32 ViPipe,  const CVI_VOID *stSnsI2cInfo);
 
 CVI_S32 CVI_ISP_QueryInnerStateInfo(VI_PIPE ViPipe, ISP_INNER_STATE_INFO_S *pstInnerStateInfo);
 CVI_S32 CVI_ISP_GetVDTimeOut(VI_PIPE ViPipe, ISP_VD_TYPE_E enIspVDType, CVI_U32 u32MilliSec);
