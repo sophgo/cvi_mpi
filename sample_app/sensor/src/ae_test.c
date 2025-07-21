@@ -22,6 +22,7 @@
 #include "cvi_awb.h"
 #include "cvi_isp.h"
 #include "cvi_sns_ctrl.h"
+#include "sample_comm.h"
 
 #define DELAY_500MS() (usleep(500 * 1000))
 #define AAA_LIMIT(var, min, max) ((var) = ((var) < (min)) ? (min) : (((var) > (max)) ? (max) : (var)))
@@ -36,10 +37,10 @@
 #define _LOG_GREEN      "\033[1;32m"
 #define _LOG_DEBUG      "\033[0m"
 
-#define debug_log(fmt, arg...) printf(_LOG_DEBUG fmt _LOG_NONE, ##arg)
-#define info_log(fmt, arg...)  printf(_LOG_GREEN fmt _LOG_NONE, ##arg)
-#define warn_log(fmt, arg...)  printf(_LOG_YELLOW fmt _LOG_NONE, ##arg)
-#define error_log(fmt, arg...) printf(_LOG_RED fmt _LOG_NONE, ##arg)
+#define debug_log(fmt, arg...) SAMPLE_PRT(_LOG_DEBUG fmt _LOG_NONE, ##arg)
+#define info_log(fmt, arg...)  SAMPLE_PRT(_LOG_GREEN fmt _LOG_NONE, ##arg)
+#define warn_log(fmt, arg...)  SAMPLE_PRT(_LOG_YELLOW fmt _LOG_NONE, ##arg)
+#define error_log(fmt, arg...) SAMPLE_PRT(_LOG_RED fmt _LOG_NONE, ##arg)
 
 #ifndef AE_SE
 #define AE_SE ISP_CHANNEL_SE
@@ -291,13 +292,13 @@ static void AE_SetManualExposureTest(CVI_U8 sID, CVI_U8 mode, CVI_S32 expTime, C
 
 	if (mode == 0) {
 		stExpAttr.bByPass = 1;
-		printf("AE byPass!\n");
+		SAMPLE_PRT("AE byPass!\n");
 	} else if (mode == 1) {
 		stExpAttr.bByPass = 0;
 		stExpAttr.enOpType = OP_TYPE_AUTO;
 		stExpAttr.stManual.enExpTimeOpType = OP_TYPE_AUTO;
 		stExpAttr.stManual.enISONumOpType = OP_TYPE_AUTO;
-		printf("AE Auto!\n");
+		SAMPLE_PRT("AE Auto!\n");
 	} else if (mode == 2) {
 		stExpAttr.bByPass = 0;
 		stExpAttr.enOpType = OP_TYPE_MANUAL;
@@ -306,7 +307,7 @@ static void AE_SetManualExposureTest(CVI_U8 sID, CVI_U8 mode, CVI_S32 expTime, C
 		stExpAttr.stManual.u32ExpTime = expTime;
 		stExpAttr.stManual.enGainType = AE_TYPE_ISO;
 		stExpAttr.stManual.u32ISONum = ISONum;
-		printf("AE Manual!\n");
+		SAMPLE_PRT("AE Manual!\n");
 	}
 
 	CVI_ISP_SetExposureAttr(sID, &stExpAttr);
@@ -421,7 +422,7 @@ static void AE_SetWDRManualRatio(CVI_U8 sID, CVI_U16 ratio)
 
 	if (ratio == 0) {
 
-		printf("set max SE shutter time: %d\n", sensorInfo[sID].u32SExpTimeMax);
+		SAMPLE_PRT("set max SE shutter time: %d\n", sensorInfo[sID].u32SExpTimeMax);
 
 		ISP_EXP_INFO_S stExpInfo;
 
@@ -811,7 +812,7 @@ static void AE_GainTableLinearTest(CVI_U8 sID, CVI_U8 type, CVI_U32 startIndex, 
 		gain = stExpInfo.u32DGain;
 	}
 
-	printf("start index: %d, gain: %d, luma: %d\n", startIndex, gain, curLuma);
+	SAMPLE_PRT("start index: %d, gain: %d, luma: %d\n", startIndex, gain, curLuma);
 
 	for (CVI_U32 i = startIndex + 1; i <= endIndex; i++) {
 
@@ -914,17 +915,17 @@ CVI_S32 sensor_ae_test(void)
 
 	sensor_ae_test_init();
 
-	printf("[INFO]\n1:AE_SetManualExposureTest(sID, 0:bypss 1:auto 2:manu, time, iso)\n");
-	printf("[INFO] 2:AE_SetDebugMode(sID, item)\n");
-	printf("[INFO] 3:AE_SetManualGainTest(sID, AG, DG, IG)\n");
-	printf("[INFO] 4:AE_SetFpsTest(sID, fps)\n");
-	printf("[INFO] 5:AE_SetLSC(sID, enable)\n");
-	printf("[INFO] 6:AE_SetWDRManualRatio(sid, ratio), ratio: 4 - 256, 0: set SE max shutter time.\n");
-	printf("[INFO] 7:AE_GainLinearTest(sID, time, startISO, endISO)\n");
-	printf("[INFO] 8:AE_ShutterLinearTest(sID, fid 0: LE 1: SE, startExpTime, endExpTime)\n");
-	printf("[INFO] 9:AE_GainTableLinearTest(sID, type: again 0 dgain 1, startIndex, endIndex)\n");
-	printf("[INFO] 10:AE_WorkFrameCheck(sID, time, ISO 1, ISO 2)\n");
-	printf("[INFO] Item/sID/para1/para2/para3\n\n");
+	SAMPLE_PRT("[INFO]\n1:AE_SetManualExposureTest(sID, 0:bypss 1:auto 2:manu, time, iso)\n");
+	SAMPLE_PRT("[INFO] 2:AE_SetDebugMode(sID, item)\n");
+	SAMPLE_PRT("[INFO] 3:AE_SetManualGainTest(sID, AG, DG, IG)\n");
+	SAMPLE_PRT("[INFO] 4:AE_SetFpsTest(sID, fps)\n");
+	SAMPLE_PRT("[INFO] 5:AE_SetLSC(sID, enable)\n");
+	SAMPLE_PRT("[INFO] 6:AE_SetWDRManualRatio(sid, ratio), ratio: 4 - 256, 0: set SE max shutter time.\n");
+	SAMPLE_PRT("[INFO] 7:AE_GainLinearTest(sID, time, startISO, endISO)\n");
+	SAMPLE_PRT("[INFO] 8:AE_ShutterLinearTest(sID, fid 0: LE 1: SE, startExpTime, endExpTime)\n");
+	SAMPLE_PRT("[INFO] 9:AE_GainTableLinearTest(sID, type: again 0 dgain 1, startIndex, endIndex)\n");
+	SAMPLE_PRT("[INFO] 10:AE_WorkFrameCheck(sID, time, ISO 1, ISO 2)\n");
+	SAMPLE_PRT("[INFO] Item/sID/para1/para2/para3\n\n");
 
 	scanf("%d %d %d %d %d", &item, &sID, &para1, &para2, &para3);
 

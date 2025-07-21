@@ -12,21 +12,13 @@
 #include "cvi_sys.h"
 #include "cvi_vb.h"
 #include "cvi_tde.h"
+#include "sample_comm.h"
 
 
 #define TDE_DEFAULT_FILE_IN           "res/640_480_bgra.bin"
 #define TDE_DEFAULT_FILE_W (640)
 #define TDE_DEFAULT_FILE_H (480)
 #define TDE_DEFAULT_PIXEL_FMT (PIXEL_FORMAT_ARGB_8888)
-
-
-#define SAMPLE_TDE_PRT(fmt...) \
-	do { \
-		printf("[%s]-%d: ", __func__, __LINE__); \
-		printf(fmt); \
-	} while (0)
-
-
 
 CVI_VOID SAMPLE_TDE_HandleSig(CVI_S32 signo)
 {
@@ -35,20 +27,20 @@ CVI_VOID SAMPLE_TDE_HandleSig(CVI_S32 signo)
 
 	if (SIGINT == signo || SIGTERM == signo) {
 		//todo for release
-		SAMPLE_TDE_PRT("Program termination abnormally\n");
+		SAMPLE_PRT("Program termination abnormally\n");
 	}
 	exit(-1);
 }
 
 CVI_VOID SAMPLE_TDE_Usage(CVI_CHAR *sPrgNm)
 {
-	printf("Usage : %s <index>\n", sPrgNm);
-	printf("index:\n");
-	printf("\t 0)tde test rotation 90\n");
-	printf("\t 1)tde test rotation 270\n");
-	printf("\t 2)tde test drawline\n");
-	printf("\t 3)tde test quick copy\n");
-	printf("\t 4)tde multi task,rot90 + drawline\n");
+	SAMPLE_PRT("Usage : %s <index>\n", sPrgNm);
+	SAMPLE_PRT("index:\n");
+	SAMPLE_PRT("\t 0)tde test rotation 90\n");
+	SAMPLE_PRT("\t 1)tde test rotation 270\n");
+	SAMPLE_PRT("\t 2)tde test drawline\n");
+	SAMPLE_PRT("\t 3)tde test quick copy\n");
+	SAMPLE_PRT("\t 4)tde multi task,rot90 + drawline\n");
 }
 
 CVI_S32 TDEFileToBuffer(const CVI_CHAR *filename, CVI_VOID *buffer, SIZE_S *pstSize)
@@ -59,14 +51,14 @@ CVI_S32 TDEFileToBuffer(const CVI_CHAR *filename, CVI_VOID *buffer, SIZE_S *pstS
 
 	fp = fopen(filename, "r");
 	if (fp == CVI_NULL) {
-		SAMPLE_TDE_PRT("open data file, %s, error\n", filename);
+		SAMPLE_PRT("open data file, %s, error\n", filename);
 		return CVI_FAILURE;
 	}
 
 	for (i = 0; i < pstSize->u32Height; i++) {
 		s32len = fread(buffer, pstSize->u32Width, 4, fp);
 		if (s32len <= 0) {
-			SAMPLE_TDE_PRT("fread data(%d) error\n", i);
+			SAMPLE_PRT("fread data(%d) error\n", i);
 			result = CVI_FAILURE;
 			break;
 		}
@@ -86,14 +78,14 @@ CVI_S32 TDEFrameSaveToFile(const CVI_CHAR *filename, CVI_VOID *buffer, TDE_SURFA
 
 	fp = fopen(filename, "w");
 	if (fp == CVI_NULL) {
-		SAMPLE_TDE_PRT("open data file, %s, error\n", filename);
+		SAMPLE_PRT("open data file, %s, error\n", filename);
 		return CVI_FAILURE;
 	}
 
 	for (i = 0; i < pstDst->u32Height; i++) {
 		s32len = fwrite(buffer, pstDst->u32Width, 4, fp);
 		if (s32len <= 0) {
-			SAMPLE_TDE_PRT("fwrite data(%d) error\n", i);
+			SAMPLE_PRT("fwrite data(%d) error\n", i);
 			result = CVI_FAILURE;
 			break;
 		}
@@ -123,7 +115,7 @@ static CVI_S32 TDE_Rotate(TDE_ROTATE_ANGLE_E enRotateAngle)
 	 ************************************************/
 	s32Ret = CVI_SYS_Init();
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_TDE_PRT("CVI_SYS_Init failed!\n");
+		SAMPLE_PRT("CVI_SYS_Init failed!\n");
 		return CVI_FAILURE;
 	}
 
@@ -132,13 +124,13 @@ static CVI_S32 TDE_Rotate(TDE_ROTATE_ANGLE_E enRotateAngle)
 	 ************************************************/
 	s32Ret = CVI_TDE_Open();
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_TDE_PRT("CVI_TDE_Open failed!\n");
+		SAMPLE_PRT("CVI_TDE_Open failed!\n");
 		goto exit1;
 	}
 
 	s32Handle = CVI_TDE_BeginJob();
 	if (s32Handle == TDE_INVALID_HANDLE) {
-		SAMPLE_TDE_PRT("CVI_TDE_BeginJob failed!\n");
+		SAMPLE_PRT("CVI_TDE_BeginJob failed!\n");
 		goto exit2;
 	}
 	stSrc.enColorFmt = TDE_DEFAULT_PIXEL_FMT;
@@ -153,13 +145,13 @@ static CVI_S32 TDE_Rotate(TDE_ROTATE_ANGLE_E enRotateAngle)
 
 	s32Ret = CVI_SYS_IonAlloc(&u64PhyAddrSrc, &pVirAddrSrc, "TDE_src_buffer", stSrc.u32Stride * stSrc.u32Height);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_TDE_PRT("CVI_SYS_IonAlloc failed!\n");
+		SAMPLE_PRT("CVI_SYS_IonAlloc failed!\n");
 		CVI_TDE_CancelJob(s32Handle);
 		goto exit3;
 	}
 	s32Ret = CVI_SYS_IonAlloc(&u64PhyAddrDst, &pVirAddrDst, "TDE_dst_buffer", stDst.u32Stride * stDst.u32Height);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_TDE_PRT("CVI_SYS_IonAlloc failed!\n");
+		SAMPLE_PRT("CVI_SYS_IonAlloc failed!\n");
 		CVI_TDE_CancelJob(s32Handle);
 		goto exit3;
 	}
@@ -167,7 +159,7 @@ static CVI_S32 TDE_Rotate(TDE_ROTATE_ANGLE_E enRotateAngle)
 
 	s32Ret = TDEFileToBuffer(filename_in, pVirAddrSrc, &stSizeIn);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_TDE_PRT("TDEFileToBuffer failed!\n");
+		SAMPLE_PRT("TDEFileToBuffer failed!\n");
 		CVI_TDE_CancelJob(s32Handle);
 		goto exit3;
 	}
@@ -178,14 +170,14 @@ static CVI_S32 TDE_Rotate(TDE_ROTATE_ANGLE_E enRotateAngle)
 
 	s32Ret = CVI_TDE_Rotate(s32Handle, &stSrc, &stDst, enRotateAngle);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_TDE_PRT("CVI_TDE_Rotate failed!\n");
+		SAMPLE_PRT("CVI_TDE_Rotate failed!\n");
 		CVI_TDE_CancelJob(s32Handle);
 		goto exit3;
 	}
 
 	s32Ret = CVI_TDE_EndJob(s32Handle, CVI_TRUE, CVI_TRUE, 1000);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_TDE_PRT("CVI_TDE_EndJob failed!\n");
+		SAMPLE_PRT("CVI_TDE_EndJob failed!\n");
 		goto exit3;
 	}
 
@@ -195,8 +187,8 @@ static CVI_S32 TDE_Rotate(TDE_ROTATE_ANGLE_E enRotateAngle)
 		filename_out = "480_640_bgra_rotate270.bin";
 	}
 
-	SAMPLE_TDE_PRT("***JOB DONE***\n");
-	SAMPLE_TDE_PRT("Successful, save output file:%s\n", filename_out);
+	SAMPLE_PRT("***JOB DONE***\n");
+	SAMPLE_PRT("Successful, save output file:%s\n", filename_out);
 
 	CVI_SYS_IonInvalidateCache(u64PhyAddrDst, pVirAddrDst, stDst.u32Stride * stDst.u32Height);
 	TDEFrameSaveToFile(filename_out, pVirAddrDst, &stDst);
@@ -251,7 +243,7 @@ static CVI_S32 SAMPLE_TDE_DrawLine(CVI_VOID)
 	 ************************************************/
 	s32Ret = CVI_SYS_Init();
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_TDE_PRT("CVI_SYS_Init failed!\n");
+		SAMPLE_PRT("CVI_SYS_Init failed!\n");
 		return CVI_FAILURE;
 	}
 
@@ -260,13 +252,13 @@ static CVI_S32 SAMPLE_TDE_DrawLine(CVI_VOID)
 	 ************************************************/
 	s32Ret = CVI_TDE_Open();
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_TDE_PRT("CVI_TDE_Open failed!\n");
+		SAMPLE_PRT("CVI_TDE_Open failed!\n");
 		goto exit1;
 	}
 
 	s32Handle = CVI_TDE_BeginJob();
 	if (s32Handle == TDE_INVALID_HANDLE) {
-		SAMPLE_TDE_PRT("CVI_TDE_BeginJob failed!\n");
+		SAMPLE_PRT("CVI_TDE_BeginJob failed!\n");
 		goto exit2;
 	}
 	stSrc.enColorFmt = TDE_DEFAULT_PIXEL_FMT;
@@ -281,7 +273,7 @@ static CVI_S32 SAMPLE_TDE_DrawLine(CVI_VOID)
 
 	s32Ret = CVI_SYS_IonAlloc(&u64PhyAddrSrc, &pVirAddrSrc, "TDE_buffer", stSrc.u32Stride * stSrc.u32Height);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_TDE_PRT("CVI_SYS_IonAlloc failed!\n");
+		SAMPLE_PRT("CVI_SYS_IonAlloc failed!\n");
 		CVI_TDE_CancelJob(s32Handle);
 		goto exit3;
 	}
@@ -289,7 +281,7 @@ static CVI_S32 SAMPLE_TDE_DrawLine(CVI_VOID)
 
 	s32Ret = TDEFileToBuffer(filename_in, pVirAddrSrc, &stSizeIn);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_TDE_PRT("TDEFileToBuffer failed!\n");
+		SAMPLE_PRT("TDEFileToBuffer failed!\n");
 		CVI_TDE_CancelJob(s32Handle);
 		goto exit3;
 	}
@@ -300,19 +292,19 @@ static CVI_S32 SAMPLE_TDE_DrawLine(CVI_VOID)
 
 	s32Ret = CVI_TDE_DrawLine(s32Handle, &stSrc, &stDst, &stLine);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_TDE_PRT("CVI_TDE_DrawLine failed!\n");
+		SAMPLE_PRT("CVI_TDE_DrawLine failed!\n");
 		CVI_TDE_CancelJob(s32Handle);
 		goto exit3;
 	}
 
 	s32Ret = CVI_TDE_EndJob(s32Handle, CVI_TRUE, CVI_TRUE, 1000);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_TDE_PRT("CVI_TDE_EndJob failed!\n");
+		SAMPLE_PRT("CVI_TDE_EndJob failed!\n");
 		goto exit3;
 	}
 
-	SAMPLE_TDE_PRT("***JOB DONE***\n");
-	SAMPLE_TDE_PRT("Successful, save output file:%s\n", filename_out);
+	SAMPLE_PRT("***JOB DONE***\n");
+	SAMPLE_PRT("Successful, save output file:%s\n", filename_out);
 
 	CVI_SYS_IonInvalidateCache(u64PhyAddrSrc, pVirAddrSrc, stDst.u32Stride * stDst.u32Height);
 	TDEFrameSaveToFile(filename_out, pVirAddrSrc, &stDst);
@@ -347,7 +339,7 @@ static CVI_S32 SAMPLE_TDE_QuickCopy(CVI_VOID)
 	 ************************************************/
 	s32Ret = CVI_SYS_Init();
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_TDE_PRT("CVI_SYS_Init failed!\n");
+		SAMPLE_PRT("CVI_SYS_Init failed!\n");
 		return CVI_FAILURE;
 	}
 
@@ -356,13 +348,13 @@ static CVI_S32 SAMPLE_TDE_QuickCopy(CVI_VOID)
 	 ************************************************/
 	s32Ret = CVI_TDE_Open();
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_TDE_PRT("CVI_TDE_Open failed!\n");
+		SAMPLE_PRT("CVI_TDE_Open failed!\n");
 		goto exit1;
 	}
 
 	s32Handle = CVI_TDE_BeginJob();
 	if (s32Handle == TDE_INVALID_HANDLE) {
-		SAMPLE_TDE_PRT("CVI_TDE_BeginJob failed!\n");
+		SAMPLE_PRT("CVI_TDE_BeginJob failed!\n");
 		goto exit2;
 	}
 	stSrc.enColorFmt = TDE_DEFAULT_PIXEL_FMT;
@@ -377,13 +369,13 @@ static CVI_S32 SAMPLE_TDE_QuickCopy(CVI_VOID)
 
 	s32Ret = CVI_SYS_IonAlloc(&u64PhyAddrSrc, &pVirAddrSrc, "TDE_src_buffer", stSrc.u32Stride * stSrc.u32Height);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_TDE_PRT("CVI_SYS_IonAlloc failed!\n");
+		SAMPLE_PRT("CVI_SYS_IonAlloc failed!\n");
 		CVI_TDE_CancelJob(s32Handle);
 		goto exit3;
 	}
 	s32Ret = CVI_SYS_IonAlloc(&u64PhyAddrDst, &pVirAddrDst, "TDE_dst_buffer", stDst.u32Stride * stDst.u32Height);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_TDE_PRT("CVI_SYS_IonAlloc failed!\n");
+		SAMPLE_PRT("CVI_SYS_IonAlloc failed!\n");
 		CVI_TDE_CancelJob(s32Handle);
 		goto exit3;
 	}
@@ -391,7 +383,7 @@ static CVI_S32 SAMPLE_TDE_QuickCopy(CVI_VOID)
 
 	s32Ret = TDEFileToBuffer(filename_in, pVirAddrSrc, &stSizeIn);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_TDE_PRT("TDEFileToBuffer failed!\n");
+		SAMPLE_PRT("TDEFileToBuffer failed!\n");
 		CVI_TDE_CancelJob(s32Handle);
 		goto exit3;
 	}
@@ -402,19 +394,19 @@ static CVI_S32 SAMPLE_TDE_QuickCopy(CVI_VOID)
 
 	s32Ret = CVI_TDE_QuickCopy(s32Handle, &stSrc, &stDst);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_TDE_PRT("CVI_TDE_QuickCopy failed!\n");
+		SAMPLE_PRT("CVI_TDE_QuickCopy failed!\n");
 		CVI_TDE_CancelJob(s32Handle);
 		goto exit3;
 	}
 
 	s32Ret = CVI_TDE_EndJob(s32Handle, CVI_TRUE, CVI_TRUE, 1000);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_TDE_PRT("CVI_TDE_EndJob failed!\n");
+		SAMPLE_PRT("CVI_TDE_EndJob failed!\n");
 		goto exit3;
 	}
 
-	SAMPLE_TDE_PRT("***JOB DONE***\n");
-	SAMPLE_TDE_PRT("Successful, save output file:%s\n", filename_out);
+	SAMPLE_PRT("***JOB DONE***\n");
+	SAMPLE_PRT("Successful, save output file:%s\n", filename_out);
 
 	CVI_SYS_IonInvalidateCache(u64PhyAddrDst, pVirAddrDst, stDst.u32Stride * stDst.u32Height);
 	TDEFrameSaveToFile(filename_out, pVirAddrDst, &stDst);
@@ -459,7 +451,7 @@ static CVI_S32 SAMPLE_TDE_MultiTask(CVI_VOID)
 	 ************************************************/
 	s32Ret = CVI_SYS_Init();
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_TDE_PRT("CVI_SYS_Init failed!\n");
+		SAMPLE_PRT("CVI_SYS_Init failed!\n");
 		return CVI_FAILURE;
 	}
 
@@ -468,13 +460,13 @@ static CVI_S32 SAMPLE_TDE_MultiTask(CVI_VOID)
 	 ************************************************/
 	s32Ret = CVI_TDE_Open();
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_TDE_PRT("CVI_TDE_Open failed!\n");
+		SAMPLE_PRT("CVI_TDE_Open failed!\n");
 		goto exit1;
 	}
 
 	s32Handle = CVI_TDE_BeginJob();
 	if (s32Handle == TDE_INVALID_HANDLE) {
-		SAMPLE_TDE_PRT("CVI_TDE_BeginJob failed!\n");
+		SAMPLE_PRT("CVI_TDE_BeginJob failed!\n");
 		goto exit2;
 	}
 	stSrc1.enColorFmt = TDE_DEFAULT_PIXEL_FMT;
@@ -489,20 +481,20 @@ static CVI_S32 SAMPLE_TDE_MultiTask(CVI_VOID)
 
 	s32Ret = CVI_SYS_IonAlloc(&u64PhyAddrSrc, &pVirAddrSrc, "TDE_src_buffer", stSrc1.u32Stride * stSrc1.u32Height);
 	if (s32Ret) {
-		SAMPLE_TDE_PRT("CVI_SYS_IonAlloc failed!\n");
+		SAMPLE_PRT("CVI_SYS_IonAlloc failed!\n");
 		CVI_TDE_CancelJob(s32Handle);
 		goto exit3;
 	}
 	s32Ret = CVI_SYS_IonAlloc(&u64PhyAddrDst, &pVirAddrDst, "TDE_dst_buffer", stDst1.u32Stride * stDst1.u32Height);
 	if (s32Ret) {
-		SAMPLE_TDE_PRT("CVI_SYS_IonAlloc failed!\n");
+		SAMPLE_PRT("CVI_SYS_IonAlloc failed!\n");
 		CVI_TDE_CancelJob(s32Handle);
 		goto exit3;
 	}
 	memset(pVirAddrSrc, 0, stSrc1.u32Stride * stSrc1.u32Height);
 	s32Ret = TDEFileToBuffer(filename_in, pVirAddrSrc, &stSizeIn);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_TDE_PRT("TDEFileToBuffer failed!\n");
+		SAMPLE_PRT("TDEFileToBuffer failed!\n");
 		CVI_TDE_CancelJob(s32Handle);
 		goto exit3;
 	}
@@ -512,7 +504,7 @@ static CVI_S32 SAMPLE_TDE_MultiTask(CVI_VOID)
 	stDst1.u64PhyAddr = u64PhyAddrDst;
 	s32Ret = CVI_TDE_Rotate(s32Handle, &stSrc1, &stDst1, TDE_ROTATE_90);
 	if (s32Ret) {
-		SAMPLE_TDE_PRT("CVI_TDE_Rotate[rot90] failed!\n");
+		SAMPLE_PRT("CVI_TDE_Rotate[rot90] failed!\n");
 		CVI_TDE_CancelJob(s32Handle);
 		goto exit3;
 	}
@@ -522,20 +514,20 @@ static CVI_S32 SAMPLE_TDE_MultiTask(CVI_VOID)
 
 	s32Ret = CVI_TDE_DrawLine(s32Handle, &stSrc2, &stDst2, &stLine);
 	if (s32Ret) {
-		SAMPLE_TDE_PRT("CVI_TDE_AddDrawlineTask failed!\n");
+		SAMPLE_PRT("CVI_TDE_AddDrawlineTask failed!\n");
 		CVI_TDE_CancelJob(s32Handle);
 		goto exit3;
 	}
 
 	s32Ret = CVI_TDE_EndJob(s32Handle, CVI_TRUE, CVI_TRUE, 1000);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_TDE_PRT("CVI_TDE_EndJob failed!\n");
+		SAMPLE_PRT("CVI_TDE_EndJob failed!\n");
 		CVI_TDE_CancelJob(s32Handle);
 		goto exit3;
 	}
 
-	SAMPLE_TDE_PRT("***JOB DONE***\n");
-	SAMPLE_TDE_PRT("Successful, save output file:%s\n", filename_out);
+	SAMPLE_PRT("***JOB DONE***\n");
+	SAMPLE_PRT("Successful, save output file:%s\n", filename_out);
 
 	CVI_SYS_IonInvalidateCache(u64PhyAddrDst, pVirAddrDst, stDst2.u32Stride * stDst2.u32Height);
 	TDEFrameSaveToFile(filename_out, pVirAddrDst, &stDst2);
@@ -589,15 +581,15 @@ CVI_S32 main(CVI_S32 argc, CVI_CHAR *argv[])
 		s32Ret = SAMPLE_TDE_MultiTask();
 		break;
 	default:
-		SAMPLE_TDE_PRT("the index %d is invaild!\n", s32Index);
+		SAMPLE_PRT("the index %d is invaild!\n", s32Index);
 		SAMPLE_TDE_Usage(argv[0]);
 		return CVI_FAILURE;
 	}
 
 	if (s32Ret == CVI_SUCCESS)
-		SAMPLE_TDE_PRT("sample_tde exit success!\n");
+		SAMPLE_PRT("sample_tde exit success!\n");
 	else
-		SAMPLE_TDE_PRT("sample_tde exit abnormally!\n");
+		SAMPLE_PRT("sample_tde exit abnormally!\n");
 
 	return s32Ret;
 }

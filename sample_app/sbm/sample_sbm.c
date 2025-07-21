@@ -35,7 +35,7 @@ static CVI_BOOL gSampleVencExit = CVI_FALSE;
 #define WAIT_STREAM_TIMEOUT 20000
 #endif
 
-#define SAMPLE_SBM_PRT(fmt...) \
+#define SAMPLE_PRT(fmt...) \
 	do { \
 		printf("[%s]-%d: ", __func__, __LINE__); \
 		printf(fmt); \
@@ -74,13 +74,13 @@ CVI_S32 SAMPLE_VENC_SaveOneChannelStream(VENC_CHN VencChn, FILE *fp)
 
 	s32Ret = CVI_VENC_QueryStatus(VencChn, &stStat);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VENC_QueryStatus, Vench = %d, s32Ret = %d\n",
+		SAMPLE_PRT("CVI_VENC_QueryStatus, Vench = %d, s32Ret = %d\n",
 				VencChn, s32Ret);
 		return s32Ret;
 	}
 
 	if (!stStat.u32CurPacks) {
-		SAMPLE_SBM_PRT("u32CurPacks = NULL!\n");
+		SAMPLE_PRT("u32CurPacks = NULL!\n");
 		return CVI_FAILURE;
 	}
 
@@ -88,7 +88,7 @@ CVI_S32 SAMPLE_VENC_SaveOneChannelStream(VENC_CHN VencChn, FILE *fp)
 		(VENC_PACK_S *)malloc(sizeof(VENC_PACK_S) * stStat.u32CurPacks);
 
 	if (stStream.pstPack == NULL) {
-		SAMPLE_SBM_PRT("malloc memory failed!\n");
+		SAMPLE_PRT("malloc memory failed!\n");
 		return CVI_FAILURE;
 	}
 
@@ -98,7 +98,7 @@ CVI_S32 SAMPLE_VENC_SaveOneChannelStream(VENC_CHN VencChn, FILE *fp)
 		stStream.pstPack = CVI_NULL;
 		return CVI_FAILURE;
 	}
-	//SAMPLE_SBM_PRT("get chn:%d count:%d\n", VencChn, stStream.u32PackCount);
+	//SAMPLE_PRT("get chn:%d count:%d\n", VencChn, stStream.u32PackCount);
 	for (CVI_U32 i = 0; i < stStream.u32PackCount; i++) {
 		fwrite(stStream.pstPack[i].pu8Addr, 1, stStream.pstPack[i].u32Len, fp);
 	}
@@ -124,7 +124,7 @@ static CVI_S32 SAMPLE_VENC_SetNameSaveStream(VENC_GET_STEAM_PROC_INFO_S *pStream
 		/* set venc fd*/
 		pStreamProcInfo->VencFd[i] = CVI_VENC_GetFd(pPara->VencChn[i]);
 		if (pStreamProcInfo->VencFd[i] < 0) {
-			SAMPLE_SBM_PRT("CVI_VENC_GetFd failed with %#x!\n",
+			SAMPLE_PRT("CVI_VENC_GetFd failed with %#x!\n",
 				pStreamProcInfo->VencFd[i]);
 			return CVI_FAILURE;
 		}
@@ -165,7 +165,7 @@ static CVI_VOID *SAMPLE_VENC_GetVencStreamProc(CVI_VOID *Para)
 	StreamProcInfo.SaveFile = pPara->SaveFile;
 
 	if (StreamProcInfo.ChnTotal >= VENC_MAX_CHN_NUM) {
-		SAMPLE_SBM_PRT("input count invalid\n");
+		SAMPLE_PRT("input count invalid\n");
 		return CVI_NULL;
 	}
 	s32Ret = SAMPLE_VENC_SetNameSaveStream(&StreamProcInfo, pPara);
@@ -190,10 +190,10 @@ static CVI_VOID *SAMPLE_VENC_GetVencStreamProc(CVI_VOID *Para)
 		timeout_val.tv_usec = 0;
 		s32Ret = select(StreamProcInfo.MaxFd + 1, &ReadFds, CVI_NULL, CVI_NULL, &timeout_val);
 		if (s32Ret < 0) {
-			SAMPLE_SBM_PRT("select failed exit!\n");
+			SAMPLE_PRT("select failed exit!\n");
 			break;
 		} else if (s32Ret == 0) {
-			SAMPLE_SBM_PRT("select stream timeout, continue\n");
+			SAMPLE_PRT("select stream timeout, continue\n");
 			continue;
 		} else {
 			SAMPLE_FD_IsSet(&StreamProcInfo, &ReadFds, pPara);
@@ -240,7 +240,7 @@ CVI_S32 SAMPLE_VENC_StopGetStream(CVI_VOID)
 
 static void SAMPLE_VENC_ExitProcess(CVI_VOID)
 {
-	SAMPLE_SBM_PRT("\npress 'ctrl + c' to exit this sample.\n");
+	SAMPLE_PRT("\npress 'ctrl + c' to exit this sample.\n");
 	while (!gSampleVencExit) {
 		sleep(1);
 	}
@@ -276,14 +276,14 @@ CVI_S32 SAMPLE_FileToFrame(SIZE_S *stSize, PIXEL_FORMAT_E enPixelFormat,
 
 	blk = CVI_VB_GetBlock(VB_INVALID_POOLID, stVbCalConfig.u32VBSize);
 	if (blk == VB_INVALID_HANDLE) {
-		SAMPLE_SBM_PRT("CVI_VB_GetBlock fail\n");
+		SAMPLE_PRT("CVI_VB_GetBlock fail\n");
 		return CVI_FAILURE;
 	}
 
 	//open data file & fread into the mmap address
 	fp = fopen(filename, "r");
 	if (fp == CVI_NULL) {
-		SAMPLE_SBM_PRT("open data file error\n");
+		SAMPLE_PRT("open data file error\n");
 		CVI_VB_ReleaseBlock(blk);
 		return CVI_FAILURE;
 	}
@@ -308,7 +308,7 @@ CVI_S32 SAMPLE_FileToFrame(SIZE_S *stSize, PIXEL_FORMAT_E enPixelFormat,
 
 		u32len = fread(stVideoFrame.stVFrame.pu8VirAddr[i], stVideoFrame.stVFrame.u32Length[i], 1, fp);
 		if (u32len <= 0) {
-			SAMPLE_SBM_PRT("vpss send frame: fread plane%d error\n", i);
+			SAMPLE_PRT("vpss send frame: fread plane%d error\n", i);
 			fclose(fp);
 			CVI_VB_ReleaseBlock(blk);
 			return CVI_FAILURE;
@@ -318,11 +318,11 @@ CVI_S32 SAMPLE_FileToFrame(SIZE_S *stSize, PIXEL_FORMAT_E enPixelFormat,
 					   stVideoFrame.stVFrame.u32Length[i]);
 	}
 
-	SAMPLE_SBM_PRT("length of buffer(%d, %d, %d)\n", stVideoFrame.stVFrame.u32Length[0]
+	SAMPLE_PRT("length of buffer(%d, %d, %d)\n", stVideoFrame.stVFrame.u32Length[0]
 		, stVideoFrame.stVFrame.u32Length[1], stVideoFrame.stVFrame.u32Length[2]);
-	SAMPLE_SBM_PRT("phy addr(%#"PRIx64", %#"PRIx64", %#"PRIx64")\n", stVideoFrame.stVFrame.u64PhyAddr[0]
+	SAMPLE_PRT("phy addr(%#"PRIx64", %#"PRIx64", %#"PRIx64")\n", stVideoFrame.stVFrame.u64PhyAddr[0]
 		, stVideoFrame.stVFrame.u64PhyAddr[1], stVideoFrame.stVFrame.u64PhyAddr[2]);
-	SAMPLE_SBM_PRT("vir addr(%p, %p, %p)\n", stVideoFrame.stVFrame.pu8VirAddr[0]
+	SAMPLE_PRT("vir addr(%p, %p, %p)\n", stVideoFrame.stVFrame.pu8VirAddr[0]
 		, stVideoFrame.stVFrame.pu8VirAddr[1], stVideoFrame.stVFrame.pu8VirAddr[2]);
 
 	fclose(fp);
@@ -345,7 +345,7 @@ CVI_S32 SAMPLE_VPSS_FrameSaveToFile(const CVI_CHAR *filename, VIDEO_FRAME_INFO_S
 
 	fp = fopen(filename, "w");
 	if (fp == CVI_NULL) {
-		SAMPLE_SBM_PRT("open data file(%s) error\n", filename);
+		SAMPLE_PRT("open data file(%s) error\n", filename);
 		return CVI_FAILURE;
 	}
 
@@ -365,15 +365,15 @@ CVI_S32 SAMPLE_VPSS_FrameSaveToFile(const CVI_CHAR *filename, VIDEO_FRAME_INFO_S
 					   pstVideoFrame->stVFrame.pu8VirAddr[i],
 					   pstVideoFrame->stVFrame.u32Length[i]);
 
-		SAMPLE_SBM_PRT("plane(%d): paddr(%#"PRIx64") vaddr(%p) stride(%d)\n",
+		SAMPLE_PRT("plane(%d): paddr(%#"PRIx64") vaddr(%p) stride(%d)\n",
 			   i, pstVideoFrame->stVFrame.u64PhyAddr[i],
 			   pstVideoFrame->stVFrame.pu8VirAddr[i],
 			   pstVideoFrame->stVFrame.u32Stride[i]);
-		SAMPLE_SBM_PRT(" data_len(%d) plane_len(%d)\n",
+		SAMPLE_PRT(" data_len(%d) plane_len(%d)\n",
 				  u32DataLen, pstVideoFrame->stVFrame.u32Length[i]);
 		u32len = fwrite(pstVideoFrame->stVFrame.pu8VirAddr[i], u32DataLen, 1, fp);
 		if (u32len <= 0) {
-			SAMPLE_SBM_PRT("fwrite data(%d) error\n", i);
+			SAMPLE_PRT("fwrite data(%d) error\n", i);
 			s32Ret = CVI_FAILURE;
 			break;
 		}
@@ -434,13 +434,13 @@ CVI_S32 SAMPLE_VENC_ChnSetup(VENC_CHN VeChn, SIZE_S *stSize, PAYLOAD_TYPE_E enTy
 
 	ret = CVI_VENC_CreateChn(VeChn, &stAttr);
 	if (ret != CVI_SUCCESS) {
-		printf("CVI_VENC_CreateChn FAIL: 0x%x\n", ret);
+		SAMPLE_PRT("CVI_VENC_CreateChn FAIL: 0x%x\n", ret);
 		return -1;
 	}
 
 	ret =  CVI_VENC_GetRcParam(VeChn, &stRcParam);
 	if (ret != CVI_SUCCESS) {
-		printf("CVI_VENC_GetRcParam FAIL: 0x%x\n", ret);
+		SAMPLE_PRT("CVI_VENC_GetRcParam FAIL: 0x%x\n", ret);
 		return -1;
 	}
 	stRcParam.s32FirstFrameStartQp = 32;
@@ -470,13 +470,13 @@ CVI_S32 SAMPLE_VENC_ChnSetup(VENC_CHN VeChn, SIZE_S *stSize, PAYLOAD_TYPE_E enTy
 
 	ret = CVI_VENC_SetRcParam(VeChn, &stRcParam);
 	if (ret != CVI_SUCCESS) {
-		printf("CVI_VENC_SetRcParam FAIL: 0x%x\n", ret);
+		SAMPLE_PRT("CVI_VENC_SetRcParam FAIL: 0x%x\n", ret);
 		return -1;
 	}
 
 	ret = CVI_VENC_StartRecvFrame(VeChn, &stRecvParam);
 	if (ret != CVI_SUCCESS) {
-		printf("CVI_VENC_StartRecvFrame FAIL: 0x%x\n", ret);
+		SAMPLE_PRT("CVI_VENC_StartRecvFrame FAIL: 0x%x\n", ret);
 		return -1;
 	}
 	return ret;
@@ -489,21 +489,21 @@ static CVI_S32 SAMPLE_Snsr_Parser(SENSOR_CFG_S *cfg)
 	// Get config from ini if found.
 	s32Ret = CVI_SNS_ParseIni(cfg);
 	if (s32Ret == CVI_FAILURE) {
-		SAMPLE_SBM_PRT("[ERROR] parse ini failed, default use patgen\n");
+		SAMPLE_PRT("[ERROR] parse ini failed, default use patgen\n");
 	} else {
 		s32Ret = CVI_SNS_GetConfigInfo(cfg);
 		if (s32Ret == CVI_FAILURE) {
-			SAMPLE_SBM_PRT("[ERROR] get sns cfg failed\n");
+			SAMPLE_PRT("[ERROR] get sns cfg failed\n");
 		}
 
 		s32Ret = CVI_SNS_SetSnsDrvCfg(cfg);
 		if (s32Ret == CVI_FAILURE) {
-			SAMPLE_SBM_PRT("[ERROR] set sns_drv failed\n");
+			SAMPLE_PRT("[ERROR] set sns_drv failed\n");
 		}
 
 		if (cfg->sns_cfg.enInterFaceMode[0] != SNS_MODE_MIPI ||
 			cfg->sns_cfg.enFormatMode[0] != SNS_DATA_TYPE_RGB) {
-			SAMPLE_SBM_PRT("[ERROR] only support mipi rgb\n");
+			SAMPLE_PRT("[ERROR] only support mipi rgb\n");
 			return CVI_FAILURE;
 		}
 	}
@@ -529,7 +529,7 @@ CVI_S32 SAMPLE_Snsr_Setup(SENSOR_CFG_S *cfg)
 						cfg->sns_ini_cfg.s32RstPin[s32SnsId],
 						cfg->sns_ini_cfg.s32RstPol[s32SnsId], 1);
 		if (s32Ret != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("[ERROR] sensor_%d reset failed!\n", ViDev);
+			SAMPLE_PRT("[ERROR] sensor_%d reset failed!\n", ViDev);
 			return s32Ret;
 		}
 	}
@@ -539,7 +539,7 @@ CVI_S32 SAMPLE_Snsr_Setup(SENSOR_CFG_S *cfg)
 		mipiDev = cfg->sns_ini_cfg.MipiDev[s32SnsId];
 		s32Ret = CVI_MIPI_SetMipiReset(mipiDev, 1);
 		if (s32Ret != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("[ERROR] mipi dev_%d reset failed!\n", ViDev);
+			SAMPLE_PRT("[ERROR] mipi dev_%d reset failed!\n", ViDev);
 			return s32Ret;
 		}
 	}
@@ -548,7 +548,7 @@ CVI_S32 SAMPLE_Snsr_Setup(SENSOR_CFG_S *cfg)
 		ViDev = s32SnsId;
 		mipiDev = cfg->sns_ini_cfg.MipiDev[s32SnsId];
 		if (CVI_SNS_GetSnsRxAttr(ViDev, &stDevAttr) != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("[ERROR] get mipi dev_%d attr failed!\n", ViDev);
+			SAMPLE_PRT("[ERROR] get mipi dev_%d attr failed!\n", ViDev);
 			return CVI_FAILURE;
 		}
 
@@ -565,7 +565,7 @@ CVI_S32 SAMPLE_Snsr_Setup(SENSOR_CFG_S *cfg)
 
 		s32Ret = CVI_MIPI_SetMipiAttr(ViDev, (CVI_VOID *)&stDevAttr);
 		if (s32Ret != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("[ERROR] set mipi dev_%d attr failed!\n", ViDev);
+			SAMPLE_PRT("[ERROR] set mipi dev_%d attr failed!\n", ViDev);
 			return s32Ret;
 		}
 	}
@@ -575,7 +575,7 @@ CVI_S32 SAMPLE_Snsr_Setup(SENSOR_CFG_S *cfg)
 		mipiDev = cfg->sns_ini_cfg.MipiDev[s32SnsId];
 		s32Ret = CVI_MIPI_SetSensorClock(mipiDev, 1);
 		if (s32Ret != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("[ERROR] sensor %d clock enable failed!\n", ViDev);
+			SAMPLE_PRT("[ERROR] sensor %d clock enable failed!\n", ViDev);
 			return s32Ret;
 		}
 	}
@@ -589,7 +589,7 @@ CVI_S32 SAMPLE_Snsr_Setup(SENSOR_CFG_S *cfg)
 							cfg->sns_ini_cfg.s32RstPin[s32SnsId],
 							cfg->sns_ini_cfg.s32RstPol[s32SnsId], 0);
 		if (s32Ret != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("[ERROR] sensor_%d unreset failed!\n", ViDev);
+			SAMPLE_PRT("[ERROR] sensor_%d unreset failed!\n", ViDev);
 			return s32Ret;
 		}
 	}
@@ -599,7 +599,7 @@ CVI_S32 SAMPLE_Snsr_Setup(SENSOR_CFG_S *cfg)
 	for (s32SnsId = 0; s32SnsId < cfg->sns_ini_cfg.devNum; s32SnsId++) {
 		ViDev = s32SnsId;
 		if (CVI_SNS_SetSnsProbe(ViDev) != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("[ERROR] sensor_%d probe failed!\n", ViDev);
+			SAMPLE_PRT("[ERROR] sensor_%d probe failed!\n", ViDev);
 			return CVI_FAILURE;
 		}
 	}
@@ -648,27 +648,27 @@ CVI_S32 SAMPLE_VI_Setup(CVI_BOOL isPatgen, SENSOR_CFG_S *cfg, SIZE_S *pstSize)
 		stViDevBindAttr.u32Num = 1;
 		s32Ret = CVI_VI_SetDevBindAttr(ViDev, &stViDevBindAttr);
 		if (s32Ret != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("CVI_VI_SetDevBindAttr failed with %#x!\n", s32Ret);
+			SAMPLE_PRT("CVI_VI_SetDevBindAttr failed with %#x!\n", s32Ret);
 			return s32Ret;
 		}
 
 		if (isPatgen) {
 			s32Ret = CVI_VI_EnablePatgen(ViDev);
 			if (s32Ret != CVI_SUCCESS) {
-				SAMPLE_SBM_PRT("set patgen failed\n");
+				SAMPLE_PRT("set patgen failed\n");
 				return s32Ret;
 			}
 		}
 
 		s32Ret = CVI_VI_SetDevAttr(ViDev, &stViDevAttr);
 		if (s32Ret != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("CVI_VI_SetDevAttr failed with %#x!\n", s32Ret);
+			SAMPLE_PRT("CVI_VI_SetDevAttr failed with %#x!\n", s32Ret);
 			return s32Ret;
 		}
 
 		s32Ret = CVI_VI_EnableDev(ViDev);
 		if (s32Ret != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("CVI_VI_EnableDev failed with %#x!\n", s32Ret);
+			SAMPLE_PRT("CVI_VI_EnableDev failed with %#x!\n", s32Ret);
 			return s32Ret;
 		}
 	}
@@ -687,13 +687,13 @@ CVI_S32 SAMPLE_VI_Setup(CVI_BOOL isPatgen, SENSOR_CFG_S *cfg, SIZE_S *pstSize)
 
 		s32Ret = CVI_VI_CreatePipe(ViPipe, &stPipeAttr);
 		if (s32Ret != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("CVI_VI_CreatePipe failed with %#x!\n", s32Ret);
+			SAMPLE_PRT("CVI_VI_CreatePipe failed with %#x!\n", s32Ret);
 			return s32Ret;
 		}
 
 		s32Ret = CVI_VI_StartPipe(ViPipe);
 		if (s32Ret != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("CVI_VI_StartPipe failed with %#x!\n", s32Ret);
+			SAMPLE_PRT("CVI_VI_StartPipe failed with %#x!\n", s32Ret);
 			return s32Ret;
 		}
 	}
@@ -703,7 +703,7 @@ CVI_S32 SAMPLE_VI_Setup(CVI_BOOL isPatgen, SENSOR_CFG_S *cfg, SIZE_S *pstSize)
 		if (!isPatgen) {
 			s32Ret = CVI_SNS_SetSnsInit(ViDev);
 			if (s32Ret != CVI_SUCCESS) {
-				SAMPLE_SBM_PRT("[ERROR] sensor_%d init failed!\n", ViDev);
+				SAMPLE_PRT("[ERROR] sensor_%d init failed!\n", ViDev);
 				return s32Ret;
 			}
 		}
@@ -726,13 +726,13 @@ CVI_S32 SAMPLE_VI_Setup(CVI_BOOL isPatgen, SENSOR_CFG_S *cfg, SIZE_S *pstSize)
 
 		s32Ret = CVI_VI_SetChnAttr(ViPipe, ViChn, &stChnAttr);
 		if (s32Ret != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("CVI_VI_SetChnAttr failed with %#x!\n", s32Ret);
+			SAMPLE_PRT("CVI_VI_SetChnAttr failed with %#x!\n", s32Ret);
 			return CVI_FAILURE;
 		}
 
 		s32Ret = CVI_VI_EnableChn(ViPipe, ViChn);
 		if (s32Ret != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("CVI_VI_EnableChn failed with %#x!\n", s32Ret);
+			SAMPLE_PRT("CVI_VI_EnableChn failed with %#x!\n", s32Ret);
 			return CVI_FAILURE;
 		}
 	}
@@ -752,7 +752,7 @@ static CVI_S32 SAMPLE_VI_Destory(SENSOR_CFG_S *cfg)
 		ViPipe = s32SnsId;
 		s32Ret = CVI_VI_DisableChn(ViPipe, ViChn);
 		if (s32Ret != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("CVI_VI_DisableChn failed with %#x!\n", s32Ret);
+			SAMPLE_PRT("CVI_VI_DisableChn failed with %#x!\n", s32Ret);
 			return s32Ret;
 		}
 	}
@@ -762,13 +762,13 @@ static CVI_S32 SAMPLE_VI_Destory(SENSOR_CFG_S *cfg)
 
 		s32Ret = CVI_VI_StopPipe(ViPipe);
 		if (s32Ret != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("CVI_VI_DisablePipe failed with %#x!\n", s32Ret);
+			SAMPLE_PRT("CVI_VI_DisablePipe failed with %#x!\n", s32Ret);
 			return s32Ret;
 		}
 
 		s32Ret = CVI_VI_DestroyPipe(ViPipe);
 		if (s32Ret != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("CVI_VI_DestroyPipe failed with %#x!\n", s32Ret);
+			SAMPLE_PRT("CVI_VI_DestroyPipe failed with %#x!\n", s32Ret);
 			return s32Ret;
 		}
 	}
@@ -777,7 +777,7 @@ static CVI_S32 SAMPLE_VI_Destory(SENSOR_CFG_S *cfg)
 		ViDev = s32SnsId;
 		s32Ret = CVI_VI_DisableDev(ViDev);
 		if (s32Ret != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("CVI_VI_DisableDev failed with %#x!\n", s32Ret);
+			SAMPLE_PRT("CVI_VI_DisableDev failed with %#x!\n", s32Ret);
 			return s32Ret;
 		}
 	}
@@ -815,7 +815,7 @@ CVI_S32 SAMPLE_RGN_Setup(MMF_CHN_S stChn, SIZE_S stSize, CVI_S32 s32Handle, CVI_
 
 	s32Ret = CVI_RGN_Create(s32Handle, &stRegion);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_RGN_Create failed with %#x!\n", s32Ret);
+		SAMPLE_PRT("CVI_RGN_Create failed with %#x!\n", s32Ret);
 		return s32Ret;
 	}
 
@@ -823,7 +823,7 @@ CVI_S32 SAMPLE_RGN_Setup(MMF_CHN_S stChn, SIZE_S stSize, CVI_S32 s32Handle, CVI_
 	stChnAttr.enType = OVERLAY_RGN;
 	s32Ret = CVI_RGN_AttachToChn(s32Handle, &stChn, &stChnAttr);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_RGN_AttachToChn failed with %#x!\n", s32Ret);
+		SAMPLE_PRT("CVI_RGN_AttachToChn failed with %#x!\n", s32Ret);
 		return s32Ret;
 	}
 
@@ -834,7 +834,7 @@ CVI_S32 SAMPLE_RGN_Setup(MMF_CHN_S stChn, SIZE_S stSize, CVI_S32 s32Handle, CVI_
 
 		s32Ret = CVI_RGN_GetCanvasInfo(s32Handle, &stCanvasInfo);
 		if (s32Ret != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("CVI_RGN_GetCanvasInfo failed with %#x!\n", s32Ret);
+			SAMPLE_PRT("CVI_RGN_GetCanvasInfo failed with %#x!\n", s32Ret);
 			return s32Ret;
 		}
 
@@ -859,13 +859,13 @@ CVI_S32 SAMPLE_RGN_Setup(MMF_CHN_S stChn, SIZE_S stSize, CVI_S32 s32Handle, CVI_
 
 		s32Ret = CVI_RGN_UpdateCanvas(s32Handle);
 		if (s32Ret != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("CVI_RGN_UpdateCanvas failed with %#x!\n", s32Ret);
+			SAMPLE_PRT("CVI_RGN_UpdateCanvas failed with %#x!\n", s32Ret);
 			return s32Ret;
 		}
 	} else {
 		fp = fopen(dog_argb1555_bin, "rb");
 		if (fp == NULL) {
-			SAMPLE_SBM_PRT("fopen failed!\n");
+			SAMPLE_PRT("fopen failed!\n");
 			return s32Ret;
 		}
 		fseek(fp, 0L, SEEK_END);
@@ -873,7 +873,7 @@ CVI_S32 SAMPLE_RGN_Setup(MMF_CHN_S stChn, SIZE_S stSize, CVI_S32 s32Handle, CVI_
 		rewind(fp);
 		stBitmap.pData = malloc(u32FileSize);
 		if (stBitmap.pData == NULL) {
-			SAMPLE_SBM_PRT("malloc size(%d) failed!\n", u32FileSize);
+			SAMPLE_PRT("malloc size(%d) failed!\n", u32FileSize);
 			fclose(fp);
 			return s32Ret;
 		}
@@ -886,7 +886,7 @@ CVI_S32 SAMPLE_RGN_Setup(MMF_CHN_S stChn, SIZE_S stSize, CVI_S32 s32Handle, CVI_
 
 		s32Ret = CVI_RGN_SetBitMap(s32Handle, &stBitmap);
 		if (s32Ret != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("CVI_RGN_SetBitMap failed with %#x!\n", s32Ret);
+			SAMPLE_PRT("CVI_RGN_SetBitMap failed with %#x!\n", s32Ret);
 			free(stBitmap.pData);
 			return s32Ret;
 		}
@@ -912,7 +912,7 @@ CVI_S32 SAMPLE_SBM_Offline(CVI_VOID)
 
 	fpOutput = fopen(pFileNameOut, "wb");
 	if (fpOutput == NULL) {
-		SAMPLE_SBM_PRT("can't open file %s\n", pFileNameOut);
+		SAMPLE_PRT("can't open file %s\n", pFileNameOut);
 		return CVI_FAILURE;
 	}
 
@@ -921,7 +921,7 @@ CVI_S32 SAMPLE_SBM_Offline(CVI_VOID)
 	 ************************************************/
 	s32Ret = CVI_SYS_Init();
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_SYS_Init failed!\n");
+		SAMPLE_PRT("CVI_SYS_Init failed!\n");
 		fclose(fpOutput);
 		return CVI_FAILURE;
 	}
@@ -938,13 +938,13 @@ CVI_S32 SAMPLE_SBM_Offline(CVI_VOID)
 
 	s32Ret = CVI_VB_SetConfig(&stVbConf);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VB_SetConf failed!\n");
+		SAMPLE_PRT("CVI_VB_SetConf failed!\n");
 		goto exit0;
 	}
 
 	s32Ret = CVI_VB_Init();
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VB_Init failed!\n");
+		SAMPLE_PRT("CVI_VB_Init failed!\n");
 		goto exit0;
 	}
 
@@ -955,7 +955,7 @@ CVI_S32 SAMPLE_SBM_Offline(CVI_VOID)
 
 	s32Ret = CVI_SYS_SetVIVPSSMode(&stVIVPSSMode);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_SYS_SetVIVPSSMode failed with %#x\n", s32Ret);
+		SAMPLE_PRT("CVI_SYS_SetVIVPSSMode failed with %#x\n", s32Ret);
 		goto exit1;
 	}
 
@@ -974,7 +974,7 @@ CVI_S32 SAMPLE_SBM_Offline(CVI_VOID)
 
 	s32Ret = CVI_VPSS_SetMode(&stVPSSMode);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VPSS_SetMode failed with %#x!\n", s32Ret);
+		SAMPLE_PRT("CVI_VPSS_SetMode failed with %#x!\n", s32Ret);
 		goto exit1;
 	}
 
@@ -986,7 +986,7 @@ CVI_S32 SAMPLE_SBM_Offline(CVI_VOID)
 
 	s32Ret = CVI_VPSS_CreateGrp(VpssGrp, &stVpssGrpAttr);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VPSS_CreateGrp(grp:%d) failed with %#x!\n", VpssGrp, s32Ret);
+		SAMPLE_PRT("CVI_VPSS_CreateGrp(grp:%d) failed with %#x!\n", VpssGrp, s32Ret);
 		goto exit1;
 	}
 
@@ -1004,7 +1004,7 @@ CVI_S32 SAMPLE_SBM_Offline(CVI_VOID)
 
 	s32Ret = CVI_VPSS_SetChnAttr(VpssGrp, VpssChn, &stVpssChnAttr);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VPSS_SetChnAttr failed with %#x\n", s32Ret);
+		SAMPLE_PRT("CVI_VPSS_SetChnAttr failed with %#x\n", s32Ret);
 		goto exit2;
 	}
 
@@ -1014,20 +1014,20 @@ CVI_S32 SAMPLE_SBM_Offline(CVI_VOID)
 
 	s32Ret = CVI_VPSS_SetChnBufWrapAttr(VpssGrp, VpssChn, &stVpssChnBufWrap);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VPSS_SetChnBufWrapAttr failed with %#x\n", s32Ret);
+		SAMPLE_PRT("CVI_VPSS_SetChnBufWrapAttr failed with %#x\n", s32Ret);
 		goto exit2;
 	}
 
 	s32Ret = CVI_VPSS_EnableChn(VpssGrp, VpssChn);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VPSS_EnableChn failed with %#x\n", s32Ret);
+		SAMPLE_PRT("CVI_VPSS_EnableChn failed with %#x\n", s32Ret);
 		goto exit2;
 	}
 
 	/*start vpss*/
 	s32Ret = CVI_VPSS_StartGrp(VpssGrp);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VPSS_StartGrp failed with %#x\n", s32Ret);
+		SAMPLE_PRT("CVI_VPSS_StartGrp failed with %#x\n", s32Ret);
 		goto exit3;
 	}
 
@@ -1042,13 +1042,13 @@ CVI_S32 SAMPLE_SBM_Offline(CVI_VOID)
 
 	s32Ret = CVI_SYS_Bind(&stSrcChn, &stDestChn);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_SYS_Bind failed with %#x\n", s32Ret);
+		SAMPLE_PRT("CVI_SYS_Bind failed with %#x\n", s32Ret);
 		goto exit4;
 	}
 
 	s32Ret = SAMPLE_VENC_ChnSetup(VencChn, &stSize, enType);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("SAMPLE_VENC_ChnSetup failed. s32Ret: 0x%x !\n", s32Ret);
+		SAMPLE_PRT("SAMPLE_VENC_ChnSetup failed. s32Ret: 0x%x !\n", s32Ret);
 		goto exit5;
 	}
 
@@ -1057,7 +1057,7 @@ CVI_S32 SAMPLE_SBM_Offline(CVI_VOID)
 	 ************************************************/
 	s32Ret = SAMPLE_FileToFrame(&stSize, enPixelFormatIn, pFileNameIn, &stVideoFrameIn);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("SAMPLE_VPSS_FileToFrame failed. s32Ret: 0x%x !\n", s32Ret);
+		SAMPLE_PRT("SAMPLE_VPSS_FileToFrame failed. s32Ret: 0x%x !\n", s32Ret);
 		goto exit6;
 	}
 
@@ -1071,7 +1071,7 @@ CVI_S32 SAMPLE_SBM_Offline(CVI_VOID)
 
 		s32Ret = CVI_VPSS_SendFrame(VpssGrp, &stVideoFrameIn, 1000);
 		if (s32Ret != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("CVI_VPSS_SendFrame fail. s32Ret: 0x%x !\n", s32Ret);
+			SAMPLE_PRT("CVI_VPSS_SendFrame fail. s32Ret: 0x%x !\n", s32Ret);
 			goto exit7;
 		}
 again:
@@ -1081,7 +1081,7 @@ again:
 #if defined(CONFIG_DUAL_OS)
 		s32Ret = SAMPLE_VENC_SaveOneChannelStream(VencChn, fpOutput);
 		if (s32Ret) {
-			SAMPLE_SBM_PRT("get venc stream time out, try get again\n");
+			SAMPLE_PRT("get venc stream time out, try get again\n");
 			cnt++;
 			goto again;
 		}
@@ -1095,10 +1095,10 @@ again:
 		timeout_val.tv_usec = 0;
 		s32Ret = select(VencFd + 1, &ReadFds, CVI_NULL, CVI_NULL, &timeout_val);
 		if (s32Ret < 0) {
-			SAMPLE_SBM_PRT("select failed!\n");
+			SAMPLE_PRT("select failed!\n");
 			break;
 		} else if (s32Ret == 0) {
-			SAMPLE_SBM_PRT("get venc stream time out, try get again\n");
+			SAMPLE_PRT("get venc stream time out, try get again\n");
 			cnt++;
 			goto again;
 		} else {
@@ -1146,7 +1146,7 @@ CVI_S32 SAMPLE_SBM_Online(CVI_VOID)
 
 	fpOutput = fopen(pFileNameOut, "wb");
 	if (fpOutput == NULL) {
-		SAMPLE_SBM_PRT("can't open file %s\n", pFileNameOut);
+		SAMPLE_PRT("can't open file %s\n", pFileNameOut);
 		return CVI_FAILURE;
 	}
 
@@ -1155,7 +1155,7 @@ CVI_S32 SAMPLE_SBM_Online(CVI_VOID)
 	 ************************************************/
 	s32Ret = CVI_SYS_Init();
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_SYS_Init failed!\n");
+		SAMPLE_PRT("CVI_SYS_Init failed!\n");
 		fclose(fpOutput);
 		return CVI_FAILURE;
 	}
@@ -1172,13 +1172,13 @@ CVI_S32 SAMPLE_SBM_Online(CVI_VOID)
 
 	s32Ret = CVI_VB_SetConfig(&stVbConf);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VB_SetConf failed!\n");
+		SAMPLE_PRT("CVI_VB_SetConf failed!\n");
 		goto exit0;
 	}
 
 	s32Ret = CVI_VB_Init();
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VB_Init failed!\n");
+		SAMPLE_PRT("CVI_VB_Init failed!\n");
 		goto exit0;
 	}
 
@@ -1188,7 +1188,7 @@ CVI_S32 SAMPLE_SBM_Online(CVI_VOID)
 	memset(&sensor_cfg, 0, sizeof(SENSOR_CFG_S));
 	s32Ret = SAMPLE_Snsr_Parser(&sensor_cfg);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("Use Patgen\n");
+		SAMPLE_PRT("Use Patgen\n");
 		bPatgen = CVI_TRUE;
 		sensor_cfg.sns_ini_cfg.devNum = 1;
 	} else {
@@ -1203,7 +1203,7 @@ CVI_S32 SAMPLE_SBM_Online(CVI_VOID)
 
 	s32Ret = CVI_SYS_SetVIVPSSMode(&stVIVPSSMode);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_SYS_SetVIVPSSMode failed with %#x\n", s32Ret);
+		SAMPLE_PRT("CVI_SYS_SetVIVPSSMode failed with %#x\n", s32Ret);
 		goto exit1;
 	}
 
@@ -1213,14 +1213,14 @@ CVI_S32 SAMPLE_SBM_Online(CVI_VOID)
 	if (!bPatgen) {
 		s32Ret = SAMPLE_Snsr_Setup(&sensor_cfg);
 		if (s32Ret != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("SAMPLE_Snsr_Setup failed!\n");
+			SAMPLE_PRT("SAMPLE_Snsr_Setup failed!\n");
 			goto exit1;
 		}
 	}
 
 	s32Ret = SAMPLE_VI_Setup(bPatgen, &sensor_cfg, &stSize);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("SAMPLE_VI_Setup failed!\n");
+		SAMPLE_PRT("SAMPLE_VI_Setup failed!\n");
 		goto exit1;
 	}
 
@@ -1240,7 +1240,7 @@ CVI_S32 SAMPLE_SBM_Online(CVI_VOID)
 
 	s32Ret = CVI_VPSS_SetMode(&stVPSSMode);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VPSS_SetMode failed with %#x!\n", s32Ret);
+		SAMPLE_PRT("CVI_VPSS_SetMode failed with %#x!\n", s32Ret);
 		goto exit2;
 	}
 
@@ -1253,7 +1253,7 @@ CVI_S32 SAMPLE_SBM_Online(CVI_VOID)
 
 	s32Ret = CVI_VPSS_CreateGrp(VpssGrp, &stVpssGrpAttr);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VPSS_CreateGrp(grp:%d) failed with %#x!\n", VpssGrp, s32Ret);
+		SAMPLE_PRT("CVI_VPSS_CreateGrp(grp:%d) failed with %#x!\n", VpssGrp, s32Ret);
 		goto exit2;
 	}
 
@@ -1271,7 +1271,7 @@ CVI_S32 SAMPLE_SBM_Online(CVI_VOID)
 
 	s32Ret = CVI_VPSS_SetChnAttr(VpssGrp, VpssChn, &stVpssChnAttr);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VPSS_SetChnAttr failed with %#x\n", s32Ret);
+		SAMPLE_PRT("CVI_VPSS_SetChnAttr failed with %#x\n", s32Ret);
 		goto exit2;
 	}
 
@@ -1281,20 +1281,20 @@ CVI_S32 SAMPLE_SBM_Online(CVI_VOID)
 
 	s32Ret = CVI_VPSS_SetChnBufWrapAttr(VpssGrp, VpssChn, &stVpssChnBufWrap);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VPSS_SetChnBufWrapAttr failed with %#x\n", s32Ret);
+		SAMPLE_PRT("CVI_VPSS_SetChnBufWrapAttr failed with %#x\n", s32Ret);
 		goto exit2;
 	}
 
 	s32Ret = CVI_VPSS_EnableChn(VpssGrp, VpssChn);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VPSS_EnableChn failed with %#x\n", s32Ret);
+		SAMPLE_PRT("CVI_VPSS_EnableChn failed with %#x\n", s32Ret);
 		goto exit2;
 	}
 
 	/*start vpss*/
 	s32Ret = CVI_VPSS_StartGrp(VpssGrp);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VPSS_StartGrp failed with %#x\n", s32Ret);
+		SAMPLE_PRT("CVI_VPSS_StartGrp failed with %#x\n", s32Ret);
 		goto exit3;
 	}
 	/************************************************
@@ -1309,17 +1309,17 @@ CVI_S32 SAMPLE_SBM_Online(CVI_VOID)
 
 	s32Ret = CVI_SYS_Bind(&stSrcChn, &stDestChn);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_SYS_Bind failed with %#x\n", s32Ret);
+		SAMPLE_PRT("CVI_SYS_Bind failed with %#x\n", s32Ret);
 		goto exit4;
 	}
 	s32Ret = SAMPLE_VENC_ChnSetup(VencChn, &stSize, enType);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("SAMPLE_VENC_ChnSetup failed. s32Ret: 0x%x !\n", s32Ret);
+		SAMPLE_PRT("SAMPLE_VENC_ChnSetup failed. s32Ret: 0x%x !\n", s32Ret);
 		goto exit5;
 	}
 	s32Ret = SAMPLE_VENC_StartGetStream(&VencChn, MaxChnNum);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("SAMPLE_VENC_ChnSetup failed. s32Ret: 0x%x !\n", s32Ret);
+		SAMPLE_PRT("SAMPLE_VENC_ChnSetup failed. s32Ret: 0x%x !\n", s32Ret);
 		goto exit6;
 	}
 
@@ -1378,12 +1378,12 @@ CVI_S32 SAMPLE_SBM_FRM_Online(CVI_VOID)
 
 	fpOutputMain = fopen(pFileNameOutMain, "wb");
 	if (fpOutputMain == NULL) {
-		SAMPLE_SBM_PRT("can't open file %s\n", pFileNameOutMain);
+		SAMPLE_PRT("can't open file %s\n", pFileNameOutMain);
 		return CVI_FAILURE;
 	}
 	fpOutputSmall = fopen(pFileNameOutSmall, "wb");
 	if (fpOutputSmall == NULL) {
-		SAMPLE_SBM_PRT("can't open file %s\n", pFileNameOutSmall);
+		SAMPLE_PRT("can't open file %s\n", pFileNameOutSmall);
 		fclose(fpOutputMain);
 		return CVI_FAILURE;
 	}
@@ -1393,7 +1393,7 @@ CVI_S32 SAMPLE_SBM_FRM_Online(CVI_VOID)
 	 ************************************************/
 	s32Ret = CVI_SYS_Init();
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_SYS_Init failed!\n");
+		SAMPLE_PRT("CVI_SYS_Init failed!\n");
 		fclose(fpOutputSmall);
 		fclose(fpOutputMain);
 		return CVI_FAILURE;
@@ -1408,17 +1408,17 @@ CVI_S32 SAMPLE_SBM_FRM_Online(CVI_VOID)
 	stVbConf.astCommPool[0].u32BlkSize	= u32BlkSize;
 	stVbConf.astCommPool[0].u32BlkCnt	= 3;
 	stVbConf.astCommPool[0].enRemapMode = VB_REMAP_MODE_CACHED;
-	SAMPLE_SBM_PRT("pool[0] u32BlkSize=%d\n", u32BlkSize);
+	SAMPLE_PRT("pool[0] u32BlkSize=%d\n", u32BlkSize);
 
 	s32Ret = CVI_VB_SetConfig(&stVbConf);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VB_SetConf failed!\n");
+		SAMPLE_PRT("CVI_VB_SetConf failed!\n");
 		goto exit0;
 	}
 
 	s32Ret = CVI_VB_Init();
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VB_Init failed!\n");
+		SAMPLE_PRT("CVI_VB_Init failed!\n");
 		goto exit0;
 	}
 
@@ -1428,7 +1428,7 @@ CVI_S32 SAMPLE_SBM_FRM_Online(CVI_VOID)
 	memset(&sensor_cfg, 0, sizeof(SENSOR_CFG_S));
 	s32Ret = SAMPLE_Snsr_Parser(&sensor_cfg);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("Use Patgen\n");
+		SAMPLE_PRT("Use Patgen\n");
 		bPatgen = CVI_TRUE;
 	} else {
 		stSize.u32Width = sensor_cfg.sns_cfg.u32ImageWigth[0];
@@ -1442,7 +1442,7 @@ CVI_S32 SAMPLE_SBM_FRM_Online(CVI_VOID)
 
 	s32Ret = CVI_SYS_SetVIVPSSMode(&stVIVPSSMode);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_SYS_SetVIVPSSMode failed with %#x\n", s32Ret);
+		SAMPLE_PRT("CVI_SYS_SetVIVPSSMode failed with %#x\n", s32Ret);
 		goto exit1;
 	}
 
@@ -1452,14 +1452,14 @@ CVI_S32 SAMPLE_SBM_FRM_Online(CVI_VOID)
 	if (!bPatgen) {
 		s32Ret = SAMPLE_Snsr_Setup(&sensor_cfg);
 		if (s32Ret != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("SAMPLE_Snsr_Setup failed!\n");
+			SAMPLE_PRT("SAMPLE_Snsr_Setup failed!\n");
 			goto exit1;
 		}
 	}
 
 	s32Ret = SAMPLE_VI_Setup(bPatgen, &sensor_cfg, &stSize);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("SAMPLE_VI_Setup failed!\n");
+		SAMPLE_PRT("SAMPLE_VI_Setup failed!\n");
 		goto exit1;
 	}
 
@@ -1480,7 +1480,7 @@ CVI_S32 SAMPLE_SBM_FRM_Online(CVI_VOID)
 
 	s32Ret = CVI_VPSS_SetMode(&stVPSSMode);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VPSS_SetMode failed with %#x!\n", s32Ret);
+		SAMPLE_PRT("CVI_VPSS_SetMode failed with %#x!\n", s32Ret);
 		goto exit2;
 	}
 
@@ -1493,7 +1493,7 @@ CVI_S32 SAMPLE_SBM_FRM_Online(CVI_VOID)
 
 	s32Ret = CVI_VPSS_CreateGrp(VpssGrp, &stVpssGrpAttr);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VPSS_CreateGrp(grp:%d) failed with %#x!\n", VpssGrp, s32Ret);
+		SAMPLE_PRT("CVI_VPSS_CreateGrp(grp:%d) failed with %#x!\n", VpssGrp, s32Ret);
 		goto exit2;
 	}
 
@@ -1512,7 +1512,7 @@ CVI_S32 SAMPLE_SBM_FRM_Online(CVI_VOID)
 
 	s32Ret = CVI_VPSS_SetChnAttr(VpssGrp, VpssChn0, &stVpssChnAttr);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VPSS_SetChnAttr failed with %#x\n", s32Ret);
+		SAMPLE_PRT("CVI_VPSS_SetChnAttr failed with %#x\n", s32Ret);
 		goto exit2;
 	}
 
@@ -1522,13 +1522,13 @@ CVI_S32 SAMPLE_SBM_FRM_Online(CVI_VOID)
 
 	s32Ret = CVI_VPSS_SetChnBufWrapAttr(VpssGrp, VpssChn0, &stVpssChnBufWrap);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VPSS_SetChnBufWrapAttr failed with %#x\n", s32Ret);
+		SAMPLE_PRT("CVI_VPSS_SetChnBufWrapAttr failed with %#x\n", s32Ret);
 		goto exit2;
 	}
 
 	s32Ret = CVI_VPSS_EnableChn(VpssGrp, VpssChn0);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VPSS_EnableChn failed with %#x\n", s32Ret);
+		SAMPLE_PRT("CVI_VPSS_EnableChn failed with %#x\n", s32Ret);
 		goto exit2;
 	}
 
@@ -1547,20 +1547,20 @@ CVI_S32 SAMPLE_SBM_FRM_Online(CVI_VOID)
 
 	s32Ret = CVI_VPSS_SetChnAttr(VpssGrp, VpssChn1, &stVpssChnAttr);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VPSS_SetChnAttr failed with %#x\n", s32Ret);
+		SAMPLE_PRT("CVI_VPSS_SetChnAttr failed with %#x\n", s32Ret);
 		goto exit3;
 	}
 
 	s32Ret = CVI_VPSS_EnableChn(VpssGrp, VpssChn1);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VPSS_EnableChn failed with %#x\n", s32Ret);
+		SAMPLE_PRT("CVI_VPSS_EnableChn failed with %#x\n", s32Ret);
 		goto exit3;
 	}
 
 	/*start vpss*/
 	s32Ret = CVI_VPSS_StartGrp(VpssGrp);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VPSS_StartGrp failed with %#x\n", s32Ret);
+		SAMPLE_PRT("CVI_VPSS_StartGrp failed with %#x\n", s32Ret);
 		goto exit3;
 	}
 
@@ -1575,7 +1575,7 @@ CVI_S32 SAMPLE_SBM_FRM_Online(CVI_VOID)
 	bCompressed = CVI_TRUE;
 	s32Ret = SAMPLE_RGN_Setup(stChn0, stSizeRect, s32Handle0, bCompressed);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("SAMPLE_RGN_Setup failed!\n");
+		SAMPLE_PRT("SAMPLE_RGN_Setup failed!\n");
 		goto exit4;
 	}
 
@@ -1587,7 +1587,7 @@ CVI_S32 SAMPLE_SBM_FRM_Online(CVI_VOID)
 	bCompressed = CVI_FALSE;
 	s32Ret = SAMPLE_RGN_Setup(stChn0, stSizeBitmap, s32Handle1, bCompressed);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("SAMPLE_RGN_Setup failed!\n");
+		SAMPLE_PRT("SAMPLE_RGN_Setup failed!\n");
 		goto exit5;
 	}
 
@@ -1608,30 +1608,30 @@ CVI_S32 SAMPLE_SBM_FRM_Online(CVI_VOID)
 
 	s32Ret = CVI_SYS_Bind(&stSrcChn, &stDestChn);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_SYS_Bind failed with %#x\n", s32Ret);
+		SAMPLE_PRT("CVI_SYS_Bind failed with %#x\n", s32Ret);
 		goto exit6;
 	}
 
 	s32Ret = CVI_SYS_Bind(&stSrcChn1, &stDestChn1);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_SYS_Bind failed with %#x\n", s32Ret);
+		SAMPLE_PRT("CVI_SYS_Bind failed with %#x\n", s32Ret);
 		goto exit7;
 	}
 
 	s32Ret = SAMPLE_VENC_ChnSetup(VencChn[0], &stSize, enType);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("SAMPLE_VENC_ChnSetup failed. s32Ret: 0x%x !\n", s32Ret);
+		SAMPLE_PRT("SAMPLE_VENC_ChnSetup failed. s32Ret: 0x%x !\n", s32Ret);
 		goto exit8;
 	}
 	s32Ret = SAMPLE_VENC_ChnSetup(VencChn[1], &stSizeSmall, enType);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("SAMPLE_VENC_ChnSetup failed. s32Ret: 0x%x !\n", s32Ret);
+		SAMPLE_PRT("SAMPLE_VENC_ChnSetup failed. s32Ret: 0x%x !\n", s32Ret);
 		goto exit9;
 	}
 
 	s32Ret = SAMPLE_VENC_StartGetStream((CVI_S32 *)&VencChn, MaxChnNum);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("SAMPLE_VENC_StartGetStream failed. s32Ret: 0x%x !\n", s32Ret);
+		SAMPLE_PRT("SAMPLE_VENC_StartGetStream failed. s32Ret: 0x%x !\n", s32Ret);
 		goto exit10;
 	}
 
@@ -1712,12 +1712,12 @@ CVI_S32 SAMPLE_DOUBLE_SBM(CVI_VOID)
 
 	fpOutput1 = fopen(pFileNameOut1, "wb");
 	if (fpOutput1 == NULL) {
-		SAMPLE_SBM_PRT("can't open file %s\n", pFileNameOut1);
+		SAMPLE_PRT("can't open file %s\n", pFileNameOut1);
 		return CVI_FAILURE;
 	}
 	fpOutput2 = fopen(pFileNameOut2, "wb");
 	if (fpOutput2 == NULL) {
-		SAMPLE_SBM_PRT("can't open file %s\n", pFileNameOut2);
+		SAMPLE_PRT("can't open file %s\n", pFileNameOut2);
 		fclose(fpOutput1);
 		return CVI_FAILURE;
 	}
@@ -1727,7 +1727,7 @@ CVI_S32 SAMPLE_DOUBLE_SBM(CVI_VOID)
 	 ************************************************/
 	s32Ret = CVI_SYS_Init();
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_SYS_Init failed!\n");
+		SAMPLE_PRT("CVI_SYS_Init failed!\n");
 		fclose(fpOutput1);
 		fclose(fpOutput2);
 		return CVI_FAILURE;
@@ -1745,13 +1745,13 @@ CVI_S32 SAMPLE_DOUBLE_SBM(CVI_VOID)
 
 	s32Ret = CVI_VB_SetConfig(&stVbConf);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VB_SetConf failed!\n");
+		SAMPLE_PRT("CVI_VB_SetConf failed!\n");
 		goto exit0;
 	}
 
 	s32Ret = CVI_VB_Init();
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VB_Init failed!\n");
+		SAMPLE_PRT("CVI_VB_Init failed!\n");
 		goto exit0;
 	}
 
@@ -1761,7 +1761,7 @@ CVI_S32 SAMPLE_DOUBLE_SBM(CVI_VOID)
 	memset(&sensor_cfg, 0, sizeof(SENSOR_CFG_S));
 	s32Ret = SAMPLE_Snsr_Parser(&sensor_cfg);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("Use Patgen\n");
+		SAMPLE_PRT("Use Patgen\n");
 		bPatgen = CVI_TRUE;
 	} else {
 		stSize[0].u32Width = sensor_cfg.sns_cfg.u32ImageWigth[0];
@@ -1777,7 +1777,7 @@ CVI_S32 SAMPLE_DOUBLE_SBM(CVI_VOID)
 
 	s32Ret = CVI_SYS_SetVIVPSSMode(&stVIVPSSMode);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_SYS_SetVIVPSSMode failed with %#x\n", s32Ret);
+		SAMPLE_PRT("CVI_SYS_SetVIVPSSMode failed with %#x\n", s32Ret);
 		goto exit1;
 	}
 
@@ -1787,14 +1787,14 @@ CVI_S32 SAMPLE_DOUBLE_SBM(CVI_VOID)
 	if (!bPatgen) {
 		s32Ret = SAMPLE_Snsr_Setup(&sensor_cfg);
 		if (s32Ret != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("SAMPLE_Snsr_Setup failed!\n");
+			SAMPLE_PRT("SAMPLE_Snsr_Setup failed!\n");
 			goto exit1;
 		}
 	}
 
 	s32Ret = SAMPLE_VI_Setup(bPatgen, &sensor_cfg, &stSize[0]);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("SAMPLE_VI_Setup failed!\n");
+		SAMPLE_PRT("SAMPLE_VI_Setup failed!\n");
 		goto exit1;
 	}
 
@@ -1814,7 +1814,7 @@ CVI_S32 SAMPLE_DOUBLE_SBM(CVI_VOID)
 
 	s32Ret = CVI_VPSS_SetMode(&stVPSSMode);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_VPSS_SetMode failed with %#x!\n", s32Ret);
+		SAMPLE_PRT("CVI_VPSS_SetMode failed with %#x!\n", s32Ret);
 		goto exit2;
 	}
 
@@ -1830,7 +1830,7 @@ CVI_S32 SAMPLE_DOUBLE_SBM(CVI_VOID)
 
 		s32Ret = CVI_VPSS_CreateGrp(VpssGrp, &stVpssGrpAttr);
 		if (s32Ret != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("CVI_VPSS_CreateGrp(grp:%d) failed with %#x!\n", VpssGrp, s32Ret);
+			SAMPLE_PRT("CVI_VPSS_CreateGrp(grp:%d) failed with %#x!\n", VpssGrp, s32Ret);
 			goto exit3;
 		}
 
@@ -1848,7 +1848,7 @@ CVI_S32 SAMPLE_DOUBLE_SBM(CVI_VOID)
 
 		s32Ret = CVI_VPSS_SetChnAttr(VpssGrp, VpssChn, &stVpssChnAttr);
 		if (s32Ret != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("CVI_VPSS_SetChnAttr failed with %#x\n", s32Ret);
+			SAMPLE_PRT("CVI_VPSS_SetChnAttr failed with %#x\n", s32Ret);
 			goto exit3;
 		}
 
@@ -1858,20 +1858,20 @@ CVI_S32 SAMPLE_DOUBLE_SBM(CVI_VOID)
 
 		s32Ret = CVI_VPSS_SetChnBufWrapAttr(VpssGrp, VpssChn, &stVpssChnBufWrap);
 		if (s32Ret != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("CVI_VPSS_SetChnBufWrapAttr failed with %#x\n", s32Ret);
+			SAMPLE_PRT("CVI_VPSS_SetChnBufWrapAttr failed with %#x\n", s32Ret);
 			goto exit3;
 		}
 
 		s32Ret = CVI_VPSS_EnableChn(VpssGrp, VpssChn);
 		if (s32Ret != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("CVI_VPSS_EnableChn failed with %#x\n", s32Ret);
+			SAMPLE_PRT("CVI_VPSS_EnableChn failed with %#x\n", s32Ret);
 			goto exit3;
 		}
 
 		/*start vpss*/
 		s32Ret = CVI_VPSS_StartGrp(VpssGrp);
 		if (s32Ret != CVI_SUCCESS) {
-			SAMPLE_SBM_PRT("CVI_VPSS_StartGrp failed with %#x\n", s32Ret);
+			SAMPLE_PRT("CVI_VPSS_StartGrp failed with %#x\n", s32Ret);
 			goto exit3;
 		}
 	}
@@ -1892,30 +1892,30 @@ CVI_S32 SAMPLE_DOUBLE_SBM(CVI_VOID)
 
 	s32Ret = CVI_SYS_Bind(&stSrcChn, &stDestChn);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_SYS_Bind failed with %#x\n", s32Ret);
+		SAMPLE_PRT("CVI_SYS_Bind failed with %#x\n", s32Ret);
 		goto exit3;
 	}
 
 	s32Ret = CVI_SYS_Bind(&stSrcChn1, &stDestChn1);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("CVI_SYS_Bind failed with %#x\n", s32Ret);
+		SAMPLE_PRT("CVI_SYS_Bind failed with %#x\n", s32Ret);
 		goto exit4;
 	}
 
 	s32Ret = SAMPLE_VENC_ChnSetup(VencChn[0], &stSize[0], enType);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("SAMPLE_VENC_ChnSetup failed. s32Ret: 0x%x !\n", s32Ret);
+		SAMPLE_PRT("SAMPLE_VENC_ChnSetup failed. s32Ret: 0x%x !\n", s32Ret);
 		goto exit5;
 	}
 	s32Ret = SAMPLE_VENC_ChnSetup(VencChn[1], &stSize[1], enType);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("SAMPLE_VENC_ChnSetup failed. s32Ret: 0x%x !\n", s32Ret);
+		SAMPLE_PRT("SAMPLE_VENC_ChnSetup failed. s32Ret: 0x%x !\n", s32Ret);
 		goto exit6;
 	}
 
 	s32Ret = SAMPLE_VENC_StartGetStream((CVI_S32 *)&VencChn, MaxChnNum);
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_SBM_PRT("SAMPLE_VENC_StartGetStream failed. s32Ret: 0x%x !\n", s32Ret);
+		SAMPLE_PRT("SAMPLE_VENC_StartGetStream failed. s32Ret: 0x%x !\n", s32Ret);
 		goto exit7;
 	}
 
@@ -1965,6 +1965,277 @@ exit0:
 	return s32Ret;
 }
 
+CVI_S32 SAMPLE_JPEG_SBM(CVI_VOID)
+{
+	CVI_S32 s32Ret = CVI_SUCCESS;
+	VB_CONFIG_S stVbConf;
+	CVI_U32 u32BlkSize;
+	PIXEL_FORMAT_E enPixelFormat = PIXEL_FORMAT_NV12;
+	SIZE_S stSize = {1920, 1080};
+	SIZE_S stJpegSize = {8192, 8192};
+	FILE *fpOutput = NULL;
+	CVI_CHAR astJpegName[64];
+	VI_VPSS_MODE_S stVIVPSSMode;
+	SENSOR_CFG_S sensor_cfg;
+	CVI_BOOL bPatgen = CVI_FALSE;
+	CVI_S32 i = 0;
+	VIDEO_FRAME_INFO_S stVideoFrame;
+
+	/************************************************
+	 * step0:  Init SYS
+	 ************************************************/
+	s32Ret = CVI_SYS_Init();
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_PRT("CVI_SYS_Init failed!\n");
+		return CVI_FAILURE;
+	}
+
+	/************************************************
+	 * step1: sensor config
+	 ************************************************/
+	memset(&sensor_cfg, 0, sizeof(SENSOR_CFG_S));
+	s32Ret = SAMPLE_Snsr_Parser(&sensor_cfg);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_PRT("Use Patgen\n");
+		bPatgen = CVI_TRUE;
+		sensor_cfg.sns_ini_cfg.devNum = 1;
+	} else {
+		stSize.u32Width = sensor_cfg.sns_cfg.u32ImageWigth[0];
+		stSize.u32Height = sensor_cfg.sns_cfg.u32ImageHeight[0];
+	}
+
+	/************************************************
+	 * step2:  Init common VB
+	 ************************************************/
+	memset(&stVbConf, 0, sizeof(VB_CONFIG_S));
+	stVbConf.u32MaxPoolCnt = 1;
+
+	u32BlkSize = COMMON_GetPicBufferSize(stSize.u32Width, stSize.u32Height,
+		enPixelFormat, DATA_BITWIDTH_8, COMPRESS_MODE_NONE, DEFAULT_ALIGN);
+	stVbConf.astCommPool[0].u32BlkSize	= u32BlkSize;
+	stVbConf.astCommPool[0].u32BlkCnt	= 3;
+	stVbConf.astCommPool[0].enRemapMode = VB_REMAP_MODE_CACHED;
+
+	s32Ret = CVI_VB_SetConfig(&stVbConf);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_PRT("CVI_VB_SetConf failed!\n");
+		goto exit0;
+	}
+
+	s32Ret = CVI_VB_Init();
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_PRT("CVI_VB_Init failed!\n");
+		goto exit0;
+	}
+
+	/************************************************
+	 * Config vpss online mode
+	 ************************************************/
+	stVIVPSSMode.aenMode[0] = stVIVPSSMode.aenMode[1] = VI_OFFLINE_VPSS_OFFLINE;
+
+	s32Ret = CVI_SYS_SetVIVPSSMode(&stVIVPSSMode);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_PRT("CVI_SYS_SetVIVPSSMode failed with %#x\n", s32Ret);
+		goto exit1;
+	}
+
+	/************************************************
+	 * step3:  Init VI
+	 ************************************************/
+	if (!bPatgen) {
+		s32Ret = SAMPLE_Snsr_Setup(&sensor_cfg);
+		if (s32Ret != CVI_SUCCESS) {
+			SAMPLE_PRT("SAMPLE_Snsr_Setup failed!\n");
+			goto exit1;
+		}
+	}
+
+	s32Ret = SAMPLE_VI_Setup(bPatgen, &sensor_cfg, &stSize);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_PRT("SAMPLE_VI_Setup failed!\n");
+		goto exit1;
+	}
+
+	/************************************************
+	 * step4:  Init VPSS
+	 ************************************************/
+	VPSS_GRP		   VpssGrp		  = 0;
+	VPSS_CHN		   VpssChn		  = VPSS_CHN0;
+	VPSS_GRP_ATTR_S    stVpssGrpAttr  = {0};
+	VPSS_CHN_ATTR_S    stVpssChnAttr  = {0};
+	VPSS_CHN_BUF_WRAP_S stVpssChnBufWrap;
+	VPSS_MODE_S stVPSSMode;
+
+	stVPSSMode.enMode = VPSS_MODE_DUAL;
+	stVPSSMode.aenInput[0] = VPSS_INPUT_MEM;
+	stVPSSMode.aenInput[1] = VPSS_INPUT_MEM;
+
+	s32Ret = CVI_VPSS_SetMode(&stVPSSMode);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_PRT("CVI_VPSS_SetMode failed with %#x!\n", s32Ret);
+		goto exit2;
+	}
+
+	stVpssGrpAttr.u32MaxW						= stSize.u32Width;
+	stVpssGrpAttr.u32MaxH						= stSize.u32Height;
+	stVpssGrpAttr.enPixelFormat					= enPixelFormat;
+	stVpssGrpAttr.stFrameRate.s32SrcFrameRate	= -1;
+	stVpssGrpAttr.stFrameRate.s32DstFrameRate	= -1;
+	stVpssGrpAttr.u8VpssDev						= 1;
+
+	s32Ret = CVI_VPSS_CreateGrp(VpssGrp, &stVpssGrpAttr);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_PRT("CVI_VPSS_CreateGrp(grp:%d) failed with %#x!\n", VpssGrp, s32Ret);
+		goto exit2;
+	}
+
+	stVpssChnAttr.u32Width						= stJpegSize.u32Width;
+	stVpssChnAttr.u32Height						= stJpegSize.u32Height;
+	stVpssChnAttr.enVideoFormat					= VIDEO_FORMAT_LINEAR;
+	stVpssChnAttr.enPixelFormat					= enPixelFormat;
+	stVpssChnAttr.stFrameRate.s32SrcFrameRate	= -1;
+	stVpssChnAttr.stFrameRate.s32DstFrameRate	= -1;
+	stVpssChnAttr.u32Depth						= 0;
+	stVpssChnAttr.bMirror						= CVI_FALSE;
+	stVpssChnAttr.bFlip							= CVI_FALSE;
+	stVpssChnAttr.stAspectRatio.enMode			= ASPECT_RATIO_NONE;
+	stVpssChnAttr.stNormalize.bEnable			= CVI_FALSE;
+
+	s32Ret = CVI_VPSS_SetChnAttr(VpssGrp, VpssChn, &stVpssChnAttr);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_PRT("CVI_VPSS_SetChnAttr failed with %#x\n", s32Ret);
+		goto exit2;
+	}
+
+	stVpssChnBufWrap.bEnable = CVI_TRUE;
+	stVpssChnBufWrap.u32BufLine = 128;
+	stVpssChnBufWrap.u32WrapBufferSize = 5;
+
+	s32Ret = CVI_VPSS_SetChnBufWrapAttr(VpssGrp, VpssChn, &stVpssChnBufWrap);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_PRT("CVI_VPSS_SetChnBufWrapAttr failed with %#x\n", s32Ret);
+		goto exit2;
+	}
+
+	s32Ret = CVI_VPSS_EnableChn(VpssGrp, VpssChn);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_PRT("CVI_VPSS_EnableChn failed with %#x\n", s32Ret);
+		goto exit2;
+	}
+
+	/*start vpss*/
+	s32Ret = CVI_VPSS_StartGrp(VpssGrp);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_PRT("CVI_VPSS_StartGrp failed with %#x\n", s32Ret);
+		goto exit3;
+	}
+
+	/************************************************
+	 * step5:  Init VENC
+	 ************************************************/
+	VENC_CHN VencChn = 0;
+	PAYLOAD_TYPE_E enType = PT_JPEG;
+	MMF_CHN_S stSrcChn = {CVI_ID_VPSS, VpssGrp, VpssChn};
+	MMF_CHN_S stDestChn = {CVI_ID_VENC, 0, VencChn};
+	CVI_S32 VencFd;
+
+	s32Ret = CVI_SYS_Bind(&stSrcChn, &stDestChn);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_PRT("CVI_SYS_Bind failed with %#x\n", s32Ret);
+		goto exit4;
+	}
+	s32Ret = SAMPLE_VENC_ChnSetup(VencChn, &stJpegSize, enType);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_PRT("SAMPLE_VENC_ChnSetup failed. s32Ret: 0x%x !\n", s32Ret);
+		goto exit5;
+	}
+
+	VencFd = CVI_VENC_GetFd(VencChn);
+	if (VencFd < 0)
+		goto exit6;
+
+	while (!gSampleVencExit) {
+		SAMPLE_PRT("\npress 'Enter' to Snap frame.\n");
+		getchar();
+		if (gSampleVencExit) {
+			break;
+		}
+
+		s32Ret = CVI_VI_GetChnFrame(0, 0, &stVideoFrame, 1000);
+		if (s32Ret != CVI_SUCCESS) {
+			SAMPLE_PRT("CVI_VI_GetChnFrame fail. s32Ret: 0x%x !\n", s32Ret);
+			break;
+		}
+		s32Ret = CVI_VPSS_SendFrame(VpssGrp, &stVideoFrame, 1000);
+		if (s32Ret != CVI_SUCCESS) {
+			SAMPLE_PRT("CVI_VPSS_SendFrame fail. s32Ret: 0x%x !\n", s32Ret);
+			CVI_VI_ReleaseChnFrame(0, 0, &stVideoFrame);
+			break;
+		}
+		CVI_VI_ReleaseChnFrame(0, 0, &stVideoFrame);
+
+		snprintf(astJpegName, 63, "sbm-%dx%d_%d.jpeg", stJpegSize.u32Width, stJpegSize.u32Height, i++);
+		fpOutput = fopen(astJpegName, "wb");
+		if (fpOutput == NULL) {
+			SAMPLE_PRT("can't open file %s\n", astJpegName);
+			break;
+		}
+
+again:
+#if defined(CONFIG_DUAL_OS)
+		s32Ret = SAMPLE_VENC_SaveOneChannelStream(VencChn, fpOutput);
+		if (s32Ret) {
+			SAMPLE_PRT("get venc stream time out, try get again\n");
+			goto again;
+		}
+#else
+		struct timeval timeout_val;
+		fd_set ReadFds;
+
+		FD_ZERO(&ReadFds);
+		FD_SET(VencFd, &ReadFds);
+		timeout_val.tv_sec = 2; /* 2 is a number */
+		timeout_val.tv_usec = 0;
+		s32Ret = select(VencFd + 1, &ReadFds, CVI_NULL, CVI_NULL, &timeout_val);
+		if (s32Ret < 0) {
+			SAMPLE_PRT("select failed!\n");
+			break;
+		} else if (s32Ret == 0) {
+			SAMPLE_PRT("get venc stream time out, try get again\n");
+			goto again;
+		} else {
+			if (FD_ISSET(VencFd, &ReadFds))
+				SAMPLE_VENC_SaveOneChannelStream(VencChn, fpOutput);
+		}
+#endif
+		SAMPLE_PRT("Save file:%s\n", astJpegName);
+		if (fpOutput) {
+			fclose(fpOutput);
+			fpOutput = NULL;
+		}
+	}
+
+	if (fpOutput)
+			fclose(fpOutput);
+exit6:
+	CVI_VENC_StopRecvFrame(VencChn);
+	CVI_VENC_DestroyChn(VencChn);
+exit5:
+	CVI_SYS_UnBind(&stSrcChn, &stDestChn);
+exit4:
+	CVI_VPSS_StopGrp(VpssGrp);
+exit3:
+	CVI_VPSS_DisableChn(VpssGrp, VpssChn);
+exit2:
+	CVI_VPSS_DestroyGrp(VpssGrp);
+	SAMPLE_VI_Destory(&sensor_cfg);
+exit1:
+	CVI_VB_Exit();
+exit0:
+	CVI_SYS_Exit();
+	return s32Ret;
+}
+
 CVI_VOID SAMPLE_SBM_HandleSig(CVI_S32 signo)
 {
 	signal(SIGINT, SIG_IGN);
@@ -1973,18 +2244,19 @@ CVI_VOID SAMPLE_SBM_HandleSig(CVI_S32 signo)
 	if (SIGINT == signo || SIGTERM == signo) {
 		//todo for release
 		gSampleVencExit = CVI_TRUE;
-		SAMPLE_SBM_PRT("Program termination abnormally\n");
+		SAMPLE_PRT("Program termination abnormally\n");
 	}
 }
 
 CVI_VOID SAMPLE_SBM_Usage(CVI_CHAR *sPrgNm)
 {
-	printf("Usage : %s <index>\n", sPrgNm);
-	printf("index:\n");
-	printf("\t 0)read file, vpss-venc sbm\n");
-	printf("\t 1)vi-vpss online, vpss-venc sbm\n");
-	printf("\t 2)vi-vpss online, vpss-venc sbm + frame mode\n");
-	printf("\t 3)double sbm\n");
+	SAMPLE_PRT("Usage : %s <index>\n", sPrgNm);
+	SAMPLE_PRT("index:\n");
+	SAMPLE_PRT("\t 0)read file, vpss-venc sbm\n");
+	SAMPLE_PRT("\t 1)vi-vpss online, vpss-venc sbm\n");
+	SAMPLE_PRT("\t 2)vi-vpss online, vpss-venc sbm + frame mode\n");
+	SAMPLE_PRT("\t 3)double sbm\n");
+	SAMPLE_PRT("\t 4)jpeg sbm\n");
 }
 
 CVI_S32 main(CVI_S32 argc, CVI_CHAR *argv[])
@@ -2019,16 +2291,19 @@ CVI_S32 main(CVI_S32 argc, CVI_CHAR *argv[])
 	case 3:
 		s32Ret = SAMPLE_DOUBLE_SBM();
 		break;
+	case 4:
+		s32Ret = SAMPLE_JPEG_SBM();
+		break;
 	default:
-		SAMPLE_SBM_PRT("the index %d is invaild!\n", s32Index);
+		SAMPLE_PRT("the index %d is invaild!\n", s32Index);
 		SAMPLE_SBM_Usage(argv[0]);
 		return CVI_FAILURE;
 	}
 
 	if (s32Ret == CVI_SUCCESS)
-		SAMPLE_SBM_PRT("sample_sbm exit success!\n");
+		SAMPLE_PRT("sample_sbm exit success!\n");
 	else
-		SAMPLE_SBM_PRT("sample_sbm exit abnormally!\n");
+		SAMPLE_PRT("sample_sbm exit abnormally!\n");
 
 	return s32Ret;
 }

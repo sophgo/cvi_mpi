@@ -495,18 +495,18 @@ void print_help(char * const *argv)
 {
 	CVI_U32 idx;
 
-	printf("// ------------------------------------------------\n");
-	printf("// %s -c codec -w width -h height -i src.yuv -o enc\n", argv[0]);
-	printf("EX.\n");
-	printf("sample_venc -c 265 -w 1920 -h 1080 -i ReadySteadyGo_1920x1080_600.yuv -o enc\n");
-	printf("// ------------------------------------------------\n");
+	SAMPLE_PRT("// ------------------------------------------------\n");
+	SAMPLE_PRT("// %s -c codec -w width -h height -i src.yuv -o enc\n", argv[0]);
+	SAMPLE_PRT("EX.\n");
+	SAMPLE_PRT("sample_venc -c 265 -w 1920 -h 1080 -i ReadySteadyGo_1920x1080_600.yuv -o enc\n");
+	SAMPLE_PRT("// ------------------------------------------------\n");
 
 	for (idx = 0; idx < sizeof(g_vencLongOptionExt) / sizeof(optionExt); idx++) {
 		if (g_vencLongOptionExt[idx].opt.name == NULL)
 			break;
 
-		printf("--%s\n", g_vencLongOptionExt[idx].opt.name);
-		printf("    %s\n", g_vencLongOptionExt[idx].help);
+		SAMPLE_PRT("--%s\n", g_vencLongOptionExt[idx].opt.name);
+		SAMPLE_PRT("    %s\n", g_vencLongOptionExt[idx].help);
 	}
 }
 

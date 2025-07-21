@@ -19,13 +19,13 @@ static CVI_VOID vb_ut_handle_sig(CVI_S32 nSignal, siginfo_t *si, CVI_VOID *arg)
 
 	s32Ret = CVI_VB_Exit();
 	if (s32Ret != CVI_SUCCESS) {
-		printf("CVI_VB_Exit failed!\n");
+		SAMPLE_PRT("CVI_VB_Exit failed!\n");
 		exit(1);
 	}
 
 	s32Ret = CVI_SYS_Exit();
 	if (s32Ret != CVI_SUCCESS) {
-		printf("CVI_SYS_Exit failed!\n");
+		SAMPLE_PRT("CVI_SYS_Exit failed!\n");
 		exit(1);
 	}
 
@@ -50,7 +50,7 @@ CVI_S32 vo_sys_init(CVI_VOID)
 
 	s32Ret = CVI_SYS_Init();
 	if (s32Ret != CVI_SUCCESS) {
-		printf("CVI_SYS_Init failed!\n");
+		SAMPLE_PRT("CVI_SYS_Init failed!\n");
 		return s32Ret;
 	}
 
@@ -58,25 +58,25 @@ CVI_S32 vo_sys_init(CVI_VOID)
 	stVbConf.u32MaxPoolCnt = 2;
 	stVbConf.astCommPool[0].u32BlkSize = COMMON_POOL0_BLK_SIZE;
 	stVbConf.astCommPool[0].u32BlkCnt = COMMON_POOL0_BLK_CNT;
-	printf("common pool[0] BlkSize(%d) BlkCnt(%d)\n",
+	SAMPLE_PRT("common pool[0] BlkSize(%d) BlkCnt(%d)\n",
 		COMMON_POOL0_BLK_SIZE, COMMON_POOL0_BLK_CNT);
 	stVbConf.astCommPool[0].enRemapMode	= VB_REMAP_MODE_CACHED;
 	stVbConf.astCommPool[1].u32BlkSize = COMMON_POOL1_BLK_SIZE;
 	stVbConf.astCommPool[1].u32BlkCnt = COMMON_POOL1_BLK_CNT;
-	printf("common pool[1] BlkSize(%d) BlkCnt(%d)\n",
+	SAMPLE_PRT("common pool[1] BlkSize(%d) BlkCnt(%d)\n",
 		COMMON_POOL1_BLK_SIZE, COMMON_POOL1_BLK_CNT);
 	stVbConf.astCommPool[1].enRemapMode	= VB_REMAP_MODE_CACHED;
 
 	s32Ret = CVI_VB_SetConfig(&stVbConf);
 	if (s32Ret != CVI_SUCCESS) {
-		printf("CVI_VB_SetConf failed!\n");
+		SAMPLE_PRT("CVI_VB_SetConf failed!\n");
 		CVI_SYS_Exit();
 		return s32Ret;
 	}
 
 	s32Ret = CVI_VB_Init();
 	if (s32Ret != CVI_SUCCESS) {
-		printf("CVI_VB_Init failed!\n");
+		SAMPLE_PRT("CVI_VB_Init failed!\n");
 		CVI_SYS_Exit();
 		return s32Ret;
 	}
@@ -90,13 +90,13 @@ CVI_S32 vo_sys_deinit(CVI_VOID)
 
 	s32Ret = CVI_VB_Exit();
 	if (s32Ret != CVI_SUCCESS) {
-		printf("CVI_VB_Exit failed!\n");
+		SAMPLE_PRT("CVI_VB_Exit failed!\n");
 		return s32Ret;
 	}
 
 	s32Ret = CVI_SYS_Exit();
 	if (s32Ret != CVI_SUCCESS) {
-		printf("CVI_SYS_Exit failed!\n");
+		SAMPLE_PRT("CVI_SYS_Exit failed!\n");
 		return s32Ret;
 	}
 
@@ -119,7 +119,7 @@ CVI_S32 vo_init_by_fmt(CVI_S32 fmt, VO_DEV VoDev)
 	stDefImageSize.u32Height = stDefDispRect.u32Height;
 	s32Ret = SAMPLE_COMM_VO_GetDefConfig(&stVoConfig);
 	if (s32Ret != CVI_SUCCESS) {
-		printf("SAMPLE_COMM_VO_GetDefConfig failed with %#x\n", s32Ret);
+		SAMPLE_PRT("SAMPLE_COMM_VO_GetDefConfig failed with %#x\n", s32Ret);
 		return s32Ret;
 	}
 
@@ -129,17 +129,18 @@ CVI_S32 vo_init_by_fmt(CVI_S32 fmt, VO_DEV VoDev)
 	stVoConfig.stDispRect	 = stDefDispRect;
 	stVoConfig.stImageSize	 = stDefImageSize;
 	stVoConfig.enPixFormat	 = fmt;
-	printf("SAMPLE_COMM_VO_StartVO fmt %x\n", fmt);
+	SAMPLE_PRT("SAMPLE_COMM_VO_StartVO fmt %x\n", fmt);
 	stVoConfig.enVoMode	 = VO_MODE_1MUX;
 	s32Ret = SAMPLE_COMM_VO_StartVO(&stVoConfig);
 	if (s32Ret != CVI_SUCCESS) {
-		printf("SAMPLE_COMM_VO_StartVO failed with %#x\n", s32Ret);
+		SAMPLE_PRT("SAMPLE_COMM_VO_StartVO failed with %#x\n", s32Ret);
 		return s32Ret;
 	}
 
 	s32Ret = CVI_VO_SetChnRotation(VoLayer, VoChn, ROTATION_0);
 	if (s32Ret != CVI_SUCCESS) {
-		printf("CVI_VO_SetChnRotation is fail\n");
+		SAMPLE_PRT("CVI_VO_SetChnRotation is fail\n");
+		SAMPLE_COMM_VO_StopVO(&stVoConfig);
 		return s32Ret;
 	}
 
@@ -152,7 +153,7 @@ static CVI_S32 vo_prepare_frame(SIZE_S stSize, PIXEL_FORMAT_E enPixelFormat, VID
 	VB_CAL_CONFIG_S stVbCalConfig;
 
 	if (pstVideoFrame == CVI_NULL) {
-		printf("Null pointer!\n");
+		SAMPLE_PRT("Null pointer!\n");
 		return CVI_FAILURE;
 	}
 
@@ -174,7 +175,7 @@ static CVI_S32 vo_prepare_frame(SIZE_S stSize, PIXEL_FORMAT_E enPixelFormat, VID
 
 	blk = CVI_VB_GetBlock(VB_INVALID_POOLID, stVbCalConfig.u32VBSize);
 	if (blk == VB_INVALID_HANDLE) {
-		printf("Can't acquire vb block\n");
+		SAMPLE_PRT("Can't acquire vb block\n");
 		return CVI_FAILURE;
 	}
 
@@ -206,44 +207,44 @@ CVI_S32 vo_send_frame(VO_UT_FILE *fileptr, VO_DEV VoDev)
 	stSize.u32Width = fileptr->stSize.u32Width;
 	stSize.u32Height = fileptr->stSize.u32Height;
 
-	printf("File[name, w, h, format]=[%s, %d,%d, %d]\n",
+	SAMPLE_PRT("File[name, w, h, format]=[%s, %d,%d, %d]\n",
 		  fileptr->filename, fileptr->stSize.u32Width,
 		  fileptr->stSize.u32Height, fileptr->enPixelFormat);
 
 	if (vo_prepare_frame(stSize, fileptr->enPixelFormat, &stVideoFrame) != CVI_SUCCESS) {
-		printf("SAMPLE_COMM_PrepareFrame failed\n");
+		SAMPLE_PRT("SAMPLE_COMM_PrepareFrame failed\n");
 		return CVI_FAILURE;
 	}
 
 	stVideoFrame.stVFrame.pu8VirAddr[0] = CVI_SYS_Mmap(stVideoFrame.stVFrame.u64PhyAddr[0],
 							   stVideoFrame.stVFrame.u32Length[0]);
 	if (stVideoFrame.stVFrame.pu8VirAddr[0] == NULL) {
-		printf("CVI_SYS_Mmap failed\n");
+		SAMPLE_PRT("CVI_SYS_Mmap failed\n");
 		return CVI_FAILURE;
 	}
 	stVideoFrame.stVFrame.pu8VirAddr[1] = CVI_SYS_Mmap(stVideoFrame.stVFrame.u64PhyAddr[1],
 							   stVideoFrame.stVFrame.u32Length[1]);
 	if (stVideoFrame.stVFrame.pu8VirAddr[1] == NULL) {
-		printf("CVI_SYS_Mmap failed\n");
+		SAMPLE_PRT("CVI_SYS_Mmap failed\n");
 		CVI_SYS_Munmap(stVideoFrame.stVFrame.pu8VirAddr[0], stVideoFrame.stVFrame.u32Length[0]);
 		return CVI_FAILURE;
 	}
 
-	printf("phy addr(%#"PRIx64", %#"PRIx64")\n", stVideoFrame.stVFrame.u64PhyAddr[0],
+	SAMPLE_PRT("phy addr(%#"PRIx64", %#"PRIx64")\n", stVideoFrame.stVFrame.u64PhyAddr[0],
 		  stVideoFrame.stVFrame.u64PhyAddr[1]);
-	printf("vir addr(%p, %p)\n", stVideoFrame.stVFrame.pu8VirAddr[0],
+	SAMPLE_PRT("vir addr(%p, %p)\n", stVideoFrame.stVFrame.pu8VirAddr[0],
 		  stVideoFrame.stVFrame.pu8VirAddr[1]);
 
 	fp = fopen(fileptr->filename, "r");
 	if (fp == NULL) {
-		printf("open file %s fail\n", fileptr->filename);
+		SAMPLE_PRT("open file %s fail\n", fileptr->filename);
 		return CVI_FAILURE;
 	}
 
-	printf("open file %s success\n", fileptr->filename);
+	SAMPLE_PRT("open file %s success\n", fileptr->filename);
 
 	for (CVI_S32 i = 0; i < 2; i++) {
-		printf("vir addr(%p, %d)\n", stVideoFrame.stVFrame.pu8VirAddr[i],
+		SAMPLE_PRT("vir addr(%p, %d)\n", stVideoFrame.stVFrame.pu8VirAddr[i],
 						stVideoFrame.stVFrame.u32Length[i]);
 		fread((CVI_VOID *)stVideoFrame.stVFrame.pu8VirAddr[i]
 			, stVideoFrame.stVFrame.u32Length[i], 1, fp);
@@ -265,7 +266,7 @@ CVI_S32 vo_deinit(CVI_VOID)
 
 	s32Ret = SAMPLE_COMM_VO_StopVO(&stVoConfig);
 	if (s32Ret != CVI_SUCCESS) {
-		printf("SAMPLE_COMM_VO_StopVO failed with %#x\n", s32Ret);
+		SAMPLE_PRT("SAMPLE_COMM_VO_StopVO failed with %#x\n", s32Ret);
 	}
 
 	return s32Ret;

@@ -28,7 +28,7 @@
 
 #define SAMPLE_IMAGE_WIDTH     304
 #define SAMPLE_IMAGE_HEIGHT    186
-#define SAMPLE_IMAGE_NUM       10
+#define SAMPLE_IMAGE_NUM       4
 
 #define SAMPLE_IMAGE2_PATH	"./res/tiger256lut.bmp"
 #define SAMPLE_CURSOR_PATH	"./res/dog.bmp"
@@ -49,7 +49,6 @@
 
 #define GRAPHICS_LAYER_G0      VO_LAYER_G0
 
-static CVI_CHAR g_exit_flag;
 static int g_sample_gfbg_exit;
 pthread_t g_gfbg_thread;
 
@@ -121,67 +120,24 @@ static CVI_VOID sample_gfbg_handle_sig(CVI_S32 signo)
 
 static CVI_VOID sample_gfbg_usage2(CVI_VOID)
 {
-	printf("\n\n/****************index******************/\n");
-	printf("please choose the case which you want to run:\n");
-	printf("\t0:  ARGB8888 standard mode with colorkey set\n");
-	printf("\t1:  ARGB8888 standard mode with move cursor + scale(w,h) x 2 by graphic layer\n");
-	printf("\t2:  ARGB1555 BUF_NONE mode\n");
-	printf("\t3:  CLUT256 standard mode\n");
-	printf("\t4:  ARGB888 standard mode with tde\n");
+	SAMPLE_PRT("\n\n/****************index******************/\n");
+	SAMPLE_PRT("please choose the case which you want to run:\n");
+	SAMPLE_PRT("\t0:  ARGB8888 standard mode with colorkey set\n");
+	SAMPLE_PRT("\t1:  ARGB8888 standard mode with move cursor + scale(w,h) x 2 by graphic layer\n");
+	SAMPLE_PRT("\t2:  ARGB1555 BUF_NONE mode\n");
+	SAMPLE_PRT("\t3:  CLUT256 standard mode\n");
+	SAMPLE_PRT("\t4:  ARGB888 standard mode with tde\n");
+	SAMPLE_PRT("\t5:  ARGB888 standard mode with oenc\n");
 }
 
 static CVI_VOID sample_gfbg_usage1(CVI_CHAR *s_prg_nm)
 {
-	printf("usage : %s <index>\n", s_prg_nm);
+	SAMPLE_PRT("usage : %s <index>\n", s_prg_nm);
 	sample_gfbg_usage2();
-}
-
-static CVI_VOID sample_gfbg_to_exit_signal(CVI_VOID)
-{
-	printf("\033[0;31mreceive the signal,wait......!\033[0;39m\n");
-
-	if (g_gfbg_thread) {
-		pthread_join(g_gfbg_thread, 0);
-		g_gfbg_thread = 0;
-	}
-}
-
-static int sample_gfbg_getchar(CVI_VOID)
-{
-	int c;
-
-	if (g_sample_gfbg_exit == 1) {
-		sample_gfbg_to_exit_signal();
-		printf("\033[0;31mprogram exit abnormally!\033[0;39m\n");
-		exit(-1);
-	}
-
-	c = getchar();
-
-	if (g_sample_gfbg_exit == 1) {
-		sample_gfbg_to_exit_signal();
-		printf("\033[0;31mprogram exit abnormally!\033[0;39m\n");
-		exit(-1);
-	}
-
-	return c;
 }
 
 static CVI_VOID sample_gfbg_to_exit(CVI_VOID)
 {
-	CVI_CHAR ch;
-
-	while (1) {
-		printf("\npress 'q' to exit this sample.\n");
-		while ((ch = (char)sample_gfbg_getchar()) == '\n') {
-		};
-		if (ch == 'q') {
-			g_exit_flag = ch;
-			break;
-		}
-
-		printf("input invalid! please try again.\n");
-	}
 	if (g_gfbg_thread != 0) {
 		pthread_join(g_gfbg_thread, 0);
 		g_gfbg_thread = 0;
@@ -193,13 +149,13 @@ static CVI_S32 sample_get_file_name(pthread_gfbg_sample_info *info, CVI_CHAR *fi
 	switch (info->layer) {
 	case GRAPHICS_LAYER_G0:
 		if (strncpy(file, "/dev/fb0", strlen("/dev/fb0") + 1) != file) {
-			printf("%s:%d:strncpy_s failed.\n", __func__, __LINE__);
+			SAMPLE_PRT("%s:%d:strncpy_s failed.\n", __func__, __LINE__);
 			return CVI_FAILURE;
 		}
 		break;
 	default:
 		if (strncpy(file, "/dev/fb0", strlen("/dev/fb0") + 1) != file) {
-			printf("%s:%d:strncpy_s failed.\n", __func__, __LINE__);
+			SAMPLE_PRT("%s:%d:strncpy_s failed.\n", __func__, __LINE__);
 			return CVI_FAILURE;
 		}
 		break;
@@ -215,13 +171,13 @@ static CVI_S32 sample_init_frame_buffer(pthread_gfbg_sample_info *info, const ch
 	/* open framebuffer device overlay 0 */
 	info->fd = open(input_file, O_RDWR, 0);
 	if (info->fd < 0) {
-		printf("open %s failed!\n", input_file);
+		SAMPLE_PRT("open %s failed!\n", input_file);
 		return CVI_FAILURE;
 	}
 
 	show = CVI_FALSE;
 	if (ioctl(info->fd, FBIOPUT_SHOW_GFBG, &show) < 0) {
-		printf("FBIOPUT_SHOW_GFBG failed!\n");
+		SAMPLE_PRT("FBIOPUT_SHOW_GFBG failed!\n");
 		close(info->fd);
 		info->fd = -1;
 		return CVI_FAILURE;
@@ -229,7 +185,7 @@ static CVI_S32 sample_init_frame_buffer(pthread_gfbg_sample_info *info, const ch
 
 	// wait a vblank
 	if (ioctl(info->fd, FBIOGET_VER_BLANK_GFBG, NULL) < 0) {
-		printf("wait a vblank failed!\n");
+		SAMPLE_PRT("wait a vblank failed!\n");
 		return CVI_FAILURE;
 	}
 
@@ -251,7 +207,7 @@ static CVI_S32 sample_init_frame_buffer(pthread_gfbg_sample_info *info, const ch
 	}
 
 	if (ioctl(info->fd, FBIOPUT_SCREEN_ORIGIN_GFBG, &point) < 0) {
-		printf("set screen original show position failed!\n");
+		SAMPLE_PRT("set screen original show position failed!\n");
 		close(info->fd);
 		info->fd = -1;
 		return CVI_FAILURE;
@@ -265,7 +221,7 @@ static CVI_S32 sample_init_var(pthread_gfbg_sample_info *info)
 	struct fb_var_screeninfo var;
 
 	if (ioctl(info->fd, FBIOGET_VSCREENINFO, &var) < 0) {
-		printf("get variable screen info failed!\n");
+		SAMPLE_PRT("get variable screen info failed!\n");
 		return CVI_FAILURE;
 	}
 
@@ -311,7 +267,7 @@ static CVI_S32 sample_init_var(pthread_gfbg_sample_info *info)
 	var.activate       = FB_ACTIVATE_NOW;
 
 	if (ioctl(info->fd, FBIOPUT_VSCREENINFO, &var) < 0) {
-		printf("put variable screen info failed!\n");
+		SAMPLE_PRT("put variable screen info failed!\n");
 		return CVI_FAILURE;
 	}
 	return CVI_SUCCESS;
@@ -342,13 +298,13 @@ static CVI_S32 sample_put_colorkey(pthread_gfbg_sample_info *info, cvi_fb_color_
 #else
 	cvi_fb_surfaceex surfaceex;
 #endif
-	printf("expected: the red box will erased by colorkey!\n");
+	SAMPLE_PRT("expected: the red box will erased by colorkey!\n");
 #ifndef FLIP_SURFACE
 	color_key.enable = CVI_TRUE;
 	color_key.value = (clr_fmt == CVI_FB_FORMAT_ARGB8888) ? GFBG_RED_8888 : GFBG_RED_1555;
 	ret = ioctl(info->fd, FBIOPUT_COLORKEY_GFBG, &color_key);
 	if (ret < 0) {
-		printf("FBIOPUT_COLORKEY_GFBG failed!\n");
+		SAMPLE_PRT("FBIOPUT_COLORKEY_GFBG failed!\n");
 		return CVI_FAILURE;
 	}
 #else
@@ -357,24 +313,24 @@ static CVI_S32 sample_put_colorkey(pthread_gfbg_sample_info *info, cvi_fb_color_
 	surfaceex.colorkey.value = (clr_fmt == CVI_FB_FORMAT_ARGB8888) ? GFBG_RED_8888 : GFBG_RED_1555;
 	ret = ioctl(info->fd, FBIOFLIP_SURFACE, &surfaceex);
 	if (ret < 0) {
-		printf("FBIOFLIP_SURFACE failed!\n");
+		SAMPLE_PRT("FBIOFLIP_SURFACE failed!\n");
 		return CVI_FAILURE;
 	}
 #endif
 	sleep(2); /* 2 second */
-	printf("expected: the red box will appear again!\n");
+	SAMPLE_PRT("expected: the red box will appear again!\n");
 #ifndef FLIP_SURFACE
 	color_key.enable = CVI_FALSE;
 	ret = ioctl(info->fd, FBIOPUT_COLORKEY_GFBG, &color_key);
 	if (ret < 0) {
-		printf("FBIOPUT_COLORKEY_GFBG failed!\n");
+		SAMPLE_PRT("FBIOPUT_COLORKEY_GFBG failed!\n");
 		return CVI_FAILURE;
 	}
 #else
 	surfaceex.colorkey.enable = CVI_FALSE;
 	ret = ioctl(info->fd, FBIOFLIP_SURFACE, &surfaceex);
 	if (ret < 0) {
-		printf("FBIOPUT_COLORKEY_GFBG failed!\n");
+		SAMPLE_PRT("FBIOPUT_COLORKEY_GFBG failed!\n");
 		return CVI_FAILURE;
 	}
 #endif
@@ -396,13 +352,18 @@ static CVI_S32 sample_time_to_play(pthread_gfbg_sample_info *info, CVI_U8 *show_
 #endif
 
 	if (ioctl(info->fd, FBIOGET_VSCREENINFO, &var) < 0) {
-		printf("get variable screen info failed!\n");
+		SAMPLE_PRT("get variable screen info failed!\n");
 		return CVI_FAILURE;
 	}
 
 	show = CVI_TRUE;
 	if (ioctl(info->fd, FBIOPUT_SHOW_GFBG, &show) < 0) {
-		printf("FBIOPUT_SHOW_GFBG failed!\n");
+		SAMPLE_PRT("FBIOPUT_SHOW_GFBG failed!\n");
+		return CVI_FAILURE;
+	}
+
+	if (ioctl(info->fd, FBIOPUT_COMPRESSION_GFBG, &info->compress) < 0) {
+		SAMPLE_PRT("FBIOPUT_COMPRESSION_GFBG failed!\n");
 		return CVI_FAILURE;
 	}
 
@@ -424,7 +385,7 @@ static CVI_S32 sample_time_to_play(pthread_gfbg_sample_info *info, CVI_U8 *show_
 		return CVI_FAILURE;
 	}
 	base_phyaddr = fix.smem_start;
-	printf("base_phyaddr=0x%lx\n", base_phyaddr);
+	SAMPLE_PRT("base_phyaddr=0x%lx\n", base_phyaddr);
 #endif
 
 	for (i = 0; i < 4; i++) {
@@ -436,7 +397,7 @@ static CVI_S32 sample_time_to_play(pthread_gfbg_sample_info *info, CVI_U8 *show_
 		}
 
 		if (ioctl(info->fd, FBIOPAN_DISPLAY, &var) < 0) {
-			printf("FBIOPAN_DISPLAY failed!\n");
+			SAMPLE_PRT("FBIOPAN_DISPLAY failed!\n");
 			return CVI_FAILURE;
 		}
 #else
@@ -462,7 +423,7 @@ static CVI_S32 sample_gfbg_load_bmp(const char *filename, CVI_U8 *addr)
 	OSD_BITMAPINFO bmp_info;
 
 	if (GetBmpInfo(filename, &bmp_file_header, &bmp_info) < 0) {
-		printf("get_bmp_info err!\n");
+		SAMPLE_PRT("get_bmp_info err!\n");
 		return CVI_FAILURE;
 	}
 
@@ -483,97 +444,81 @@ static CVI_S32 sample_move_cursor(pthread_gfbg_sample_info *info, struct fb_var_
 		return CVI_FAILURE;
 	}
 	if (ioctl(info->fd, FBIOPAN_DISPLAY, var) < 0) {
-		printf("FBIOPAN_DISPLAY failed!\n");
+		SAMPLE_PRT("FBIOPAN_DISPLAY failed!\n");
 		return CVI_FAILURE;
 	}
 
 	// scale x 2 by Graphic layer
 	if (ioctl(info->fd, FBIOGET_SCREEN_SIZE, &screen_size) < 0) {
-		printf("FBIOGET_SCREEN_SIZE failed!\n");
+		SAMPLE_PRT("FBIOGET_SCREEN_SIZE failed!\n");
 		return CVI_FAILURE;
 	}
-	printf("FBIOPUT_SCREEN_SIZE before(%d,%d)\n", screen_size.width, screen_size.height);
+	SAMPLE_PRT("FBIOPUT_SCREEN_SIZE before(%d,%d)\n", screen_size.width, screen_size.height);
 
 	screen_size.width *= 2;
 	screen_size.height *= 2;
 	if (ioctl(info->fd, FBIOPUT_SCREEN_SIZE, &screen_size) < 0) {
-		printf("FBIOPUT_SCREEN_SIZE failed!\n");
+		SAMPLE_PRT("FBIOPUT_SCREEN_SIZE failed!\n");
 		return CVI_FAILURE;
 	}
 
 	if (ioctl(info->fd, FBIOGET_SCREEN_SIZE, &screen_size) < 0) {
-		printf("FBIOGET_SCREEN_SIZE failed!\n");
+		SAMPLE_PRT("FBIOGET_SCREEN_SIZE failed!\n");
 		return CVI_FAILURE;
 	}
-	printf("FBIOPUT_SCREEN_SIZE after(%d,%d)\n", screen_size.width, screen_size.height);
+	SAMPLE_PRT("FBIOPUT_SCREEN_SIZE after(%d,%d)\n", screen_size.width, screen_size.height);
 
-	printf("show cursor\n");
+	SAMPLE_PRT("show cursor\n");
 	sleep(1); /* 1 second */
 	while (point.x_pos <= WIDTH_720P) {
-		if (g_exit_flag == 'q') {
-			printf("process exit...\n");
-			break;
-		}
 		point.x_pos += 2; /* 2 pos */
 		if (ioctl(info->fd, FBIOPUT_SCREEN_ORIGIN_GFBG, &point) < 0) {
-			printf("set screen original show position failed!\n");
+			SAMPLE_PRT("set screen original show position failed!\n");
 			return CVI_FAILURE;
 		}
 		// wait a vblank
 		if (ioctl(info->fd, FBIOGET_VER_BLANK_GFBG, NULL) < 0) {
-			printf("wait a vblank failed!\n");
+			SAMPLE_PRT("wait a vblank failed!\n");
 			return CVI_FAILURE;
 		}
 	}
 	while (point.x_pos > 0) {
-		if (g_exit_flag == 'q') {
-			printf("process exit...\n");
-			break;
-		}
 		point.x_pos -= 2; /* 2 pos */
 		if (ioctl(info->fd, FBIOPUT_SCREEN_ORIGIN_GFBG, &point) < 0) {
-			printf("set screen original show position failed!\n");
+			SAMPLE_PRT("set screen original show position failed!\n");
 			return CVI_FAILURE;
 		}
 		// wait a vblank
 		if (ioctl(info->fd, FBIOGET_VER_BLANK_GFBG, NULL) < 0) {
-			printf("wait a vblank failed!\n");
+			SAMPLE_PRT("wait a vblank failed!\n");
 			return CVI_FAILURE;
 		}
 	}
 	while (point.y_pos <= HEIGHT_1280P) {
-		if (g_exit_flag == 'q') {
-			printf("process exit...\n");
-			break;
-		}
 		point.y_pos += 2; /* 2 pos */
 		if (ioctl(info->fd, FBIOPUT_SCREEN_ORIGIN_GFBG, &point) < 0) {
-			printf("set screen original show position failed!\n");
+			SAMPLE_PRT("set screen original show position failed!\n");
 			return CVI_FAILURE;
 		}
 		// wait a vblank
 		if (ioctl(info->fd, FBIOGET_VER_BLANK_GFBG, NULL) < 0) {
-			printf("wait a vblank failed!\n");
+			SAMPLE_PRT("wait a vblank failed!\n");
 			return CVI_FAILURE;
 		}
 	}
 	while (point.y_pos > 0) {
-		if (g_exit_flag == 'q') {
-			printf("process exit...\n");
-			break;
-		}
 		point.y_pos -= 2; /* 2 pos */
 		if (ioctl(info->fd, FBIOPUT_SCREEN_ORIGIN_GFBG, &point) < 0) {
-			printf("set screen original show position failed!\n");
+			SAMPLE_PRT("set screen original show position failed!\n");
 			return CVI_FAILURE;
 		}
 		// wait a vblank
 		if (ioctl(info->fd, FBIOGET_VER_BLANK_GFBG, NULL) < 0) {
-			printf("wait a vblank failed!\n");
+			SAMPLE_PRT("wait a vblank failed!\n");
 			return CVI_FAILURE;
 		}
 	}
-	printf("move the cursor\n");
+	SAMPLE_PRT("move the cursor\n");
 	sleep(1);
 	return CVI_SUCCESS;
 }
@@ -586,14 +531,14 @@ static CVI_S32 TDEFileToBuffer(const CVI_CHAR *filename, CVI_VOID *buffer, SIZE_
 
 	fp = fopen(filename, "r");
 	if (fp == CVI_NULL) {
-		printf("open data file, %s, error\n", filename);
+		SAMPLE_PRT("open data file, %s, error\n", filename);
 		return CVI_FAILURE;
 	}
 
 	for (i = 0; i < pstSize->u32Height; i++) {
 		s32len = fread(buffer, pstSize->u32Width, 4, fp);
 		if (s32len <= 0) {
-			printf("fread data(%d) error\n", i);
+			SAMPLE_PRT("fread data(%d) error\n", i);
 			s32Ret = CVI_FAILURE;
 			break;
 		}
@@ -622,13 +567,13 @@ static CVI_S32 TDE_Rotate(TDE_ROTATE_ANGLE_E enRotateAngle, struct fb_fix_screen
 	 ************************************************/
 	s32Ret = CVI_TDE_Open();
 	if (s32Ret != CVI_SUCCESS) {
-		printf("CVI_TDE_Open failed!\n");
+		SAMPLE_PRT("CVI_TDE_Open failed!\n");
 		goto exit1;
 	}
 
 	s32Handle = CVI_TDE_BeginJob();
 	if (s32Handle == TDE_INVALID_HANDLE) {
-		printf("CVI_TDE_BeginJob failed!\n");
+		SAMPLE_PRT("CVI_TDE_BeginJob failed!\n");
 		goto exit2;
 	}
 	stSrc.enColorFmt = PIXEL_FORMAT_ARGB_8888;
@@ -643,7 +588,7 @@ static CVI_S32 TDE_Rotate(TDE_ROTATE_ANGLE_E enRotateAngle, struct fb_fix_screen
 
 	s32Ret = CVI_SYS_IonAlloc(&u64PhyAddrSrc, &pVirAddrSrc, "TDE_src_buffer", stSrc.u32Stride * stSrc.u32Height);
 	if (s32Ret != CVI_SUCCESS) {
-		printf("CVI_SYS_IonAlloc failed!\n");
+		SAMPLE_PRT("CVI_SYS_IonAlloc failed!\n");
 		CVI_TDE_CancelJob(s32Handle);
 		goto exit3;
 	}
@@ -651,7 +596,7 @@ static CVI_S32 TDE_Rotate(TDE_ROTATE_ANGLE_E enRotateAngle, struct fb_fix_screen
 
 	s32Ret = TDEFileToBuffer(filename_in, pVirAddrSrc, &stSizeIn);
 	if (s32Ret != CVI_SUCCESS) {
-		printf("TDEFileToBuffer failed!\n");
+		SAMPLE_PRT("TDEFileToBuffer failed!\n");
 		CVI_TDE_CancelJob(s32Handle);
 		goto exit3;
 	}
@@ -662,18 +607,18 @@ static CVI_S32 TDE_Rotate(TDE_ROTATE_ANGLE_E enRotateAngle, struct fb_fix_screen
 
 	s32Ret = CVI_TDE_Rotate(s32Handle, &stSrc, &stDst, enRotateAngle);
 	if (s32Ret != CVI_SUCCESS) {
-		printf("CVI_TDE_Rotate failed!\n");
+		SAMPLE_PRT("CVI_TDE_Rotate failed!\n");
 		CVI_TDE_CancelJob(s32Handle);
 		goto exit3;
 	}
 
 	s32Ret = CVI_TDE_EndJob(s32Handle, CVI_TRUE, CVI_TRUE, 1000);
 	if (s32Ret != CVI_SUCCESS) {
-		printf("CVI_TDE_EndJob failed!\n");
+		SAMPLE_PRT("CVI_TDE_EndJob failed!\n");
 		goto exit3;
 	}
 
-	printf("***JOB DONE***\n");
+	SAMPLE_PRT("***JOB DONE***\n");
 
 	CVI_SYS_IonInvalidateCache(stDst.u64PhyAddr, show_screen, stDst.u32Stride * stDst.u32Height);
 
@@ -693,12 +638,12 @@ static CVI_S32 sample_use_tde(pthread_gfbg_sample_info *info, struct fb_var_scre
 
 	s32Ret = TDE_Rotate(TDE_ROTATE_90, fix, show_screen);
 	if (s32Ret != CVI_SUCCESS) {
-		printf("TDE_Rotate failed!\n");
+		SAMPLE_PRT("TDE_Rotate failed!\n");
 		return CVI_FAILURE;
 	}
 
 	if (ioctl(info->fd, FBIOPAN_DISPLAY, var) < 0) {
-		printf("FBIOPAN_DISPLAY failed!\n");
+		SAMPLE_PRT("FBIOPAN_DISPLAY failed!\n");
 		return CVI_FAILURE;
 	}
 
@@ -716,12 +661,12 @@ static CVI_S32 sample_show_bitmap(pthread_gfbg_sample_info *info, CVI_U8 *show_s
 	// CVI_VOID *viraddr = CVI_NULL;
 
 	if (ioctl(info->fd, FBIOGET_VSCREENINFO, &var) < 0) {
-		printf("get variable screen info failed!\n");
+		SAMPLE_PRT("get variable screen info failed!\n");
 		return CVI_FAILURE;
 	}
 
 	if (ioctl(info->fd, FBIOGET_FSCREENINFO, &fix) < 0) {
-		printf("get fix screen info failed!\n");
+		SAMPLE_PRT("get fix screen info failed!\n");
 		return CVI_FAILURE;
 	}
 
@@ -760,19 +705,19 @@ static CVI_S32 sample_show_process(pthread_gfbg_sample_info *info)
 	CVI_BOOL show;
 
 	if (ioctl(info->fd, FBIOGET_VSCREENINFO, &var) < 0) {
-		printf("get variable screen info failed!\n");
+		SAMPLE_PRT("get variable screen info failed!\n");
 		goto ERR1;
 	}
 
 	if (ioctl(info->fd, FBIOGET_FSCREENINFO, &fix) < 0) {
-		printf("get fix screen info failed!\n");
+		SAMPLE_PRT("get fix screen info failed!\n");
 		goto ERR1;
 	}
 
 	fix_screen_stride = fix.line_length;
 	show_screen = mmap(CVI_NULL, fix.smem_len, PROT_READ | PROT_WRITE, MAP_SHARED, info->fd, 0);
 	if (show_screen == MAP_FAILED) {
-		printf("mmap framebuffer failed!\n");
+		SAMPLE_PRT("mmap framebuffer failed!\n");
 		goto ERR1;
 	}
 
@@ -792,7 +737,7 @@ static CVI_S32 sample_show_process(pthread_gfbg_sample_info *info)
 	munmap(show_screen, fix.smem_len);
 	show = CVI_FALSE;
 	if (ioctl(info->fd, FBIOPUT_SHOW_GFBG, &show) < 0) {
-		printf("FBIOPUT_SHOW_GFBG failed!\n");
+		SAMPLE_PRT("FBIOPUT_SHOW_GFBG failed!\n");
 		close(info->fd);
 		return CVI_FAILURE;
 	}
@@ -821,7 +766,7 @@ static CVI_VOID *sample_gfbg_pandisplay(CVI_VOID *data)
 
 	info = (pthread_gfbg_sample_info *)data;
 	if (snprintf(thdname, 17, "GFBG%d_pandisplay", info->layer) == -1) { /* 17 for char length */
-		printf("%s:%d:snprintf_s failed.\n", __func__, __LINE__);
+		SAMPLE_PRT("%s:%d:snprintf_s failed.\n", __func__, __LINE__);
 		return CVI_NULL;
 	}
 	prctl(PR_SET_NAME, thdname, 0, 0, 0);
@@ -845,7 +790,7 @@ static CVI_VOID *sample_gfbg_pandisplay(CVI_VOID *data)
 		return CVI_NULL;
 	}
 
-	printf("[end]\n");
+	SAMPLE_PRT("[end]\n");
 
 	return CVI_NULL;
 }
@@ -858,12 +803,12 @@ static CVI_S32 sample_init_frame_buffer_ex(pthread_gfbg_sample_info *info, const
 	/* step 1. open framebuffer device overlay 0 */
 	info->fd = open(input_file, O_RDWR, 0);
 	if (info->fd < 0) {
-		printf("open %s failed!\n", input_file);
+		SAMPLE_PRT("open %s failed!\n", input_file);
 		return CVI_FAILURE;
 	}
 
 	if (ioctl(info->fd, FBIOPUT_SCREEN_ORIGIN_GFBG, &point) < 0) {
-		printf("set screen original show position failed!\n");
+		SAMPLE_PRT("set screen original show position failed!\n");
 		close(info->fd);
 		info->fd = -1;
 		return CVI_FAILURE;
@@ -877,7 +822,7 @@ static CVI_S32 sample_init_var_ex(pthread_gfbg_sample_info *info)
 	struct fb_var_screeninfo var;
 
 	if (ioctl(info->fd, FBIOGET_VSCREENINFO, &var) < 0) {
-		printf("get variable screen info failed!\n");
+		SAMPLE_PRT("get variable screen info failed!\n");
 		return CVI_FAILURE;
 	}
 
@@ -907,7 +852,7 @@ static CVI_S32 sample_init_var_ex(pthread_gfbg_sample_info *info)
 
 	/* step 5. set the variable screen information */
 	if (ioctl(info->fd, FBIOPUT_VSCREENINFO, &var) < 0) {
-		printf("put variable screen info failed!\n");
+		SAMPLE_PRT("put variable screen info failed!\n");
 		return CVI_FAILURE;
 	}
 
@@ -934,7 +879,7 @@ static CVI_S32 sample_init_layer_info(pthread_gfbg_sample_info *info)
 	}
 
 	if (ioctl(info->fd, FBIOPUT_LAYER_INFO, &layer_info) < 0) {
-		printf("PUT_LAYER_INFO failed!\n");
+		SAMPLE_PRT("PUT_LAYER_INFO failed!\n");
 		close(info->fd);
 		info->fd = -1;
 		return CVI_FAILURE;
@@ -962,7 +907,7 @@ static CVI_S32 sample_init_canvas(pthread_gfbg_sample_info *info, cvi_fb_buf *ca
 
 	if (CVI_SYS_IonAlloc(&g_canvas_addr, buf, "user_canvas", WIDTH_720P * HEIGHT_1280P *
 		(byte_per_pixel)) == CVI_FAILURE) {
-		printf("allocate memory (max_w*max_h*%d bytes) failed\n", byte_per_pixel);
+		SAMPLE_PRT("allocate memory (max_w*max_h*%d bytes) failed\n", byte_per_pixel);
 		close(info->fd);
 		info->fd = -1;
 		return CVI_FAILURE;
@@ -975,7 +920,7 @@ static CVI_S32 sample_init_canvas(pthread_gfbg_sample_info *info, cvi_fb_buf *ca
 	canvas_buf->canvas.format = clr_fmt;
 	if (memset(*buf, 0x00, canvas_buf->canvas.pitch *
 		canvas_buf->canvas.height) != *buf) {
-		printf("%s:%d:memset failed\n", __func__, __LINE__);
+		SAMPLE_PRT("%s:%d:memset failed\n", __func__, __LINE__);
 		CVI_SYS_IonFree(g_canvas_addr, *buf);
 		g_canvas_addr = 0;
 		close(info->fd);
@@ -985,7 +930,7 @@ static CVI_S32 sample_init_canvas(pthread_gfbg_sample_info *info, cvi_fb_buf *ca
 	/* change bmp */
 	if (CVI_SYS_IonAlloc(&g_phyaddr, viraddr, "user_bmp", SAMPLE_IMAGE_WIDTH * SAMPLE_IMAGE_HEIGHT *
 		byte_per_pixel) == CVI_FAILURE) {
-		printf("allocate memory (max_w*max_h*%d bytes) failed\n", byte_per_pixel);
+		SAMPLE_PRT("allocate memory (max_w*max_h*%d bytes) failed\n", byte_per_pixel);
 		CVI_SYS_IonFree(g_canvas_addr, *buf);
 		g_canvas_addr = 0;
 		close(info->fd);
@@ -1038,7 +983,7 @@ static CVI_S32 sample_draw_line_by_cpu_ex(pthread_gfbg_sample_info *info, cvi_fb
 	canvas_buf->update_rect.height = HEIGHT_1280P;
 	ret = ioctl(info->fd, FBIO_REFRESH, canvas_buf);
 	if (ret < 0) {
-		printf("REFRESH failed!\n");
+		SAMPLE_PRT("REFRESH failed!\n");
 		return CVI_FAILURE;
 	}
 
@@ -1051,19 +996,15 @@ static CVI_S32 sample_time_to_play_ex(pthread_gfbg_sample_info *info, cvi_fb_buf
 	CVI_S32 ret;
 	CVI_U32 i;
 
-	printf("[begin]\n");
-	printf("expected:two red line!\n");
+	SAMPLE_PRT("[begin]\n");
+	SAMPLE_PRT("expected:two red line!\n");
 	/* time to play */
 	for (i = 0; i < SAMPLE_IMAGE_NUM; i++) {
-		if (g_exit_flag == 'q') {
-			printf("process exit...\n");
-			break;
-		}
 		/* draw two lines by cpu */
 		if (sample_draw_line_by_cpu_ex(info, canvas_buf, buf) != CVI_SUCCESS) {
 			return CVI_FAILURE;
 		}
-		sleep(2); /* 2 second */
+		sleep(1); /* 1 second */
 
 		(void)viraddr;
 
@@ -1073,10 +1014,10 @@ static CVI_S32 sample_time_to_play_ex(pthread_gfbg_sample_info *info, cvi_fb_buf
 		canvas_buf->update_rect.height = HEIGHT_1280P;
 		ret = ioctl(info->fd, FBIO_REFRESH, canvas_buf);
 		if (ret < 0) {
-			printf("REFRESH failed!\n");
+			SAMPLE_PRT("REFRESH failed!\n");
 			return CVI_FAILURE;
 		}
-		sleep(2); /* 2 second */
+		sleep(1); /* 1 second */
 	}
 	return CVI_SUCCESS;
 }
@@ -1120,7 +1061,7 @@ static CVI_VOID *sample_gfbg_refresh(CVI_VOID *data)
 	if (sample_time_to_play_ex(info, &canvas_buf, buf, viraddr) != CVI_SUCCESS) {
 		goto ERR;
 	}
-	printf("[end]\n");
+	SAMPLE_PRT("[end]\n");
 ERR:
 	CVI_SYS_IonFree(g_phyaddr, viraddr);
 	g_phyaddr = 0;
@@ -1142,7 +1083,7 @@ static CVI_S32 sample_cmap_init(pthread_gfbg_sample_info *info)
 	cmap.transp = g_cmap_alpha;
 
 	if (ioctl(info->fd, FBIOPUTCMAP, &cmap) < 0) {
-		printf("put cmap info failed!\n");
+		SAMPLE_PRT("put cmap info failed!\n");
 		close(info->fd);
 		return CVI_FAILURE;
 	}
@@ -1157,12 +1098,12 @@ static CVI_S32 sample_get_fix_and_mmap(pthread_gfbg_sample_info *info, struct fb
 	}
 
 	if (ioctl(info->fd, FBIOGET_FSCREENINFO, fix) < 0) {
-		printf("get fix screen info failed!\n");
+		SAMPLE_PRT("get fix screen info failed!\n");
 		return CVI_FAILURE;
 	}
 
 	if (ioctl(info->fd, FBIOGET_VSCREENINFO, var) < 0) {
-		printf("get variable screen info failed!\n");
+		SAMPLE_PRT("get variable screen info failed!\n");
 		return CVI_FAILURE;
 	}
 
@@ -1170,7 +1111,7 @@ static CVI_S32 sample_get_fix_and_mmap(pthread_gfbg_sample_info *info, struct fb
 			(SAMPLE_IMAGE_WIDTH * SAMPLE_IMAGE_HEIGHT):(SAMPLE_IMAGE_WIDTH * SAMPLE_IMAGE_HEIGHT / 2),
 			PROT_READ | PROT_WRITE, MAP_SHARED, info->fd, 0);
 	if (*viraddr == MAP_FAILED) {
-		printf("mmap failed!\n");
+		SAMPLE_PRT("mmap failed!\n");
 		return CVI_FAILURE;
 	}
 
@@ -1186,7 +1127,7 @@ CVI_S32 sample_gfbg_load_bmp_clut(const char *filename, CVI_VOID *viraddr)
 	CVI_U32 i;
 
 	if (GetBmpInfo(filename, &bmpFileHeader, &bmpInfo) < 0) {
-		printf("GetBmpInfo err!\n");
+		SAMPLE_PRT("GetBmpInfo err!\n");
 		return CVI_FAILURE;
 	}
 
@@ -1197,10 +1138,10 @@ CVI_S32 sample_gfbg_load_bmp_clut(const char *filename, CVI_VOID *viraddr)
 		else
 			g_colors_len = bmpInfo.bmiHeader.biClrUsed;
 
-		printf("load bmp clut length %d.\n", g_colors_len);
+		SAMPLE_PRT("load bmp clut length %d.\n", g_colors_len);
 
 		if (g_colors_len > CMAP_LENGTH_MAX) {
-			printf("Number of indexed palette is over 256.");
+			SAMPLE_PRT("Number of indexed palette is over 256.");
 			return CVI_FAILURE;
 		}
 
@@ -1228,7 +1169,7 @@ static CVI_S32 sample_init_var_clut(pthread_gfbg_sample_info *info)
 	struct fb_var_screeninfo var;
 
 	if (ioctl(info->fd, FBIOGET_VSCREENINFO, &var) < 0) {
-		printf("get variable screen info failed!\n");
+		SAMPLE_PRT("get variable screen info failed!\n");
 		return CVI_FAILURE;
 	}
 
@@ -1258,7 +1199,7 @@ static CVI_S32 sample_init_var_clut(pthread_gfbg_sample_info *info)
 	var.activate = FB_ACTIVATE_NOW;
 
 	if (ioctl(info->fd, FBIOPUT_VSCREENINFO, &var) < 0) {
-		printf("put variable screen info failed!\n");
+		SAMPLE_PRT("put variable screen info failed!\n");
 		return CVI_FAILURE;
 	}
 
@@ -1273,7 +1214,6 @@ static CVI_VOID *sample_gfbg_clut(void *data)
 	struct fb_var_screeninfo var;
 	struct fb_fix_screeninfo fix;
 	CVI_VOID *viraddr = CVI_NULL;
-	CVI_U32 j = 0;
 	CVI_BOOL show;
 
 	if (data == CVI_NULL) {
@@ -1282,7 +1222,7 @@ static CVI_VOID *sample_gfbg_clut(void *data)
 
 	info = (pthread_gfbg_sample_info *)data;
 	if (snprintf(thdname, 17, "GFBG%d_clut", info->layer) == -1) { /* 17 for char length */
-		printf("%s:%d:snprintf_s failed.\n", __func__, __LINE__);
+		SAMPLE_PRT("%s:%d:snprintf_s failed.\n", __func__, __LINE__);
 		return CVI_NULL;
 	}
 	prctl(PR_SET_NAME, thdname, 0, 0, 0);
@@ -1313,19 +1253,11 @@ static CVI_VOID *sample_gfbg_clut(void *data)
 
 	show = CVI_TRUE;
 	if (ioctl(info->fd, FBIOPUT_SHOW_GFBG, &show) < 0) {
-		printf("FBIOPUT_SHOW_GFBG failed!\n");
+		SAMPLE_PRT("FBIOPUT_SHOW_GFBG failed!\n");
 		goto ERR2;
 	}
 
-	while (j < SAMPLE_IMAGE_NUM) {
-		if (g_exit_flag == 'q') {
-			printf("process exit...\n");
-			break;
-		}
-
-		sleep(1);
-		j++;
-	}
+	sleep(4);
 
 ERR2:
 	munmap(viraddr, (info->color_format == CVI_FB_FORMAT_LUT_256) ?
@@ -1334,11 +1266,11 @@ ERR2:
 ERR1:
 	close(info->fd);
 	info->fd = -1;
-	printf("[end]\n");
+	SAMPLE_PRT("[end]\n");
 	return CVI_NULL;
 }
 
-static CVI_S32 sample_gfbg_standard_mode(CVI_S32 index, CVI_BOOL use_tde)
+static CVI_S32 sample_gfbg_standard_mode(CVI_S32 index, CVI_BOOL use_tde, CVI_BOOL compress)
 {
 	CVI_S32 ret = CVI_SUCCESS;
 	pthread_gfbg_sample_info info0 = {0};
@@ -1346,12 +1278,12 @@ static CVI_S32 sample_gfbg_standard_mode(CVI_S32 index, CVI_BOOL use_tde)
 	info0.layer = GRAPHICS_LAYER_G0;
 	info0.fd = -1;
 	info0.ctrlkey = (index == 0) ? 2 : 3; /* 2 none buffer pan display / 3 cursor or tde case*/
-	info0.compress = CVI_FALSE; /* compress opened or not */
+	info0.compress = compress; /* compress opened or not */
 	info0.color_format = CVI_FB_FORMAT_ARGB8888;
 	info0.use_tde = use_tde;
 
 	if (pthread_create(&g_gfbg_thread, 0, sample_gfbg_pandisplay, (CVI_VOID *)(&info0)) != 0) {
-		printf("start gfbg thread0 failed!\n");
+		SAMPLE_PRT("start gfbg thread0 failed!\n");
 	}
 
 	sample_gfbg_to_exit();
@@ -1370,7 +1302,7 @@ static CVI_S32 sample_gfbg_none_buf_mode(void)
 	info0.compress = CVI_FALSE;
 	info0.color_format = CVI_FB_FORMAT_ARGB1555;
 	if (pthread_create(&g_gfbg_thread, 0, sample_gfbg_refresh, (void *)(&info0)) != 0) {
-		printf("start gfbg thread failed!\n");
+		SAMPLE_PRT("start gfbg thread failed!\n");
 	}
 
 	sample_gfbg_to_exit();
@@ -1389,7 +1321,7 @@ static CVI_S32 sample_gfbg_clut_mode(void)
 	info0.compress = CVI_FALSE;
 	info0.color_format = CVI_FB_FORMAT_LUT_256;
 	if (pthread_create(&g_gfbg_thread, 0, sample_gfbg_clut, (void *)(&info0)) != 0) {
-		printf("start gfbg thread failed!\n");
+		SAMPLE_PRT("start gfbg thread failed!\n");
 	}
 
 	sample_gfbg_to_exit();
@@ -1403,33 +1335,35 @@ static CVI_S32 sample_choose_the_case(char **argv)
 	CVI_CHAR ch;
 
 	ch = *(argv[1]);
-	g_exit_flag = 0;
 
 	if (ch == '0') {
-		printf("\nindex 0 selected.\n");
-		ret = sample_gfbg_standard_mode(0, 0);
+		SAMPLE_PRT("\nindex 0 selected.\n");
+		ret = sample_gfbg_standard_mode(0, 0, 0);
 	} else if (ch == '1') {
-		printf("\nindex 1 selected.\n");
-		ret = sample_gfbg_standard_mode(1, 0);
+		SAMPLE_PRT("\nindex 1 selected.\n");
+		ret = sample_gfbg_standard_mode(1, 0, 0);
 	} else if (ch == '2') {
-		printf("\nindex 2 selected.\n");
+		SAMPLE_PRT("\nindex 2 selected.\n");
 		ret = sample_gfbg_none_buf_mode();
 	} else if (ch == '3') {
-		printf("\nindex 3 selected.\n");
+		SAMPLE_PRT("\nindex 3 selected.\n");
 		ret = sample_gfbg_clut_mode();
 	} else if (ch == '4') {
-		printf("\nindex 4 selected.\n");
-		ret = sample_gfbg_standard_mode(1, 1);
+		SAMPLE_PRT("\nindex 4 selected.\n");
+		ret = sample_gfbg_standard_mode(1, 1, 0);
+	} else if (ch == '5') {
+		SAMPLE_PRT("\nindex 5 selected.\n");
+		ret = sample_gfbg_standard_mode(0, 0, 1);
 	} else {
-		printf("index invalid! please try again.\n");
+		SAMPLE_PRT("index invalid! please try again.\n");
 		sample_gfbg_usage1(argv[0]);
 		return CVI_FAILURE;
 	}
 
 	if (ret == CVI_SUCCESS) {
-		printf("program exit normally!\n");
+		SAMPLE_PRT("program exit normally!\n");
 	} else {
-		printf("program exit abnormally!\n");
+		SAMPLE_PRT("program exit abnormally!\n");
 	}
 
 	return ret;
@@ -1441,7 +1375,7 @@ int main(int argc, char *argv[])
 	VO_DEV VoDev = 0;
 
 	if ((argc != 2) || (strlen(argv[1]) != 1)) {
-		printf("index invalid! please try again.\n");
+		SAMPLE_PRT("index invalid! please try again.\n");
 		sample_gfbg_usage1(argv[0]);
 		return CVI_FAILURE;
 	}
@@ -1451,35 +1385,36 @@ int main(int argc, char *argv[])
 	/*enable vo*/
 	ret = vo_sys_init();
 	if (ret != CVI_SUCCESS) {
-		printf("vo_sys_init failed\n");
+		SAMPLE_PRT("vo_sys_init failed\n");
 		return CVI_FAILURE;
 	}
 
 	ret = vo_init_by_fmt(vo_file.enPixelFormat, VoDev);
 	if (ret != CVI_SUCCESS) {
-		printf("vo_init_by_fmt failed\n");
-		return ret;
+		SAMPLE_PRT("vo_init_by_fmt failed\n");
+		goto exit1;
 	}
 
 	ret = vo_send_frame(&vo_file, VoDev);
 	if (ret != CVI_SUCCESS) {
-		printf("vo_ut_send_frame failed\n");
-		return ret;
+		SAMPLE_PRT("vo_ut_send_frame failed\n");
+		goto exit2;
 	}
 
 	ret = sample_choose_the_case(argv);
 	if (ret != CVI_SUCCESS) {
-		return ret;
+		goto exit2;
 	}
 
+exit2:
 	ret = vo_deinit();
 	if (ret != CVI_SUCCESS) {
-		printf("vo_deinit failed\n");
+		SAMPLE_PRT("vo_deinit failed\n");
 	}
-
+exit1:
 	ret = vo_sys_deinit();
 	if (ret != CVI_SUCCESS) {
-		printf("vo_sys_deinit failed\n");
+		SAMPLE_PRT("vo_sys_deinit failed\n");
 		return CVI_FAILURE;
 	}
 

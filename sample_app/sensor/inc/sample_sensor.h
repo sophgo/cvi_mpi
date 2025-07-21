@@ -37,16 +37,17 @@ typedef struct _TEST_SENSOR_INFO_S {
 typedef struct _TEST_DEV_INFO_S {
 	VI_DEV ViDev;
 	WDR_MODE_E enWDRMode;
+	VI_ISP_YUV_SCENE_E enYuvSceneMode;
 } TEST_DEV_INFO_S;
 
 typedef struct _TEST_PIPE_INFO_S {
-	VI_PIPE aPipe[WDR_MAX_PIPE_NUM];
+	VI_PIPE aPipe[VI_MAX_PIPE_NUM];
 	VI_VPSS_MODE_E enMastPipeMode;
 	bool bMultiPipe;
 	bool bVcNumCfged;
 	bool bIspBypass;
 	PIXEL_FORMAT_E enPixFmt;
-	CVI_U32 u32VCNum[WDR_MAX_PIPE_NUM];
+	CVI_U32 u32VCNum[VI_MAX_PIPE_NUM];
 } TEST_PIPE_INFO_S;
 
 typedef struct _TEST_CHN_INFO_S {

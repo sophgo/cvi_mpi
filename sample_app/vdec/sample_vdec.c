@@ -23,7 +23,7 @@ int main(int argc, char **argv)
 	vdecInputCfg *pic = &psvdec->inputCfg;
 	CVI_S32 s32Ret = CVI_SUCCESS;
 
-	printf("%s\n", argv[0]);
+	SAMPLE_PRT("%s\n", argv[0]);
 
 	s32Ret = parseDecArgv(pic, argc, argv);
 	if (s32Ret < 0) {

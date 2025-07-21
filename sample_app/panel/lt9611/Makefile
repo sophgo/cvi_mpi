@@ -6,7 +6,8 @@ endif
 
 SDIR = $(PWD)
 SRCS = $(wildcard $(SDIR)/*.c)
-INCS = -I$(MW_INC)
+COMM_INC = $(PWD)/../../common
+INCS = -I$(MW_INC) -I$(COMM_INC) -I$(ISP_INC) -I$(MW_INC)/sensor
 OBJS = $(SRCS:.c=.o)
 DEPS = $(SRCS:.c=.d)
 

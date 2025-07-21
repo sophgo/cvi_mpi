@@ -191,6 +191,7 @@ clean:
 	@rm -rf cvi_mp3player
 	@rm -rf sample_mp3*
 	@rm -rf ./cvi_mp3_player/*.d
+	@rm -rf ./aac_sample/*.d
 	@rm -rf cvi_mp3recorder
 	@rm -rf ssp_NotchTest*
 	@rm -rf $(MW_PATH)/lib/3rd/libmad*

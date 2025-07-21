@@ -9,6 +9,7 @@
 #define __SAMPLE_COMM_H__
 
 #include <pthread.h>
+#include <stdarg.h>
 
 #include "cvi_sys.h"
 #include <cvi_common.h>
@@ -117,24 +118,33 @@ extern SENSOR_CFG_S gstSensorCfg;
 
 #define MAX_STRING_LEN 255
 
-#define PAUSE()                                                                                                        \
-	do {                                                                                                           \
-		printf("---------------press Enter key to exit!---------------\n");                                    \
-		getchar();                                                                                             \
+#define PAUSE()                                                                \
+	do {                                                                       \
+		printf("---------------press Enter key to exit!---------------\n");    \
+		getchar();                                                             \
 	} while (0)
 
-#define SAMPLE_PRT(fmt...)                                                                                             \
-	do {                                                                                                           \
-		printf("[%s]-%d: ", __func__, __LINE__);                                                               \
-		printf(fmt);                                                                                           \
-	} while (0)
+static inline void sample_prt_with_newline(const char *func, int line, const char *fmt, ...) {
+	va_list args;
+	va_start(args, fmt);
+	printf("[%s]-%d: ", func, line);
+	vprintf(fmt, args);
+	va_end(args);
 
-#define CHECK_NULL_PTR(ptr)                                                                                            \
-	do {                                                                                                           \
-		if (ptr == NULL) {                                                                                     \
-			printf("func:%s,line:%d, NULL pointer\n", __func__, __LINE__);                                 \
-			return CVI_FAILURE;                                                                            \
-		}                                                                                                      \
+	size_t len = strlen(fmt);
+	if (len > 0 && fmt[len - 1] != '\n') {
+		printf("\n");
+	}
+}
+
+#define SAMPLE_PRT(fmt, ...) sample_prt_with_newline(__func__, __LINE__, fmt, ##__VA_ARGS__)
+
+#define CHECK_NULL_PTR(ptr)                                                    \
+	do {                                                                       \
+		if (ptr == NULL) {                                                     \
+			printf("func:%s,line:%d, NULL pointer\n", __func__, __LINE__);     \
+			return CVI_FAILURE;                                                \
+		}                                                                      \
 	} while (0)
 
 #define ALIGN_BASE(val, base)	(((val) + ((base)-1)) & ~((base)-1))

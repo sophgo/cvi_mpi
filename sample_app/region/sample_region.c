@@ -32,15 +32,15 @@ CVI_CHAR *Path_BMP;
 
 void SAMPLE_REGION_Usage(char *sPrgNm)
 {
-	printf("Usage : %s <index>\n", sPrgNm);
-	printf("index:\n");
-	printf("\t 0)VPSS OSD.\n");
-	printf("\t 1)VPSS COVER.\n");
-	printf("\t 2)VPSS OSD TIME.\n");
-	printf("\t 3)VPSS OSD 8bit mode OVERLAY.\n");
-	printf("\t 4)VPSS OSD objects OVERLAY.\n");
-	printf("\t 5)VPSS COVEREX.\n");
-	printf("\t 6)VPSS MOSAIC.\n");
+	SAMPLE_PRT("Usage : %s <index>\n", sPrgNm);
+	SAMPLE_PRT("index:\n");
+	SAMPLE_PRT("\t 0)VPSS OSD.\n");
+	SAMPLE_PRT("\t 1)VPSS COVER.\n");
+	SAMPLE_PRT("\t 2)VPSS OSD TIME.\n");
+	SAMPLE_PRT("\t 3)VPSS OSD 8bit mode OVERLAY.\n");
+	SAMPLE_PRT("\t 4)VPSS OSD objects OVERLAY.\n");
+	SAMPLE_PRT("\t 5)VPSS COVEREX.\n");
+	SAMPLE_PRT("\t 6)VPSS MOSAIC.\n");
 }
 
 void SAMPLE_REGION_HandleSig(CVI_S32 signo)
@@ -52,7 +52,7 @@ void SAMPLE_REGION_HandleSig(CVI_S32 signo)
 		SAMPLE_COMM_VPSS_Stop(0, abChnEnable);
 		SAMPLE_COMM_VO_StopVO(&stVoConfig);
 		SAMPLE_COMM_SYS_Exit();
-		printf("\033[0;35mprogram termination abnormally!\033[0;39m\n");
+		SAMPLE_PRT("\033[0;35mprogram termination abnormally!\033[0;39m\n");
 	}
 	exit(-1);
 }
@@ -289,7 +289,14 @@ CVI_S32 SAMPLE_VIO_VI_INIT(SAMPLE_VI_CONFIG_S *pstViConfig)
 		}
 	}
 
-	//todo: ISP enable
+	/************************************************
+	 * Create ISP
+	 ************************************************/
+	s32Ret = SAMPLE_COMM_VI_CreateIsp(pstViConfig);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_PRT("[ERROR] SAMPLE_COMM_VI_CreateIsp failed with %#x!\n", s32Ret);
+		return s32Ret;
+	}
 	/************************************************
 	 * Set sensor init
 	 ************************************************/
@@ -340,6 +347,12 @@ CVI_S32 SAMPLE_VIO_VI_DEINIT(SAMPLE_VI_CONFIG_S *pstViConfig)
 			SAMPLE_PRT("[ERROR] SAMPLE_COMM_VI_StopDev failed with %#x!\n", s32Ret);
 			return s32Ret;
 		}
+	}
+
+	s32Ret = SAMPLE_COMM_VI_DestroyIsp(pstViConfig);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_PRT("[ERROR] SAMPLE_COMM_VI_DestroyIsp failed with %#x!\n", s32Ret);
+		return s32Ret;
 	}
 
 	return s32Ret;
@@ -663,7 +676,7 @@ CVI_S32 SAMPLE_REGION_VI_VPSS_VO_8BIT_MODE(CVI_S32 HandleNum, RGN_TYPE_E enType,
 			CVI_U32 u32Pixel =
 					((overlay_palette[i].argbBlue | overlay_palette[i].argbGreen << 8) |
 					 (overlay_palette[i].argbRed << 16 | overlay_palette[i].argbAlpha << 24));
-			printf("overlay_palette index(%d) (0x%x).\n", i, u32Pixel);
+			SAMPLE_PRT("overlay_palette index(%d) (0x%x).\n", i, u32Pixel);
 		}
 #endif
 		stPalette.pstPaletteTable = (void *)overlay_palette;

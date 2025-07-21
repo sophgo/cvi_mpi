@@ -17,6 +17,7 @@
 
 #include "cvi_sys.h"
 #include <getopt.h>
+#include "sample_comm.h"
 
 #define LT9611_I2C_NAME "lt9611"
 #define LT9611_I2C_ADDR 0x39 /* 7bit addr */
@@ -433,7 +434,7 @@ void LT9611_init_i2c(void)
 	fd = open(temp, O_RDWR);
 
 	if (fd < 0) {
-		printf("open %s error!!!", temp);
+		SAMPLE_PRT("open %s error!!!", temp);
 	}
 }
 
@@ -459,7 +460,7 @@ static int lt9611_i2c_write_byte(CVI_U8 u8RegAddr, CVI_U8 u8Data)
 	int ret = ioctl(fd, I2C_RDWR, (unsigned long)&data);
 
 	if (ret < 0) {
-		printf("%s, addr: %x error!!!", __func__, u8RegAddr);
+		SAMPLE_PRT("%s, addr: %x error!!!", __func__, u8RegAddr);
 		return CVI_FAILURE;
 	}
 
@@ -490,7 +491,7 @@ static int lt9611_i2c_read_byte(CVI_U8 u8RegAddr)
 	int ret = ioctl(fd, I2C_RDWR, (unsigned long)&data);
 
 	if (ret < 0) {
-		printf("%s, addr: %x error!!!", __func__, u8RegAddr);
+		SAMPLE_PRT("%s, addr: %x error!!!", __func__, u8RegAddr);
 		return -1;
 	}
 
@@ -501,7 +502,7 @@ void LT9611_Chip_ID(void)
 {
 	lt9611_i2c_write_byte(0xFF, 0x80);
 	lt9611_i2c_write_byte(0xee, 0x01);
-	printf("LT9611 ring Chip ID = 0x%x, 0x%x, 0x%x\n", lt9611_i2c_read_byte(0x00),
+	SAMPLE_PRT("LT9611 ring Chip ID = 0x%x, 0x%x, 0x%x\n", lt9611_i2c_read_byte(0x00),
 		   lt9611_i2c_read_byte(0x01), lt9611_i2c_read_byte(0x02));
 	lt9611_i2c_write_byte(0xFF, 0x81);
 	lt9611_i2c_write_byte(0x01, 0x18); // sel xtal clock
@@ -594,7 +595,7 @@ void LT9611_MIPI_Input_Digtal(void) // weiguo
 	CVI_U8 lanes;
 
 	lanes = lt9611.mipi_lane_cnt;
-	printf("%s: lt9611 set mipi lanes = %d", __func__, lanes);
+	SAMPLE_PRT("%s: lt9611 set mipi lanes = %d", __func__, lanes);
 
 	lt9611_i2c_write_byte(0xff, 0x82);
 	lt9611_i2c_write_byte(0x4f, 0x80); //[7] = Select ad_txpll_d_clk.
@@ -608,14 +609,14 @@ void LT9611_MIPI_Input_Digtal(void) // weiguo
 	if ((lt9611.mipi_port_cnt == single_port_mipi_A) ||
 	    (lt9611.mipi_port_cnt == single_port_mipi_B)) { //(P10) //single_port_mipi
 		lt9611_i2c_write_byte(0x0a, 0x00); // 1=dual_lr, 0=dual_en
-		printf("%s: lt9611 set mipi ports = 1\n", __func__);
+		SAMPLE_PRT("%s: lt9611 set mipi ports = 1\n", __func__);
 	} else { // dual_port_mipi
 		lt9611_i2c_write_byte(0x0a, 0x03); // 1=dual_lr, 0=dual_en
-		printf("%s: lt9611 set mipi port = 2\n", __func__);
+		SAMPLE_PRT("%s: lt9611 set mipi port = 2\n", __func__);
 	}
 
 	if (lt9611.mipi_mode == csi) {
-		printf("%s: LT9611.mipi_mode = csi\n", __func__);
+		SAMPLE_PRT("%s: LT9611.mipi_mode = csi\n", __func__);
 		lt9611_i2c_write_byte(0xff, 0x83);
 		lt9611_i2c_write_byte(0x08, 0x10); // csi_en
 		lt9611_i2c_write_byte(0x2c, 0x40); // csi_sel
@@ -625,7 +626,7 @@ void LT9611_MIPI_Input_Digtal(void) // weiguo
 			lt9611_i2c_write_byte(0x1c, 0x01);
 		}
 	} else
-		printf("%s: LT9611.mipi_mode = dsi\n", __func__);
+		SAMPLE_PRT("%s: LT9611.mipi_mode = dsi\n", __func__);
 	if (lt9611.mipi_port_cnt == single_port_mipi_B) {
 		lt9611_i2c_write_byte(0xff, 0x82);
 		lt9611_i2c_write_byte(0x50, 0x14); // signal port from portB
@@ -644,9 +645,9 @@ void LT9611_Video_Check(void) // dsren
 	lt9611_i2c_write_byte(0xff, 0x82); // top video check module
 	h_total_sysclk = lt9611_i2c_read_byte(0x86);
 	h_total_sysclk = (h_total_sysclk << 8) + lt9611_i2c_read_byte(0x87);
-	printf("\33[32m\n");
-	printf("-----------------------------------------------------------------------------\n");
-	printf("%s: h_total_sysclk = %d\n", __func__, h_total_sysclk);
+	SAMPLE_PRT("\33[32m\n");
+	SAMPLE_PRT("-----------------------------------------------------------------------------\n");
+	SAMPLE_PRT("%s: h_total_sysclk = %d\n", __func__, h_total_sysclk);
 
 	v_act = lt9611_i2c_read_byte(0x82);
 	v_act = (v_act << 8) + lt9611_i2c_read_byte(0x83);
@@ -661,134 +662,134 @@ void LT9611_Video_Check(void) // dsren
 	h_act_b = (h_act_b << 8) + lt9611_i2c_read_byte(0x87);
 
 	if (lt9611.input_color_space == YUV422) {
-		printf("%s: lt9611.input_color_space = YUV422\n", __func__);
+		SAMPLE_PRT("%s: lt9611.input_color_space = YUV422\n", __func__);
 		h_act_a /= 2;
 		h_act_b /= 2;
 	} else if (lt9611.input_color_space == RGB888) {
-		printf("%s: lt9611.input_color_space = RGB888\n", __func__);
+		SAMPLE_PRT("%s: lt9611.input_color_space = RGB888\n", __func__);
 		h_act_a /= 3;
 		h_act_b /= 3;
 	}
 
 	mipi_video_format = lt9611_i2c_read_byte(0x88);
 
-	printf("%s: h_act_a, h_act_b, v_act, v_tal: %d, %d, %d, %d, ", __func__, h_act_a, h_act_b, v_act, v_tal);
-	printf("%s: mipi_video_format: 0x%x", __func__, mipi_video_format);
+	SAMPLE_PRT("%s: h_act_a, h_act_b, v_act, v_tal: %d, %d, %d, %d, ", __func__, h_act_a, h_act_b, v_act, v_tal);
+	SAMPLE_PRT("%s: mipi_video_format: 0x%x", __func__, mipi_video_format);
 
 	if (0) //(P10 == 0) //dual port.
 		h_act = h_act_a + h_act_b;
 	else
 		h_act = h_act_a;
 
-	printf("%s: Video_Format =\n", __func__);
+	SAMPLE_PRT("%s: Video_Format =\n", __func__);
 	///////////////////////formate detect///////////////////////////////////
 
 	// DTV
 	if ((h_act == video_640x480_60Hz.hact) && (v_act == video_640x480_60Hz.vact)) {
-		printf(" video_640x480_60Hz\n");
+		SAMPLE_PRT(" video_640x480_60Hz\n");
 		Video_Format = video_640x480_60Hz_vic1;
 		video = &video_640x480_60Hz;
 	} else if ((h_act == (video_720x480_60Hz.hact)) && (v_act == video_720x480_60Hz.vact)) {
-		printf(" video_720x480_60Hz\n");
+		SAMPLE_PRT(" video_720x480_60Hz\n");
 		Video_Format = video_720x480_60Hz_vic3;
 		video = &video_720x480_60Hz;
 	} else if ((h_act == (video_720x576_50Hz.hact)) && (v_act == video_720x576_50Hz.vact)) {
-		printf(" video_720x576_50Hz\n");
+		SAMPLE_PRT(" video_720x576_50Hz\n");
 		Video_Format = video_720x576_50Hz_vic;
 		video = &video_720x576_50Hz;
 	} else if ((h_act == video_1280x720_60Hz.hact) && (v_act == video_1280x720_60Hz.vact)) {
 		if (h_total_sysclk < 630) {
-			printf(" video_1280x720_60Hz\n");
+			SAMPLE_PRT(" video_1280x720_60Hz\n");
 			Video_Format = video_1280x720_60Hz_vic4;
 			video = &video_1280x720_60Hz;
 		} else if (h_total_sysclk < 750) {
-			printf(" video_1280x720_50Hz\n");
+			SAMPLE_PRT(" video_1280x720_50Hz\n");
 			Video_Format = video_1280x720_50Hz_vic;
 			video = &video_1280x720_50Hz;
 		} else if (h_total_sysclk < 1230) {
-			printf(" video_1280x720_30Hz\n");
+			SAMPLE_PRT(" video_1280x720_30Hz\n");
 			Video_Format = video_1280x720_30Hz_vic;
 			video = &video_1280x720_30Hz;
 		}
 	} else if ((h_act == (video_1280x800_60Hz.hact)) && (v_act == video_1280x800_60Hz.vact)) {
 		if (h_total_sysclk < 560) {
-			printf(" video_1280x800_60Hz\n");
+			SAMPLE_PRT(" video_1280x800_60Hz\n");
 			Video_Format = video_other;
 			video = &video_1280x800_60Hz;
 		}
 	} else if ((h_act == video_1920x1080_60Hz.hact) && (v_act == video_1920x1080_60Hz.vact)) { // 1080P
 		if (h_total_sysclk < 430) {
-			printf(" video_1920x1080_60Hz\n");
+			SAMPLE_PRT(" video_1920x1080_60Hz\n");
 			Video_Format = video_1920x1080_60Hz_vic16;
 			video = &video_1920x1080_60Hz;
 		}
 
 		else if (h_total_sysclk < 510) {
-			printf(" video_1920x1080_50Hz\n");
+			SAMPLE_PRT(" video_1920x1080_50Hz\n");
 			Video_Format = video_1920x1080_50Hz_vic;
 			video = &video_1920x1080_50Hz;
 		}
 
 		else if (h_total_sysclk < 830) {
-			printf(" video_1920x1080_30Hz\n");
+			SAMPLE_PRT(" video_1920x1080_30Hz\n");
 			Video_Format = video_1920x1080_30Hz_vic;
 			video = &video_1920x1080_30Hz;
 		}
 
 		else if (h_total_sysclk < 980) {
-			printf(" video_1920x1080_25Hz\n");
+			SAMPLE_PRT(" video_1920x1080_25Hz\n");
 			Video_Format = video_1920x1080_25Hz_vic;
 			video = &video_1920x1080_25Hz;
 		}
 
 		else if (h_total_sysclk < 1030) {
-			printf(" video_1920x1080_24Hz\n");
+			SAMPLE_PRT(" video_1920x1080_24Hz\n");
 			Video_Format = video_1920x1080_24Hz_vic;
 			video = &video_1920x1080_24Hz;
 		}
 	} else if ((h_act == video_3840x2160_30Hz.hact) && (v_act == video_3840x2160_30Hz.vact)) { // 2160P
 		if (h_total_sysclk < 430) {
-			printf(" video_3840x2160_30Hz\n");
+			SAMPLE_PRT(" video_3840x2160_30Hz\n");
 			Video_Format = video_3840x2160_30Hz_vic;
 			video = &video_3840x2160_30Hz;
 		} else if (h_total_sysclk < 490) {
-			printf(" video_3840x2160_25Hz\n");
+			SAMPLE_PRT(" video_3840x2160_25Hz\n");
 			Video_Format = video_3840x2160_25Hz_vic;
 			video = &video_3840x2160_25Hz;
 		} else if (h_total_sysclk < 520) {
-			printf(" video_3840x2160_24Hz\n");
+			SAMPLE_PRT(" video_3840x2160_24Hz\n");
 			Video_Format = video_3840x2160_24Hz_vic;
 			video = &video_3840x2160_24Hz;
 		}
 	} else if ((h_act == (video_1024x768_60Hz.hact)) && (v_act == video_1024x768_60Hz.vact)) {
-		printf(" video_1024x768_60Hz\n");
+		SAMPLE_PRT(" video_1024x768_60Hz\n");
 		Video_Format = video_other;
 		video = &video_1024x768_60Hz;
 	} else if ((h_act == (video_1280x1024_60Hz.hact)) && (v_act == video_1280x1024_60Hz.vact)) {
-		printf(" video_1280x1024_60Hz\n");
+		SAMPLE_PRT(" video_1280x1024_60Hz\n");
 		Video_Format = video_other;
 		video = &video_1280x1024_60Hz;
 	} else if ((h_act == (video_1600x1200_60Hz.hact)) && (v_act == video_1600x1200_60Hz.vact)) {
-		printf(" video_1600x1200_60Hz\n");
+		SAMPLE_PRT(" video_1600x1200_60Hz\n");
 		Video_Format = video_other;
 		video = &video_1600x1200_60Hz;
 	} else if ((h_act == video_1200x1920_60Hz.hact) && (v_act == video_1200x1920_60Hz.vact)) { //&&
-		printf(" video_1200x1920_60Hz\n");
+		SAMPLE_PRT(" video_1200x1920_60Hz\n");
 		Video_Format = video_other;
 		video = &video_1200x1920_60Hz;
 	} else if ((h_act == video_1920x720_60Hz.hact) && (v_act == video_1920x720_60Hz.vact)) { //&&
-		printf(" video_1920x720_60Hz\n");
+		SAMPLE_PRT(" video_1920x720_60Hz\n");
 		Video_Format = video_other;
 		video = &video_1920x720_60Hz;
 	} else if ((h_act == video_2560x1440_60Hz.hact) && (v_act == video_2560x1440_60Hz.vact)) { // 1440p
-		printf(" video_2560x1440_60Hz\n");
+		SAMPLE_PRT(" video_2560x1440_60Hz\n");
 		Video_Format = video_2560x1440_60Hz_vic;
 		video = &video_2560x1440_60Hz;
 	} else {
 		Video_Format = video_none;
-		printf(" unknown video format\n");
+		SAMPLE_PRT(" unknown video format\n");
 	}
-	printf("-----------------------------------------------------------------------------\n");
+	SAMPLE_PRT("-----------------------------------------------------------------------------\n");
 }
 
 void LT9611_MIPI_Video_Timing(struct video_timing *video_format) // weiguo
@@ -889,7 +890,7 @@ void LT9611_MIPI_Pcr(struct video_timing *video_format) // weiguo
 		lt9611_i2c_write_byte(0x4a, 0x10);
 		lt9611_i2c_write_byte(0x1d, 0xf3); //
 
-		printf("%s: 640x480_60Hz\n", __func__);
+		SAMPLE_PRT("%s: 640x480_60Hz\n", __func__);
 		break;
 
 	case video_540x960_60Hz_vic:
@@ -926,7 +927,7 @@ void LT9611_PLL(struct video_timing *video_format) // zhangzhichun
 	CVI_U8 i;
 
 	pclk = video_format->pclk_khz;
-	printf("%s: set rx pll = %d", __func__, pclk);
+	SAMPLE_PRT("%s: set rx pll = %d", __func__, pclk);
 
 	lt9611_i2c_write_byte(0xff, 0x81);
 	lt9611_i2c_write_byte(0x23, 0x40); // Enable LDO and disable PD
@@ -960,7 +961,7 @@ void LT9611_PLL(struct video_timing *video_format) // zhangzhichun
 
 	pcr_m = 20 * hdmi_post_div;
 
-	printf("%s: pcr_m = 0x%x, hdmi_post_div = %d", __func__, pcr_m, hdmi_post_div);
+	SAMPLE_PRT("%s: pcr_m = 0x%x, hdmi_post_div = %d", __func__, pcr_m, hdmi_post_div);
 	// Hex
 
 	lt9611_i2c_write_byte(0xff, 0x83);
@@ -997,7 +998,7 @@ void LT9611_PLL(struct video_timing *video_format) // zhangzhichun
 		pll_lock_flag = lt9611_i2c_read_byte(0x15);
 
 		if ((pll_lock_flag & 0x80) && (cal_done_flag & 0x80) && (band_out != 0xff)) {
-			printf("%s: HDMI pll locked band out: 0x%x", __func__, band_out);
+			SAMPLE_PRT("%s: HDMI pll locked band out: 0x%x", __func__, band_out);
 			break;
 		}
 
@@ -1008,7 +1009,7 @@ void LT9611_PLL(struct video_timing *video_format) // zhangzhichun
 		lt9611_i2c_write_byte(0x18, 0xdc); /* pll analog reset */
 		lt9611_i2c_write_byte(0x18, 0xfc);
 		lt9611_i2c_write_byte(0x16, 0xf3); /*start calibration*/
-		printf("%s: HDMI pll unlocked, reset pll\n", __func__);
+		SAMPLE_PRT("%s: HDMI pll unlocked, reset pll\n", __func__);
 	}
 }
 
@@ -1018,10 +1019,10 @@ void LT9611_HDMI_TX_Phy(void) // xyji
 	lt9611_i2c_write_byte(0x30, 0x6a);
 	if (lt9611.hdmi_coupling_mode == ac_mode) {
 		lt9611_i2c_write_byte(0x31, 0x73); // DC: 0x44, AC:0x73
-		printf("%s: AC couple\n", __func__);
+		SAMPLE_PRT("%s: AC couple\n", __func__);
 	} else { // lt9611.hdmi_coupling_mode==dc_mode
 		lt9611_i2c_write_byte(0x31, 0x44);
-		printf("%s: DC couple\n", __func__);
+		SAMPLE_PRT("%s: DC couple\n", __func__);
 	}
 	lt9611_i2c_write_byte(0x32, 0x4a);
 	lt9611_i2c_write_byte(0x33, 0x0b);
@@ -1058,7 +1059,7 @@ void LT9611_HDCP_Enable(void) // luodexing
 	lt9611_i2c_write_byte(0x15, 0x01); // disable HDCP
 	lt9611_i2c_write_byte(0x15, 0x71); // enable HDCP
 	lt9611_i2c_write_byte(0x15, 0x65); // enable HDCP
-	printf("%s: On\n", __func__);
+	SAMPLE_PRT("%s: On\n", __func__);
 }
 
 void LT9611_HDCP_Disable(void) // luodexing
@@ -1094,7 +1095,7 @@ void LT9611_HDMI_Out_Enable(void) // dsren
 		LT9611_HDCP_Disable();
 	}
 
-	printf("%s\n", __func__);
+	SAMPLE_PRT("%s\n", __func__);
 }
 
 void LT9611_HDMI_Out_Disable(void) // dsren
@@ -1102,7 +1103,7 @@ void LT9611_HDMI_Out_Disable(void) // dsren
 	lt9611_i2c_write_byte(0xff, 0x81);
 	lt9611_i2c_write_byte(0x30, 0x00); /* Txphy PD */
 	lt9611_i2c_write_byte(0x23, 0x80); /* Txpll PD */
-	printf("%s\n", __func__);
+	SAMPLE_PRT("%s\n", __func__);
 	LT9611_HDCP_Disable();
 }
 
@@ -1116,7 +1117,7 @@ void LT9611_HDMI_TX_Digital(struct video_timing *video_format) // dsren
 
 	infoFrame_en = (AIF_PKT_EN | AVI_PKT_EN | SPD_PKT_EN);
 	// MPEG_PKT_EN,AIF_PKT_EN,SPD_PKT_EN,AVI_PKT_EN,UD0_PKT_EN,UD1_PKT_EN
-	printf("%s: infoFrame_en = 0x%x", __func__, infoFrame_en);
+	SAMPLE_PRT("%s: infoFrame_en = 0x%x", __func__, infoFrame_en);
 
 	pb2 = (AR << 4) + 0x08;
 	pb4 = VIC;
@@ -1126,10 +1127,10 @@ void LT9611_HDMI_TX_Digital(struct video_timing *video_format) // dsren
 	lt9611_i2c_write_byte(0xff, 0x82);
 	if (lt9611.hdmi_mode == HDMI) {
 		lt9611_i2c_write_byte(0xd6, 0x8e); // sync polarity
-		printf("%s: HMDI mode = HDMI\n", __func__);
+		SAMPLE_PRT("%s: HMDI mode = HDMI\n", __func__);
 	} else if (lt9611.hdmi_mode == DVI) {
 		lt9611_i2c_write_byte(0xd6, 0x0e); // sync polarity
-		printf("%s: HMDI mode = DVI\n", __func__);
+		SAMPLE_PRT("%s: HMDI mode = DVI\n", __func__);
 	}
 
 	if (lt9611.audio_out == audio_i2s) {
@@ -1191,14 +1192,14 @@ void LT9611_CSC(void)
 	if (lt9611.input_color_space == YUV422) {
 		lt9611_i2c_write_byte(0xff, 0x82);
 		lt9611_i2c_write_byte(0xb9, 0x18);
-		printf("%s: Ypbpr 422 to RGB888\n", __func__);
+		SAMPLE_PRT("%s: Ypbpr 422 to RGB888\n", __func__);
 	}
 }
 
 void LT9611_Audio_Init(void) // sujin
 {
 	if (lt9611.audio_out == audio_i2s) {
-		printf("Audio inut = I2S 2ch\n");
+		SAMPLE_PRT("Audio inut = I2S 2ch\n");
 
 		lt9611_i2c_write_byte(0xff, 0x84);
 		lt9611_i2c_write_byte(0x06, 0x08);
@@ -1214,7 +1215,7 @@ void LT9611_Audio_Init(void) // sujin
 	}
 
 	if (lt9611.audio_out == audio_spdif) {
-		printf("Audio inut = SPDIF\n");
+		SAMPLE_PRT("Audio inut = SPDIF\n");
 
 		lt9611_i2c_write_byte(0xff, 0x84);
 		lt9611_i2c_write_byte(0x06, 0x0c);
@@ -1249,7 +1250,7 @@ void LT9611_Read_EDID(void) // luodexing
 		Timer0_Delay1ms(5);					   // wait 5ms for reading edid data.
 		if (lt9611_i2c_read_byte(0x40) & 0x02) { // KEY_DDC_ACCS_DONE=1
 			if (lt9611_i2c_read_byte(0x40) & 0x50) { // DDC No Ack or Abitration lost
-				printf("read edid failed: no ack\n");
+				SAMPLE_PRT("read edid failed: no ack\n");
 				goto end;
 			} else {
 				for (j = 0; j < 32; j++) {
@@ -1258,7 +1259,7 @@ void LT9611_Read_EDID(void) // luodexing
 					if ((i == 3) && (j == 30)) {
 						extended_flag = edid_data & 0x03;
 					}
-					printf("%x,", edid_data);
+					SAMPLE_PRT("%x,", edid_data);
 				}
 				if (i == 3) {
 					if (extended_flag < 1) { // no block 1, stop reading edid.
@@ -1267,7 +1268,7 @@ void LT9611_Read_EDID(void) // luodexing
 				}
 			}
 		} else {
-			printf("read edid failed: accs not done\n");
+			SAMPLE_PRT("read edid failed: accs not done\n");
 			goto end;
 		}
 	}
@@ -1284,13 +1285,13 @@ void LT9611_Read_EDID(void) // luodexing
 		Timer0_Delay1ms(5);					   // wait 5ms for reading edid data.
 		if (lt9611_i2c_read_byte(0x40) & 0x02) { // KEY_DDC_ACCS_DONE=1
 			if (lt9611_i2c_read_byte(0x40) & 0x50) { // DDC No Ack or Abitration lost
-				printf("read edid failed: no ack\n");
+				SAMPLE_PRT("read edid failed: no ack\n");
 				goto end;
 			} else {
 				for (j = 0; j < 32; j++) {
 					edid_data = lt9611_i2c_read_byte(0x83);
 					// Sink_EDID[256+i*32+j]= edid_data; // write edid data to Sink_EDID[];
-					printf("%x,", edid_data);
+					SAMPLE_PRT("%x,", edid_data);
 				}
 				if (i == 3) {
 					if (extended_flag < 3) { // no block 1, stop reading edid.
@@ -1299,7 +1300,7 @@ void LT9611_Read_EDID(void) // luodexing
 				}
 			}
 		} else {
-			printf("read edid failed: accs not done\n");
+			SAMPLE_PRT("read edid failed: accs not done\n");
 			goto end;
 		}
 	}
@@ -1325,12 +1326,12 @@ void LT9611_load_hdcp_key(void) // luodexing
 	lt9611_i2c_write_byte(0x07, 0x17); // 0x37
 	Timer0_Delay1ms(50);			   // wait 5ms for loading key.
 
-	// printf("LT9611_load_hdcp_key: 0x%02bx",lt9611_i2c_read_byte(0x40));
+	// SAMPLE_PRT("LT9611_load_hdcp_key: 0x%02bx",lt9611_i2c_read_byte(0x40));
 
 	if ((lt9611_i2c_read_byte(0x40) & 0x81) == 0x81) {
-		printf("%s: external key valid\n", "LT9611_load_hdcp_key");
+		SAMPLE_PRT("%s: external key valid\n", "LT9611_load_hdcp_key");
 	} else {
-		printf("%s: external key unvalid, using internal test key!\n", "LT9611_load_hdcp_key");
+		SAMPLE_PRT("%s: external key unvalid, using internal test key!\n", "LT9611_load_hdcp_key");
 	}
 
 	lt9611_i2c_write_byte(0x03, 0xc2);
@@ -1406,7 +1407,7 @@ void lt9611_cec_msg_set_logical_address(struct cec_msg *cec_msg)
 	}
 
 	if (logical_address > 15) {
-		printf(" LA error!\n");
+		SAMPLE_PRT(" LA error!\n");
 		return;
 	}
 
@@ -1504,17 +1505,17 @@ static int do_checksum(const unsigned char *x, CVI_U8 len)
 	unsigned char sum = 0;
 	int i;
 
-	printf("Checksum: 0x%x", check);
+	SAMPLE_PRT("Checksum: 0x%x", check);
 
 	for (i = 0; i < len; i++)
 		sum += x[i];
 
 	if ((unsigned char)(check + sum) != 0) {
-		printf(" (should be 0x%x)\n", -sum & 0xff);
+		SAMPLE_PRT(" (should be 0x%x)\n", -sum & 0xff);
 		return 0;
 	}
 
-	printf(" (valid)\n");
+	SAMPLE_PRT(" (valid)\n");
 	return 1;
 }
 
@@ -1556,7 +1557,7 @@ int lt9611_parse_physical_address(struct cec_msg *cec_msg, CVI_U8 *edid) // pars
 		tag_code = (edid[0x84 + offset] & 0xe0) >> 5;
 	}
 
-	printf("vsdb: 0x%x,0x%x,0x%x", edid[0x84 + offset], edid[0x85 + offset], edid[0x86 + offset]);
+	SAMPLE_PRT("vsdb: 0x%x,0x%x,0x%x", edid[0x84 + offset], edid[0x85 + offset], edid[0x86 + offset]);
 
 	if ((edid[0x84 + offset + 1] == 0x03) &&
 	    (edid[0x84 + offset + 2] == 0x0c) &&
@@ -1564,7 +1565,7 @@ int lt9611_parse_physical_address(struct cec_msg *cec_msg, CVI_U8 *edid) // pars
 		physical_address = edid[0x84 + offset + 4];
 		physical_address = (physical_address << 8) + edid[0x84 + offset + 5];
 		cec_msg->physical_address = physical_address;
-		printf("prase physical address success! %x", physical_address);
+		SAMPLE_PRT("prase physical address success! %x", physical_address);
 		return 1;
 	}
 	return 0;
@@ -1578,10 +1579,10 @@ void lt9611_hdmi_cec_read(struct cec_msg *cec_msg) // transfer cec msg from LT96
 	lt9611_i2c_write_byte(0xf5, 0x01); // lock rx data buff
 	size = lt9611_i2c_read_byte(0xd3);
 	cec_msg->rx_data_buff[0] = size;
-	// printf("cec rec:\n");
+	// SAMPLE_PRT("cec rec:\n");
 	for (i = 1; i <= size; i++) {
 		cec_msg->rx_data_buff[i] = lt9611_i2c_read_byte(0xd3 + i);
-		// printf("0x%02bx, ",cec_msg->rx_data_buff[i]);
+		// SAMPLE_PRT("0x%02bx, ",cec_msg->rx_data_buff[i]);
 	}
 	lt9611_i2c_write_byte(0xf5, 0x00); // unlock rx data buff
 }
@@ -1652,7 +1653,7 @@ void lt9611_cec_report_physical_address(struct cec_msg *cec_msg) // report physi
 	cec_msg->tx_data_buff[4] = (CVI_U8)(cec_msg->physical_address);	// parameter of opcode
 	cec_msg->tx_data_buff[5] = 0x04; // device type = playback device
 
-	// printf("PA:%bx, %bx",cec_msg->tx_data_buff[3],cec_msg->tx_data_buff[4]);
+	// SAMPLE_PRT("PA:%bx, %bx",cec_msg->tx_data_buff[3],cec_msg->tx_data_buff[4]);
 	lt9611_hdmi_cec_write(cec_msg);
 }
 
@@ -1663,7 +1664,7 @@ void lt9611_cec_menu_activate(struct cec_msg *cec_msg) // report physical addres
 	// first cec data([7:4]=initiator ;[7:4]= destintion)
 	cec_msg->tx_data_buff[2] = 0x8e; // opcode
 	cec_msg->tx_data_buff[3] = 0x00; // parameter of opcode
-	// printf("PA:%bx, %bx",cec_msg->tx_data_buff[3],cec_msg->tx_data_buff[4]);
+	// SAMPLE_PRT("PA:%bx, %bx",cec_msg->tx_data_buff[3],cec_msg->tx_data_buff[4]);
 	lt9611_hdmi_cec_write(cec_msg);
 }
 
@@ -1716,33 +1717,33 @@ void lt9611_cec_msg_tx_handle(struct cec_msg *cec_msg)
 	//        return;
 
 	if (cec_status & CEC_ERROR_INITIATOR) {
-		printf("CEC_ERROR_INITIATOR.\n");
+		SAMPLE_PRT("CEC_ERROR_INITIATOR.\n");
 		lt9611_cec_logical_reset();
 		return;
 	}
 
 	if (cec_status & CEC_ARB_LOST) {
-		printf("CEC_ARB_LOST.\n"); // lost arbitration
+		SAMPLE_PRT("CEC_ARB_LOST.\n"); // lost arbitration
 		return;
 	}
 
 	if (cec_status & (CEC_SEND_DONE | CEC_NACK | CEC_ERROR_FOLLOWER))
 		do {
-			printf("tx_date:\n");
+			SAMPLE_PRT("tx_date:\n");
 			for (i = 0; i < cec_msg->tx_data_buff[0]; i++)
-				printf("0x%x, ", cec_msg->tx_data_buff[i + 1]);
+				SAMPLE_PRT("0x%x, ", cec_msg->tx_data_buff[i + 1]);
 
 			if (cec_status & CEC_SEND_DONE)
-				printf("CEC_SEND_DONE >>\n");
+				SAMPLE_PRT("CEC_SEND_DONE >>\n");
 			if (cec_status & CEC_NACK)
-				printf("NACK >>\n");
+				SAMPLE_PRT("NACK >>\n");
 
 			header = cec_msg->tx_data_buff[1];
 
 			if ((header == 0x44) || (header == 0x88) || (header == 0xbb)) { // logical address allocation
 				if (cec_status & CEC_NACK) {
 					cec_msg->logical_address = header & 0x0f;
-					printf("la_allocation_done.\n");
+					SAMPLE_PRT("la_allocation_done.\n");
 					lt9611_cec_msg_set_logical_address(cec_msg);
 					lt9611_cec_report_physical_address(cec_msg);
 				}
@@ -1772,11 +1773,11 @@ void lt9611_cec_msg_tx_handle(struct cec_msg *cec_msg)
 			opcode = cec_msg->tx_data_buff[2];
 			if (opcode == 0x84) {
 				cec_msg->report_physical_address_done = 1;
-				printf("report_physical_address.\n");
+				SAMPLE_PRT("report_physical_address.\n");
 			}
 
 			if (opcode == 0x00) {
-				printf("feature abort\n");
+				SAMPLE_PRT("feature abort\n");
 			}
 
 		} while (0);
@@ -1796,7 +1797,7 @@ void lt9611_cec_msg_rx_parse(struct cec_msg *cec_msg)
 	//        return;
 
 	if (cec_status & CEC_ERROR_FOLLOWER) {
-		printf("CEC_ERROR_FOLLOWER.\n");
+		SAMPLE_PRT("CEC_ERROR_FOLLOWER.\n");
 		return;
 	}
 
@@ -1809,18 +1810,18 @@ void lt9611_cec_msg_rx_parse(struct cec_msg *cec_msg)
 	if (cec_msg->rx_data_buff[0] < 1) // check rx data length
 		return;
 
-	printf("rx_date:\n");
+	SAMPLE_PRT("rx_date:\n");
 	for (i = 0; i < cec_msg->rx_data_buff[0]; i++)
-		printf("0x%x, ", cec_msg->rx_data_buff[i + 1]);
+		SAMPLE_PRT("0x%x, ", cec_msg->rx_data_buff[i + 1]);
 
-	printf("parse <<\n");
+	SAMPLE_PRT("parse <<\n");
 	header = cec_msg->rx_data_buff[1];
 	destintion = header & 0x0f;
 	initiator = (header & 0xf0) >> 4;
 	// cec_msg ->parse_msg_done = 1;
 
 	if (header == 0x4f) {
-		printf("lt9611 broadcast msg.\n");
+		SAMPLE_PRT("lt9611 broadcast msg.\n");
 	}
 
 	if (cec_msg->rx_data_buff[0] < 2) // check rx data length
@@ -1835,7 +1836,7 @@ void lt9611_cec_msg_rx_parse(struct cec_msg *cec_msg)
 		    (opcode == 0x8e) ||
 		    (opcode == 0x90) ||
 		    (opcode == 0xff)) {
-			printf("Invalid msg, destination address error\n");
+			SAMPLE_PRT("Invalid msg, destination address error\n");
 			// these msg should not be broadcast msg, but they do.
 			return;
 		}
@@ -1843,14 +1844,14 @@ void lt9611_cec_msg_rx_parse(struct cec_msg *cec_msg)
 		if ((opcode == 0x84) ||
 		    (opcode == 0x84) ||
 		    (opcode == 0x84)) {
-			printf("Invalid msg, destination address error\n");
+			SAMPLE_PRT("Invalid msg, destination address error\n");
 			// these msg should be broadcast msg, but they not.
 			return;
 		}
 	}
 
 	if (opcode == 0xff) { // abort
-		printf("abort.\n");
+		SAMPLE_PRT("abort.\n");
 		if (destintion == 0x0f) // ignor broadcast abort msg.
 			return;
 		cec_msg->destintion = initiator;
@@ -1858,54 +1859,54 @@ void lt9611_cec_msg_rx_parse(struct cec_msg *cec_msg)
 	}
 
 	if (opcode == 0x83) { // give physical address
-		printf("give physical address.\n");
+		SAMPLE_PRT("give physical address.\n");
 		lt9611_cec_report_physical_address(cec_msg);
 	}
 
 	if (opcode == 0x90) { // report power status
-		printf("report power status.\n");
+		SAMPLE_PRT("report power status.\n");
 		if (cec_msg->rx_data_buff[0] < 3) {
-			printf("<error:parameters missing\n");
+			SAMPLE_PRT("<error:parameters missing\n");
 			return; // parameters missing, ignor this msg.
 		}
 	}
 
 	if (opcode == 0x8e) { // menu status
-		printf("menu status.\n");
+		SAMPLE_PRT("menu status.\n");
 		if (cec_msg->rx_data_buff[0] < 3) {
-			printf("<error:parameters missing\n");
+			SAMPLE_PRT("<error:parameters missing\n");
 			return; // parameters missing, ignor this msg.
 		}
 	}
 
 	if (opcode == 0x00) { // feature abort
-		printf("feature abort.\n");
+		SAMPLE_PRT("feature abort.\n");
 		if (cec_msg->rx_data_buff[0] < 3) {
-			printf("<error:parameters missing\n");
+			SAMPLE_PRT("<error:parameters missing\n");
 			return; // parameters missing, ignor this msg.
 		}
 	}
 
 	if (opcode == 0x9e) { // cec version
-		printf("cec version.\n");
+		SAMPLE_PRT("cec version.\n");
 		if (cec_msg->rx_data_buff[0] < 3) {
-			printf("<error:parameters missing\n");
+			SAMPLE_PRT("<error:parameters missing\n");
 			return; // parameters missing, ignor this msg.
 		}
 	}
 
 	if (opcode == 0x84) { // report physical address
-		printf("report physical address.\n");
+		SAMPLE_PRT("report physical address.\n");
 		if (cec_msg->rx_data_buff[0] < 5) {
-			printf("<error:parameters missing\n");
+			SAMPLE_PRT("<error:parameters missing\n");
 			return; // parameters missing, ignor this msg.
 		}
 	}
 
 	if (opcode == 0x86) { // set stream path
-		printf("set stream path.\n");
+		SAMPLE_PRT("set stream path.\n");
 		if (cec_msg->rx_data_buff[0] < 4) {
-			printf("<error:parameters missing\n");
+			SAMPLE_PRT("<error:parameters missing\n");
 			return; // parameters missing, ignor this msg.
 		}
 		lt9611_cec_report_physical_address(cec_msg);
@@ -1934,7 +1935,7 @@ void LT9611_Frequency_Meter_Byte_Clk(void)
 	CVI_U8 temp;
 	CVI_U32 reg = 0x00;
 
-	printf("\33[32m\n");
+	SAMPLE_PRT("\33[32m\n");
 	/* port A byte clk meter */
 	lt9611_i2c_write_byte(0xff, 0x82);
 	lt9611_i2c_write_byte(0xc7, 0x03); // PortA
@@ -1946,9 +1947,9 @@ void LT9611_Frequency_Meter_Byte_Clk(void)
 		reg = reg + (CVI_U16)temp * 256;
 		temp = lt9611_i2c_read_byte(0xcf);
 		reg = reg + temp;
-		printf("port A byte clk = %d", reg);
+		SAMPLE_PRT("port A byte clk = %d", reg);
 	} else /* clk unstable */
-		printf("port A byte clk unstable\n");
+		SAMPLE_PRT("port A byte clk unstable\n");
 
 	/* port B byte clk meter */
 	lt9611_i2c_write_byte(0xff, 0x82);
@@ -1961,9 +1962,9 @@ void LT9611_Frequency_Meter_Byte_Clk(void)
 		reg = reg + (CVI_U16)temp * 256;
 		temp = lt9611_i2c_read_byte(0xcf);
 		reg = reg + temp;
-		printf("port A reference clock = %d", reg);
+		SAMPLE_PRT("port A reference clock = %d", reg);
 	} else /* clk unstable */
-		printf("port A reference clock unstable\n");
+		SAMPLE_PRT("port A reference clock unstable\n");
 }
 
 void LT9611_Htotal_Sysclk(void)
@@ -1976,7 +1977,7 @@ void LT9611_Htotal_Sysclk(void)
 		lt9611_i2c_write_byte(0xff, 0x82);
 		reg = lt9611_i2c_read_byte(0x86);
 		reg = reg * 256 + lt9611_i2c_read_byte(0x87);
-		printf("Htotal_Sysclk = %d", reg);
+		SAMPLE_PRT("Htotal_Sysclk = %d", reg);
 		// printdec_u32(reg);
 	}
 #endif
@@ -1988,11 +1989,11 @@ void LT9611_Pcr_MK_Print(void)
 
 	for (loopx = 0; loopx < 8; loopx++) {
 		lt9611_i2c_write_byte(0xff, 0x83);
-		printf("M:0x%x", lt9611_i2c_read_byte(0x97));
-		printf(" 0x%x", lt9611_i2c_read_byte(0xb4));
-		printf(" 0x%x", lt9611_i2c_read_byte(0xb5));
-		printf(" 0x%x", lt9611_i2c_read_byte(0xb6));
-		printf(" 0x%x", lt9611_i2c_read_byte(0xb7));
+		SAMPLE_PRT("M:0x%x", lt9611_i2c_read_byte(0x97));
+		SAMPLE_PRT(" 0x%x", lt9611_i2c_read_byte(0xb4));
+		SAMPLE_PRT(" 0x%x", lt9611_i2c_read_byte(0xb5));
+		SAMPLE_PRT(" 0x%x", lt9611_i2c_read_byte(0xb6));
+		SAMPLE_PRT(" 0x%x", lt9611_i2c_read_byte(0xb7));
 		Timer0_Delay1ms(1000);
 	}
 #endif
@@ -2006,38 +2007,38 @@ void LT9611_Dphy_debug(void)
 	lt9611_i2c_write_byte(0xff, 0x83);
 	temp = lt9611_i2c_read_byte(0xbc);
 	if (temp == 0x55)
-		printf("port A lane PN is right\n");
+		SAMPLE_PRT("port A lane PN is right\n");
 	else
-		printf("port A lane PN error 0x83bc = 0x%x", temp);
+		SAMPLE_PRT("port A lane PN error 0x83bc = 0x%x", temp);
 
 	temp = lt9611_i2c_read_byte(0x99);
 	if (temp == 0xb8)
-		printf("port A lane 0 sot right\n");
+		SAMPLE_PRT("port A lane 0 sot right\n");
 	else
-		printf("port A lane 0 sot error = 0x%x", temp);
+		SAMPLE_PRT("port A lane 0 sot error = 0x%x", temp);
 
 	temp = lt9611_i2c_read_byte(0x9b);
 	if (temp == 0xb8)
-		printf("port A lane 1 sot right\n");
+		SAMPLE_PRT("port A lane 1 sot right\n");
 	else
-		printf("port A lane 1 sot error = 0x%x", temp);
+		SAMPLE_PRT("port A lane 1 sot error = 0x%x", temp);
 
 	temp = lt9611_i2c_read_byte(0x9d);
 	if (temp == 0xb8)
-		printf("port A lane 2 sot right\n");
+		SAMPLE_PRT("port A lane 2 sot right\n");
 	else
-		printf("port A lane 2 sot error = 0x%x", temp);
+		SAMPLE_PRT("port A lane 2 sot error = 0x%x", temp);
 
 	temp = lt9611_i2c_read_byte(0x9f);
 	if (temp == 0xb8)
-		printf("port A lane 3 sot right\n");
+		SAMPLE_PRT("port A lane 3 sot right\n");
 	else
-		printf("port A lane 3 sot error = 0x%x", temp);
+		SAMPLE_PRT("port A lane 3 sot error = 0x%x", temp);
 
-	printf("port A lane 0 settle = 0x%x", lt9611_i2c_read_byte(0x98));
-	printf("port A lane 1 settle = 0x%x", lt9611_i2c_read_byte(0x9a));
-	printf("port A lane 2 settle = 0x%x", lt9611_i2c_read_byte(0x9c));
-	printf("port A lane 3 settle = 0x%x", lt9611_i2c_read_byte(0x9e));
+	SAMPLE_PRT("port A lane 0 settle = 0x%x", lt9611_i2c_read_byte(0x98));
+	SAMPLE_PRT("port A lane 1 settle = 0x%x", lt9611_i2c_read_byte(0x9a));
+	SAMPLE_PRT("port A lane 2 settle = 0x%x", lt9611_i2c_read_byte(0x9c));
+	SAMPLE_PRT("port A lane 3 settle = 0x%x", lt9611_i2c_read_byte(0x9e));
 
 #endif
 }
@@ -2077,12 +2078,12 @@ void LT9611_Enable_Interrupts(CVI_U8 interrupts, bool on)
 			lt9611_i2c_write_byte(0x07, 0xff); // clear3
 			lt9611_i2c_write_byte(0x07, 0x3f); // clear3
 			lt9611_i2c_write_byte(0x03, 0x3f); // mask3  //Tx_det
-			printf("%s: hpd_irq_enable\n", "LT9611_Enable_Interrupts");
+			SAMPLE_PRT("%s: hpd_irq_enable\n", "LT9611_Enable_Interrupts");
 		} else {
 			lt9611_i2c_write_byte(0xff, 0x82);
 			lt9611_i2c_write_byte(0x07, 0xff); // clear3
 			lt9611_i2c_write_byte(0x03, 0xff); // mask3  //Tx_det
-			printf("%s: hpd_irq_disable\n", "LT9611_Enable_Interrupts");
+			SAMPLE_PRT("%s: hpd_irq_disable\n", "LT9611_Enable_Interrupts");
 		}
 	}
 
@@ -2094,12 +2095,12 @@ void LT9611_Enable_Interrupts(CVI_U8 interrupts, bool on)
 			lt9611_i2c_write_byte(0x04, 0xff); // clear0
 			lt9611_i2c_write_byte(0x04, 0xfe); // clear0
 			lt9611_i2c_write_byte(0x00, 0xfe); // mask0 vid_chk_IRQ
-			printf("%s: vid_chg_irq_enable\n", "LT9611_Enable_Interrupts");
+			SAMPLE_PRT("%s: vid_chg_irq_enable\n", "LT9611_Enable_Interrupts");
 		} else {
 			lt9611_i2c_write_byte(0xff, 0x82);
 			lt9611_i2c_write_byte(0x04, 0xff); // clear0
 			lt9611_i2c_write_byte(0x00, 0xff); // mask0 vid_chk_IRQ
-			printf("%s: vid_chg_irq_disable\n", "LT9611_Enable_Interrupts");
+			SAMPLE_PRT("%s: vid_chg_irq_disable\n", "LT9611_Enable_Interrupts");
 		}
 	}
 	if (interrupts == CEC_INTERRUPT_ENABLE) {
@@ -2136,7 +2137,7 @@ void LT9611_HDP_Interrupt_Handle(void)
 	lt9611_i2c_write_byte(0x07, 0x3f); // clear3
 
 	if (Tx_HPD) {
-		printf("%s: HDMI connected\n", __func__);
+		SAMPLE_PRT("%s: HDMI connected\n", __func__);
 		LT9611_LowPower_mode(0);
 		LT9611_Enable_Interrupts(VID_CHG_INTERRUPT_ENABLE, 1);
 		Timer0_Delay1ms(100);
@@ -2154,10 +2155,10 @@ void LT9611_HDP_Interrupt_Handle(void)
 			LT9611_HDMI_Out_Enable();
 		} else {
 			LT9611_HDMI_Out_Disable();
-			printf("%s: no mipi video, disable hdmi output\n", __func__);
+			SAMPLE_PRT("%s: no mipi video, disable hdmi output\n", __func__);
 		}
 	} else {
-		printf("%s: HDMI disconnected\n", __func__);
+		SAMPLE_PRT("%s: HDMI disconnected\n", __func__);
 		LT9611_Enable_Interrupts(VID_CHG_INTERRUPT_ENABLE, 0);
 		// LT9611_LowPower_mode(1);
 #ifdef cec_on
@@ -2168,7 +2169,7 @@ void LT9611_HDP_Interrupt_Handle(void)
 
 void LT9611_Vid_Chg_Interrupt_Handle(void)
 {
-	printf("%s:\n", __func__);
+	SAMPLE_PRT("%s:\n", __func__);
 
 	// lt9611_i2c_write_byte(0xff, 0x82);
 	// lt9611_i2c_write_byte(0x9e, 0xff); // clear vid chk irq
@@ -2187,7 +2188,7 @@ void LT9611_Vid_Chg_Interrupt_Handle(void)
 		LT9611_HDMI_Out_Enable();
 		// LT9611_HDCP_Enable();
 	} else {
-		// printf("LT9611_Vid_Chg_Interrupt_Handle: no mipi video\n");
+		// SAMPLE_PRT("LT9611_Vid_Chg_Interrupt_Handle: no mipi video\n");
 		LT9611_HDMI_Out_Disable();
 	}
 }
@@ -2200,7 +2201,7 @@ void lt9611_cec_msg_Interrupt_Handle(struct cec_msg *cec_msg)
 	cec_status = lt9611_i2c_read_byte(0xd2);
 
 	cec_msg->cec_status = cec_status;
-	printf("IRQ cec_status: 0x%x", cec_status);
+	SAMPLE_PRT("IRQ cec_status: 0x%x", cec_status);
 
 	lt9611_i2c_write_byte(0xff, 0x86);
 	lt9611_i2c_write_byte(0xfc, 0x7f); // cec irq clr
@@ -2249,7 +2250,7 @@ void LT9611_pattern_pixel_clk(struct video_timing *video_format)
 	CVI_U32 pclk;
 
 	pclk = video_format->pclk_khz;
-	printf("set pixel clk = %d", pclk);
+	SAMPLE_PRT("set pixel clk = %d", pclk);
 	// printdec_u32(pclk); //Dec
 
 	lt9611_i2c_write_byte(0xff, 0x83);
@@ -2368,7 +2369,7 @@ void LT9611_Init(void)
 	LT9611_Htotal_Sysclk();
 	LT9611_Pcr_MK_Print();
 
-	printf("==========================LT9611 Initial End===============================\n");
+	SAMPLE_PRT("==========================LT9611 Initial End===============================\n");
 	Timer0_Delay1ms(200); // HPD have debounce, wait HPD irq.
 	LT9611_HDP_Interrupt_Handle();
 }
@@ -2379,7 +2380,7 @@ void LT9611_IRQ_Task(void)
 	CVI_U8 irq_flag0;
 	CVI_U8 irq_flag1;
 
-	// printf("LT9611_IRQ_Task :IRQ Task\n");
+	// SAMPLE_PRT("LT9611_IRQ_Task :IRQ Task\n");
 
 	lt9611_i2c_write_byte(0xff, 0x82);
 
@@ -2432,7 +2433,7 @@ static void __upadte_video(LT9611_VIDEO_FORMAT_E enVideoFormat)
 		video = &video_2560x1440_60Hz;
 		break;
 	default:
-		printf("ERROR: unknown video format...\n");
+		SAMPLE_PRT("ERROR: unknown video format...\n");
 		break;
 	}
 }
@@ -2480,7 +2481,7 @@ CVI_S32 lt9611_get_video_format(char *pinput_str)
 
 	for (i = 0; i < E_LT9611_VIDEO_MAX; i++) {
 		if (strcmp(pinput_str, s_hdmi_resolution_arr[i]) == 0) {
-			printf("pinput_str = %s match resolution_arr = %s\n", pinput_str, s_hdmi_resolution_arr[i]);
+			SAMPLE_PRT("pinput_str = %s match resolution_arr = %s\n", pinput_str, s_hdmi_resolution_arr[i]);
 			is_find = true;
 			break;
 		}
@@ -2497,24 +2498,24 @@ void printHdmiHelp(char **argv)
 {
 	CVI_U32 idx;
 
-	printf("// ------------------------------------------------\n");
-	printf("%s --port=select input port\n", argv[0]);
-	printf("%s --resolution=select hdmi display solution\n", argv[0]);
-	printf("\noptional resolution list by lt9611:\n");
+	SAMPLE_PRT("// ------------------------------------------------\n");
+	SAMPLE_PRT("%s --port=select input port\n", argv[0]);
+	SAMPLE_PRT("%s --resolution=select hdmi display solution\n", argv[0]);
+	SAMPLE_PRT("\noptional resolution list by lt9611:\n");
 	for (CVI_S32 i = 0; i < E_LT9611_VIDEO_MAX; i++) {
-		printf(" %s\n", s_hdmi_resolution_arr[i]);
+		SAMPLE_PRT(" %s\n", s_hdmi_resolution_arr[i]);
 	}
-	printf("\nEX.\n");
-	printf(" %s -h\n", argv[0]);
-	printf(" %s --port=A --resolution=1920x1080_30HZ\n", argv[0]);
-	printf("// ------------------------------------------------\n");
+	SAMPLE_PRT("\nEX.\n");
+	SAMPLE_PRT(" %s -h\n", argv[0]);
+	SAMPLE_PRT(" %s --port=A --resolution=1920x1080_30HZ\n", argv[0]);
+	SAMPLE_PRT("// ------------------------------------------------\n");
 
 	for (idx = 0; idx < sizeof(long_option_ext) / sizeof(optionExt); idx++) {
 		if (long_option_ext[idx].opt.name == NULL)
 			break;
 
-		printf("--%s\n", long_option_ext[idx].opt.name);
-		printf("    %s\n", long_option_ext[idx].help);
+		SAMPLE_PRT("--%s\n", long_option_ext[idx].opt.name);
+		SAMPLE_PRT("    %s\n", long_option_ext[idx].help);
 	}
 }
 
@@ -2537,7 +2538,7 @@ int main(int argc, char *argv[])
 			break;
 
 		if (idx >= MAX_CMD_OPTIONS) {
-			printf("too many options\n");
+			SAMPLE_PRT("too many options\n");
 			return -1;
 		}
 
@@ -2553,13 +2554,13 @@ int main(int argc, char *argv[])
 			} else if (strcasecmp(optarg, "B") == 0) {
 				lt9611.mipi_port_cnt = single_port_mipi_B;
 			} else {
-				printf("invalid port parameter, use default\n");
+				SAMPLE_PRT("invalid port parameter, use default\n");
 			}
 			break;
 		case 'r':
 			ret = lt9611_get_video_format(optarg);
 			if (ret != CVI_SUCCESS) {
-				printf("invalid resolution parameter\n");
+				SAMPLE_PRT("invalid resolution parameter\n");
 				return ret;
 			}
 			break;
@@ -2567,7 +2568,7 @@ int main(int argc, char *argv[])
 			printHdmiHelp(argv);
 			return CVI_SUCCESS;
 		default:
-			printf("ch = %c\n", ch);
+			SAMPLE_PRT("ch = %c\n", ch);
 			printHdmiHelp(argv);
 			break;
 		}

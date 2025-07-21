@@ -28,9 +28,9 @@ ELFFLAGS += -static
 endif
 
 ifeq ($(OS_TYPE), DUAL_OS)
-LIBS = $(MW_LIBS) -lsensor -lvpss -lrgn -lsys
+LIBS = $(MW_LIBS) -lsensor -lvpss -lrgn -lsys -lcvi_bin -lisp -lawb -lae -laf
 else
-LIBS = $(MW_LIBS) -lsns_full -lsensor -lvpss -lrgn -lsys
+LIBS = $(MW_LIBS) -lsns_full -lsensor -lvpss -lrgn -lsys -lcvi_bin -lisp -lawb -lae -laf -lisp_algo
 endif
 
 EXTRA_CFLAGS = $(INCS) $(DEFS)

@@ -8,7 +8,8 @@ SDIR = $(PWD)
 SRCS = $(wildcard $(SDIR)/*.c)
 OBJS = $(SRCS:.c=.o)
 DEPS = $(SRCS:.c=.d)
-INCS = -I$(MW_INC) $(COMM_INC) -I$(ISP_INC) -I$(MW_INC)/sensor
+COMM_INC = $(PWD)/../common
+INCS = -I$(MW_INC) -I$(COMM_INC) -I$(ISP_INC) -I$(MW_INC)/sensor
 
 TARGET = sample_tde
 

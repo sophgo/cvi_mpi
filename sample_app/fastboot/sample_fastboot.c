@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <signal.h>
+#include <time.h>
 #include <inttypes.h>
 #include <unistd.h>
 #include <sys/time.h>
@@ -14,7 +15,7 @@
 #include "cvi_vpss.h"
 #include "cvi_venc.h"
 #include "cvi_vi.h"
-
+#include "sample_comm.h"
 
 #define NONE	"\033[m"
 #define RED	"\033[0;32;31m"
@@ -34,21 +35,15 @@ struct VencCtx {
 #define TEST_CHECK_RET(s32Ret, fmt, ...) \
 	do { \
 		if (s32Ret == CVI_SUCCESS) \
-			printf(GREEN fmt" pass\n"NONE, ##__VA_ARGS__); \
+			SAMPLE_PRT(GREEN fmt" pass\n"NONE, ##__VA_ARGS__); \
 		else \
-			printf(RED fmt" fail, [%s][%d]\n"NONE, __func__, __LINE__,  ##__VA_ARGS__); \
+			SAMPLE_PRT(RED fmt" fail, [%s][%d]\n"NONE, __func__, __LINE__,  ##__VA_ARGS__); \
 	} while (0)
 
 #define TEST_CHECK_ERR_RET(s32Ret, fmt, ...) \
 	do { \
 		if (s32Ret != CVI_SUCCESS) \
-			printf(RED fmt" fail, [%s][%d]\n"NONE, __func__, __LINE__,	##__VA_ARGS__); \
-	} while (0)
-
-#define SAMPLE_FASTBOOT_PRT(fmt...) \
-	do { \
-		printf("[%s]-%d: ", __func__, __LINE__); \
-		printf(fmt); \
+			SAMPLE_PRT(RED fmt" fail, [%s][%d]\n"NONE, __func__, __LINE__,	##__VA_ARGS__); \
 	} while (0)
 
 CVI_S32 TEST_COMM_SaveFrame(const CVI_CHAR *filename, VIDEO_FRAME_INFO_S *pstVideoFrame)
@@ -58,7 +53,7 @@ CVI_S32 TEST_COMM_SaveFrame(const CVI_CHAR *filename, VIDEO_FRAME_INFO_S *pstVid
 
 	fp = fopen(filename, "w");
 	if (fp == CVI_NULL) {
-		SAMPLE_FASTBOOT_PRT("open data file error\n");
+		SAMPLE_PRT("open data file error\n");
 		return CVI_FAILURE;
 	}
 	for (int i = 0; i < 3; ++i) {
@@ -73,15 +68,15 @@ CVI_S32 TEST_COMM_SaveFrame(const CVI_CHAR *filename, VIDEO_FRAME_INFO_S *pstVid
 		pstVideoFrame->stVFrame.pu8VirAddr[i]
 			= CVI_SYS_Mmap(pstVideoFrame->stVFrame.u64PhyAddr[i], pstVideoFrame->stVFrame.u32Length[i]);
 
-		SAMPLE_FASTBOOT_PRT("plane(%d): paddr(%#"PRIx64") vaddr(%p) stride(%d)\n",
+		SAMPLE_PRT("plane(%d): paddr(%#"PRIx64") vaddr(%p) stride(%d)\n",
 			   i, pstVideoFrame->stVFrame.u64PhyAddr[i],
 			   pstVideoFrame->stVFrame.pu8VirAddr[i],
 			   pstVideoFrame->stVFrame.u32Stride[i]);
-		SAMPLE_FASTBOOT_PRT(" data_len(%d) plane_len(%d)\n",
+		SAMPLE_PRT(" data_len(%d) plane_len(%d)\n",
 				  u32DataLen, pstVideoFrame->stVFrame.u32Length[i]);
 		u32len = fwrite(pstVideoFrame->stVFrame.pu8VirAddr[i], u32DataLen, 1, fp);
 		if (u32len <= 0) {
-			SAMPLE_FASTBOOT_PRT("fwrite data(%d) error\n", i);
+			SAMPLE_PRT("fwrite data(%d) error\n", i);
 			break;
 		}
 		CVI_SYS_Munmap(pstVideoFrame->stVFrame.pu8VirAddr[i], pstVideoFrame->stVFrame.u32Length[i]);
@@ -105,16 +100,17 @@ void *venc_get_stream(void *arg) {
 	VENC_RECV_PIC_PARAM_S stRecvParam = {0};
 	VENC_STREAM_S stStream = {0};
 	VENC_PACK_S *pstPack = NULL;
+	struct timespec ts;
 
 
 	stRecvParam.s32RecvPicNum = -1;
 	TEST_CHECK_RET(CVI_VENC_StartRecvFrame(VeChn, &stRecvParam), "CVI_VENC_StartRecvFrame");
 
-	SAMPLE_FASTBOOT_PRT("=====start get stream======\n");
+	SAMPLE_PRT("=====start get stream======\n");
 	while(1) {
 		stStream.pstPack = malloc(sizeof(VENC_PACK_S) * 8);
 		if (!stStream.pstPack) {
-			SAMPLE_FASTBOOT_PRT("malloc pack fail \n");
+			SAMPLE_PRT("malloc pack fail \n");
 			return NULL;
 		}
 RETRY:
@@ -123,22 +119,28 @@ RETRY:
 			usleep(1000 * 10);
 			if (g_enc_exit)
 			{
-				SAMPLE_FASTBOOT_PRT("exit get stream thread\n");
+				SAMPLE_PRT("exit get stream thread\n");
 				break;
 			}
 			goto RETRY;
 		}
 		else if (s32Ret != CVI_SUCCESS) {
-			SAMPLE_FASTBOOT_PRT("CVI_VENC_GetStream fail, ret:%x \n", s32Ret);
+			SAMPLE_PRT("CVI_VENC_GetStream fail, ret:%x \n", s32Ret);
 			return NULL;
 		}
 
 		if (s32OutFd <= 0) {
-			snprintf((char *)u8OutPath, sizeof(u8OutPath), "%sfast_chn%d.h264", SAVE_FILE_PATH, VeChn);
+			if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
+				return NULL;
+			}
+			SAMPLE_PRT("venc first stream PTS: %lld ms, [%lld-%lld]\n",
+				ts.tv_sec * 1000 + ts.tv_nsec / 1000000,
+				ts.tv_sec, ts.tv_nsec);
 
+			snprintf((char *)u8OutPath, sizeof(u8OutPath), "%sfast_chn%d.h264", SAVE_FILE_PATH, VeChn);
 			s32OutFd = open((const char *)u8OutPath, O_CREAT | O_TRUNC | O_RDWR);
 			if (s32OutFd < 0) {
-				SAMPLE_FASTBOOT_PRT("open %s fail \n", u8OutPath);
+				SAMPLE_PRT("open %s fail \n", u8OutPath);
 				return NULL;
 			}
 		}
@@ -147,7 +149,7 @@ RETRY:
 			pstPack = &stStream.pstPack[i];
 			siRet = write(s32OutFd, pstPack->pu8Addr + pstPack->u32Offset, pstPack->u32Len - pstPack->u32Offset);
 			if (siRet != pstPack->u32Len - pstPack->u32Offset) {
-				SAMPLE_FASTBOOT_PRT("write fail, write size:%d, ret:%zu \n", pstPack->u32Len - pstPack->u32Offset, siRet);
+				SAMPLE_PRT("write fail, write size:%d, ret:%zu \n", pstPack->u32Len - pstPack->u32Offset, siRet);
 			}
 		}
 
@@ -158,12 +160,12 @@ RETRY:
 		}
 		if (g_enc_exit)
 		{
-			SAMPLE_FASTBOOT_PRT("exit get stream thread\n");
+			SAMPLE_PRT("exit get stream thread\n");
 			break;
 		}
 	}
 	TEST_CHECK_RET(CVI_VENC_StopRecvFrame(VeChn), "CVI_VENC_StopRecvFrame");
-	SAMPLE_FASTBOOT_PRT("=====end get stream======\n");
+	SAMPLE_PRT("=====end get stream======\n");
 	sync();
 	close(s32OutFd);
 	return NULL;
@@ -181,7 +183,7 @@ static CVI_S32 venc_func_test(int chnNum)
 		VencAttr[i].Vechn = i;
 		ret = pthread_create(&enc_pthread_id[i], NULL, venc_get_stream, &VencAttr[i]);
 		if (ret != 0) {
-			SAMPLE_FASTBOOT_PRT("pthread :%d fail\n", i);
+			SAMPLE_PRT("pthread :%d fail\n", i);
 		}
 	}
 
@@ -248,21 +250,21 @@ static CVI_S32 _test_handle_op(CVI_S32 op, CVI_S32 chnNum)
 	case 1: {
 		s32Ret = _vi_get_chn_frm();
 		if (s32Ret == CVI_SUCCESS)
-			SAMPLE_FASTBOOT_PRT("\nsys test success\n");
+			SAMPLE_PRT("\nsys test success\n");
 		break;
 	}
 
 	case 2: {
 		s32Ret = venc_func_test(chnNum);
 		if (s32Ret == CVI_SUCCESS)
-			SAMPLE_FASTBOOT_PRT("\nvenc test success\n");
+			SAMPLE_PRT("\nvenc test success\n");
 		break;
 	}
 
 	case 3: {
 		s32Ret = _vpss_get_chn_frm();
 		if (s32Ret == CVI_SUCCESS)
-			SAMPLE_FASTBOOT_PRT("\nvpss get chn frm success\n");
+			SAMPLE_PRT("\nvpss get chn frm success\n");
 		break;
 	}
 
@@ -280,7 +282,7 @@ CVI_VOID SAMPLE_FASTBOOT_HandleSig(CVI_S32 signo)
 
 	if (SIGINT == signo || SIGTERM == signo) {
 		g_enc_exit = 1;
-		SAMPLE_FASTBOOT_PRT("Program termination abnormally\n");
+		SAMPLE_PRT("Program termination abnormally\n");
 	}
 }
 
@@ -289,13 +291,19 @@ int main(int argc, char *argv[])
 	int op;
 	int arg = -1;
 	CVI_S32 s32Ret;
+	struct timespec ts;
+
+	if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
+		return 0;
+	}
+	SAMPLE_PRT("main PTS: %lld ms, [%lld-%lld]\n", ts.tv_sec * 1000 + ts.tv_nsec / 1000000, ts.tv_sec, ts.tv_nsec);
 
 	if ((argc < 2)) {
-		SAMPLE_FASTBOOT_PRT("./sample_fastboot <op> <chn num>\n");
-		SAMPLE_FASTBOOT_PRT("1: vi test\n");
-		SAMPLE_FASTBOOT_PRT("2: venc test\n");
-		SAMPLE_FASTBOOT_PRT("3: vpss test\n");
-		SAMPLE_FASTBOOT_PRT("ex:./sample_fastboot 2 1)\n");
+		SAMPLE_PRT("./sample_fastboot <op> <chn num>\n");
+		SAMPLE_PRT("1: vi test\n");
+		SAMPLE_PRT("2: venc test\n");
+		SAMPLE_PRT("3: vpss test\n");
+		SAMPLE_PRT("ex:./sample_fastboot 2 1)\n");
 		return 0;
 	}
 
@@ -304,7 +312,7 @@ int main(int argc, char *argv[])
 
 	s32Ret = CVI_SYS_Init();
 	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_FASTBOOT_PRT("CVI_SYS_Init failed!\n");
+		SAMPLE_PRT("CVI_SYS_Init failed!\n");
 		return CVI_FAILURE;
 	}
 
@@ -318,7 +326,7 @@ int main(int argc, char *argv[])
 			arg = 100;
 
 		s32Ret = _test_handle_op(op, arg);
-		SAMPLE_FASTBOOT_PRT("\ntest op[%d] %s\n", op, s32Ret == CVI_SUCCESS ? "pass" : "fail");
+		SAMPLE_PRT("\ntest op[%d] %s\n", op, s32Ret == CVI_SUCCESS ? "pass" : "fail");
 	}
 
 	CVI_SYS_Exit();

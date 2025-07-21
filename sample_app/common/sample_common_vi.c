@@ -81,12 +81,12 @@ CVI_S32 SAMPLE_COMM_SnsIni2Vicfg(SNS_INI_CFG_S *pstIniCfg, SAMPLE_VI_CONFIG_S *p
 	SAMPLE_VI_INFO_S *viInfo = NULL;
 
 	if (!pstIniCfg) {
-		printf("%s: null ptr\n", __func__);
+		SAMPLE_PRT("%s: null ptr\n", __func__);
 		return CVI_FAILURE;
 	}
 
 	if (!pstViConfig) {
-		printf("%s: null ptr\n", __func__);
+		SAMPLE_PRT("%s: null ptr\n", __func__);
 		return CVI_FAILURE;
 	}
 

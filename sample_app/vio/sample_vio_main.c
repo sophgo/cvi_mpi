@@ -72,7 +72,7 @@ CVI_S32 SAMPLE_VIO_TWO_DEV_VO(void)
 	 ************************************************/
 	ASPECT_RATIO_E aspect_ratio = ASPECT_RATIO_NONE;
 
-	s32Ret = SAMPLE_VIO_VPSS_INIT(&stViConfig, aspect_ratio, &stRotationCfg, CVI_FALSE);
+	s32Ret = SAMPLE_VIO_VPSS_INIT(&stViConfig, aspect_ratio, &stRotationCfg);
 	if (s32Ret != CVI_SUCCESS) {
 		SAMPLE_PRT("vpss init failed. s32Ret: 0x%x !\n", s32Ret);
 		return s32Ret;
@@ -98,7 +98,7 @@ CVI_S32 SAMPLE_VIO_TWO_DEV_VO(void)
 	VO_LAYER VoLayer = VoDev;
 	VO_CHN VoChn = 0;
 
-	SAMPLE_VIO_VO_INIT(&stVoConfig, VoDev, CVI_FALSE);
+	SAMPLE_VIO_VO_INIT(&stVoConfig, VoDev);
 
 	s32Ret = CVI_VO_SetChnRotation(VoLayer, VoChn, stRotationCfg.rotation_vo);
 	if (s32Ret != CVI_SUCCESS) {
@@ -217,7 +217,7 @@ CVI_S32 SAMPLE_VIO_VoRotation(void)
 	 ************************************************/
 	ASPECT_RATIO_E aspect_ratio = ASPECT_RATIO_NONE;
 
-	s32Ret = SAMPLE_VIO_VPSS_INIT(&stViConfig, aspect_ratio, &stRotationCfg, CVI_FALSE);
+	s32Ret = SAMPLE_VIO_VPSS_INIT(&stViConfig, aspect_ratio, &stRotationCfg);
 	if (s32Ret != CVI_SUCCESS) {
 		SAMPLE_PRT("vpss init failed. s32Ret: 0x%x !\n", s32Ret);
 		return s32Ret;
@@ -243,7 +243,7 @@ CVI_S32 SAMPLE_VIO_VoRotation(void)
 	VO_LAYER VoLayer = VoDev;
 	VO_CHN VoChn = 0;
 
-	SAMPLE_VIO_VO_INIT(&stVoConfig, VoDev, CVI_FALSE);
+	SAMPLE_VIO_VO_INIT(&stVoConfig, VoDev);
 
 	s32Ret = CVI_VO_SetChnRotation(VoLayer, VoChn, stRotationCfg.rotation_vo);
 	if (s32Ret != CVI_SUCCESS) {
@@ -332,7 +332,7 @@ CVI_S32 SAMPLE_VIO_ViVpssAspectRatio(void)
 	 ************************************************/
 	ASPECT_RATIO_E aspect_ratio = ASPECT_RATIO_AUTO;
 
-	s32Ret = SAMPLE_VIO_VPSS_INIT(&stViConfig, aspect_ratio, &stRotationCfg, CVI_FALSE);
+	s32Ret = SAMPLE_VIO_VPSS_INIT(&stViConfig, aspect_ratio, &stRotationCfg);
 	if (s32Ret != CVI_SUCCESS) {
 		SAMPLE_PRT("vpss init failed. s32Ret: 0x%x !\n", s32Ret);
 		return s32Ret;
@@ -358,7 +358,7 @@ CVI_S32 SAMPLE_VIO_ViVpssAspectRatio(void)
 	VO_LAYER VoLayer = VoDev;
 	VO_CHN VoChn = 0;
 
-	SAMPLE_VIO_VO_INIT(&stVoConfig, VoDev, CVI_FALSE);
+	SAMPLE_VIO_VO_INIT(&stVoConfig, VoDev);
 
 	s32Ret = CVI_VO_SetChnRotation(VoLayer, VoChn, stRotationCfg.rotation_vo);
 	if (s32Ret != CVI_SUCCESS) {
@@ -446,7 +446,7 @@ CVI_S32 SAMPLE_VIO_ViRotation(void)
 	 ************************************************/
 	ASPECT_RATIO_E aspect_ratio = ASPECT_RATIO_NONE;
 
-	s32Ret = SAMPLE_VIO_VPSS_INIT(&stViConfig, aspect_ratio, &stRotationCfg, CVI_FALSE);
+	s32Ret = SAMPLE_VIO_VPSS_INIT(&stViConfig, aspect_ratio, &stRotationCfg);
 	if (s32Ret != CVI_SUCCESS) {
 		SAMPLE_PRT("vpss init failed. s32Ret: 0x%x !\n", s32Ret);
 		return s32Ret;
@@ -472,7 +472,7 @@ CVI_S32 SAMPLE_VIO_ViRotation(void)
 	VO_LAYER VoLayer = VoDev;
 	VO_CHN VoChn = 0;
 
-	SAMPLE_VIO_VO_INIT(&stVoConfig, VoDev, CVI_FALSE);
+	SAMPLE_VIO_VO_INIT(&stVoConfig, VoDev);
 
 	s32Ret = CVI_VO_SetChnRotation(VoLayer, VoChn, stRotationCfg.rotation_vo);
 	if (s32Ret != CVI_SUCCESS) {
@@ -559,7 +559,7 @@ CVI_S32 SAMPLE_VIO_VpssRotation(void)
 	 ************************************************/
 	ASPECT_RATIO_E aspect_ratio = ASPECT_RATIO_NONE;
 
-	s32Ret = SAMPLE_VIO_VPSS_INIT(&stViConfig, aspect_ratio, &stRotationCfg, CVI_FALSE);
+	s32Ret = SAMPLE_VIO_VPSS_INIT(&stViConfig, aspect_ratio, &stRotationCfg);
 	if (s32Ret != CVI_SUCCESS) {
 		SAMPLE_PRT("vpss init failed. s32Ret: 0x%x !\n", s32Ret);
 		return s32Ret;
@@ -585,7 +585,7 @@ CVI_S32 SAMPLE_VIO_VpssRotation(void)
 	VO_LAYER VoLayer = VoDev;
 	VO_CHN VoChn = 0;
 
-	SAMPLE_VIO_VO_INIT(&stVoConfig, VoDev, CVI_FALSE);
+	SAMPLE_VIO_VO_INIT(&stVoConfig, VoDev);
 
 	s32Ret = CVI_VO_SetChnRotation(VoLayer, VoChn, stRotationCfg.rotation_vo);
 	if (s32Ret != CVI_SUCCESS) {
@@ -683,7 +683,7 @@ CVI_S32 SAMPLE_VIO_ViVpss_RotationLdc(void)
 	 ************************************************/
 	ASPECT_RATIO_E aspect_ratio = ASPECT_RATIO_NONE;
 
-	s32Ret = SAMPLE_VIO_VPSS_INIT(&stViConfig, aspect_ratio, &stRotationCfg, CVI_TRUE);
+	s32Ret = SAMPLE_VIO_VPSS_INIT(&stViConfig, aspect_ratio, &stRotationCfg);
 	if (s32Ret != CVI_SUCCESS) {
 		SAMPLE_PRT("vpss init failed. s32Ret: 0x%x !\n", s32Ret);
 		return s32Ret;
@@ -716,7 +716,7 @@ CVI_S32 SAMPLE_VIO_ViVpss_RotationLdc(void)
 	VO_LAYER VoLayer = VoDev;
 	VO_CHN VoChn = 0;
 
-	SAMPLE_VIO_VO_INIT(&stVoConfig, VoDev, CVI_TRUE);
+	SAMPLE_VIO_VO_INIT(&stVoConfig, VoDev);
 
 	s32Ret = CVI_VO_SetChnRotation(VoLayer, VoChn, stRotationCfg.rotation_vo);
 	if (s32Ret != CVI_SUCCESS) {
@@ -768,14 +768,14 @@ void SAMPLE_VIO_HandleSig(CVI_S32 signo)
 
 void SAMPLE_VIO_Usage(char *sPrgNm)
 {
-	printf("Usage : %s <index>\n", sPrgNm);
-	printf("index:\n");
-	printf("\t 0)VI (Offline) - VPSS(Online) - VO(Rotation).\n");
-	printf("\t 1)VI (Offline) - VPSS(Online, Keep Aspect Ratio) - VO.\n");
-	printf("\t 2)VI (Offline, Rotation) - VPSS(Offline, Keep Aspect Ratio) - VO.\n");
-	printf("\t 3)VI (Offline) - VPSS(Online, Rotation) - VO.\n");
-	printf("\t 4)VI (Offline, Two devs) - VPSS(Online) - VO.\n");
-	printf("\t 5)VI (Offline, Rotation, Ldc) - VPSS(Offline, Rotation, Ldc) - VO.\n");
+	SAMPLE_PRT("Usage : %s <index>\n", sPrgNm);
+	SAMPLE_PRT("index:\n");
+	SAMPLE_PRT("\t 0)VI (Offline) - VPSS(Offline) - VO(Rotation).\n");
+	SAMPLE_PRT("\t 1)VI (Offline) - VPSS(Offline, Keep Aspect Ratio) - VO.\n");
+	SAMPLE_PRT("\t 2)VI (Offline, Rotation) - VPSS(Offline, Keep Aspect Ratio) - VO.\n");
+	SAMPLE_PRT("\t 3)VI (Offline) - VPSS(Offline, Rotation) - VO.\n");
+	SAMPLE_PRT("\t 4)VI (Offline, Two devs) - VPSS(Offline) - VO.\n");
+	SAMPLE_PRT("\t 5)VI (Offline, Rotation, Ldc) - VPSS(Offline, Rotation, Ldc) - VO.\n");
 }
 
 int main(int argc, char *argv[])

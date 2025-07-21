@@ -198,7 +198,14 @@ CVI_S32 SAMPLE_VIO_VI_INIT(SAMPLE_VI_CONFIG_S *pstViConfig)
 		}
 	}
 
-	//todo: ISP enable
+	/************************************************
+	 * Create ISP
+	 ************************************************/
+	s32Ret = SAMPLE_COMM_VI_CreateIsp(pstViConfig);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_PRT("[ERROR] SAMPLE_COMM_VI_CreateIsp failed with %#x!\n", s32Ret);
+		return s32Ret;
+	}
 	/************************************************
 	 * Set sensor init
 	 ************************************************/
@@ -251,11 +258,17 @@ CVI_S32 SAMPLE_VIO_VI_DEINIT(SAMPLE_VI_CONFIG_S *pstViConfig)
 		}
 	}
 
+	s32Ret = SAMPLE_COMM_VI_DestroyIsp(pstViConfig);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_PRT("[ERROR] SAMPLE_COMM_VI_DestroyIsp failed with %#x!\n", s32Ret);
+		return s32Ret;
+	}
+
 	return s32Ret;
 }
 
 CVI_S32 SAMPLE_VIO_VPSS_INIT(SAMPLE_VI_CONFIG_S *pstViConfig,
-							ASPECT_RATIO_E aspect_ratio, ROTATION_CFG_S *pstRotCfg, CVI_BOOL bLdcEnable)
+							ASPECT_RATIO_E aspect_ratio, ROTATION_CFG_S *pstRotCfg)
 {
 	/************************************************
 	 * Config and init VPSS
@@ -273,13 +286,8 @@ CVI_S32 SAMPLE_VIO_VPSS_INIT(SAMPLE_VI_CONFIG_S *pstViConfig,
 		astVpssChnAttr[VpssChn].u32Width		    = 1280;
 		astVpssChnAttr[VpssChn].u32Height		    = 720;
 	} else {
-		if (bLdcEnable) {
-			astVpssChnAttr[VpssChn].u32Width		    = 768;
-			astVpssChnAttr[VpssChn].u32Height		    = 1280;
-		} else {
-			astVpssChnAttr[VpssChn].u32Width		    = 720;
-			astVpssChnAttr[VpssChn].u32Height		    = 1280;
-		}
+		astVpssChnAttr[VpssChn].u32Width		    = 720;
+		astVpssChnAttr[VpssChn].u32Height		    = 1280;
 	}
 	astVpssChnAttr[VpssChn].enVideoFormat		    = VIDEO_FORMAT_LINEAR;
 	astVpssChnAttr[VpssChn].enPixelFormat		    = PIXEL_FORMAT_NV21;
@@ -289,10 +297,8 @@ CVI_S32 SAMPLE_VIO_VPSS_INIT(SAMPLE_VI_CONFIG_S *pstViConfig,
 	astVpssChnAttr[VpssChn].bMirror			    = CVI_FALSE;
 	astVpssChnAttr[VpssChn].bFlip			    = CVI_FALSE;
 	astVpssChnAttr[VpssChn].stAspectRatio.enMode	    = aspect_ratio;
-	if (!astVpssChnAttr[VpssChn].stAspectRatio.enMode) {
-		astVpssChnAttr[VpssChn].stAspectRatio.bEnableBgColor = CVI_TRUE;
-		astVpssChnAttr[VpssChn].stAspectRatio.u32BgColor    = RGB_8BIT(0, 0, 0);
-	}
+	astVpssChnAttr[VpssChn].stAspectRatio.bEnableBgColor = CVI_TRUE;
+	astVpssChnAttr[VpssChn].stAspectRatio.u32BgColor    = RGB_8BIT(0, 0, 0);
 	astVpssChnAttr[VpssChn].stNormalize.bEnable	    = CVI_FALSE;
 
 	for (i = 0; i < pstViConfig->s32ViNum; i++) {
@@ -349,7 +355,7 @@ exit1:
 	return CVI_FAILURE;
 }
 
-CVI_S32 SAMPLE_VIO_VO_INIT(SAMPLE_VO_CONFIG_S *stVoConfig, VO_DEV VoDev, CVI_BOOL bLdcEnable)
+CVI_S32 SAMPLE_VIO_VO_INIT(SAMPLE_VO_CONFIG_S *stVoConfig, VO_DEV VoDev)
 {
 	RECT_S stDefDispRect;
 	SIZE_S stDefImageSize;
@@ -357,13 +363,8 @@ CVI_S32 SAMPLE_VIO_VO_INIT(SAMPLE_VO_CONFIG_S *stVoConfig, VO_DEV VoDev, CVI_BOO
 
 	stDefDispRect.s32X = 0;
 	stDefDispRect.s32Y = 0;
-	if (bLdcEnable) {
-		stDefDispRect.u32Width = 768;
-		stDefDispRect.u32Height = 1280;
-	} else {
-		stDefDispRect.u32Width = 720;
-		stDefDispRect.u32Height = 1280;
-	}
+	stDefDispRect.u32Width = 720;
+	stDefDispRect.u32Height = 1280;
 	stDefImageSize.u32Width = stDefDispRect.u32Width;
 	stDefImageSize.u32Height = stDefDispRect.u32Height;
 	s32Ret = SAMPLE_COMM_VO_GetDefConfig(stVoConfig);

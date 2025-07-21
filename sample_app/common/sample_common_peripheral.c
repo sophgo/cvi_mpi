@@ -76,7 +76,7 @@ int SAMPLE_COMM_GPIO_SetDirection(unsigned int gpio, unsigned int out_flag)
 		perror("gpio/direction");
 		return fd;
 	}
-	//printf("mark %d , %s\n",out_flag, buf);
+	//SAMPLE_PRT("mark %d , %s\n",out_flag, buf);
 	if (out_flag)
 		write(fd, "out", 4);
 	else
@@ -157,7 +157,7 @@ int SAMPLE_COMM_PWM_SetParm(int chn, int period, int duty_cycle)
 	char buf[MAX_BUF], buf1[MAX_BUF];
 
 	if (!((chn >= 0) && (chn <= 3))) {
-		printf("pwm chanel 0 ~ 3\n");
+		SAMPLE_PRT("pwm chanel 0 ~ 3\n");
 		return -1;
 	}
 
@@ -165,7 +165,7 @@ int SAMPLE_COMM_PWM_SetParm(int chn, int period, int duty_cycle)
 	if (access(buf, 0) == -1) {
 		fd = open(SYSFS_PWM_DIR"/export", O_WRONLY);
 		if (fd < 0) {
-			printf("open export error\n");
+			SAMPLE_PRT("open export error\n");
 			return -1;
 		}
 		if (chn == 0)
@@ -182,7 +182,7 @@ int SAMPLE_COMM_PWM_SetParm(int chn, int period, int duty_cycle)
 
 	fd = open(buf, O_WRONLY);
 	if (fd < 0) {
-		printf("open period error\n");
+		SAMPLE_PRT("open period error\n");
 		return -1;
 	}
 	snprintf(buf1, sizeof(buf1), "%d", period);
@@ -192,7 +192,7 @@ int SAMPLE_COMM_PWM_SetParm(int chn, int period, int duty_cycle)
 	snprintf(buf, sizeof(buf), SYSFS_PWM_DIR"/pwm%d/duty_cycle", chn);
 	fd = open(buf, O_WRONLY);
 	if (fd < 0) {
-		printf("open duty_cycle error\n");
+		SAMPLE_PRT("open duty_cycle error\n");
 		return -1;
 	}
 	snprintf(buf1, sizeof(buf1), "%d", duty_cycle);
@@ -206,14 +206,14 @@ int SAMPLE_COMM_PWM_Enable(int chn, int en)
 	char buf[MAX_BUF];
 
 	if (!((chn >= 0) && (chn <= 3))) {
-		printf("pwm chanel 0 ~ 3\n");
+		SAMPLE_PRT("pwm chanel 0 ~ 3\n");
 		return -1;
 	}
 	snprintf(buf, sizeof(buf), SYSFS_PWM_DIR"/pwm%d/enable", chn);
 
 	fd = open(buf, O_WRONLY);
 	if (fd < 0) {
-		printf("open period error\n");
+		SAMPLE_PRT("open period error\n");
 		return -1;
 	}
 
@@ -250,7 +250,7 @@ CVI_S32 SAMPLE_COMM_I2C_Write(CVI_S32 file, CVI_U16 addr, CVI_U16 reg, CVI_U16 v
 			temp[2] = val;
 			break;
 		default:
-			printf("No support of this value width\n");
+			SAMPLE_PRT("No support of this value width\n");
 		}
 		break;
 	case 2:
@@ -265,11 +265,11 @@ CVI_S32 SAMPLE_COMM_I2C_Write(CVI_S32 file, CVI_U16 addr, CVI_U16 reg, CVI_U16 v
 			temp[3] = val;
 			break;
 		default:
-			printf("No support of this value width\n");
+			SAMPLE_PRT("No support of this value width\n");
 		}
 		break;
 	default:
-		printf("No support of this register width\n");
+		SAMPLE_PRT("No support of this register width\n");
 		return CVI_FAILURE;
 	}
 
@@ -307,7 +307,7 @@ CVI_S32 SAMPLE_COMM_I2C_Read(CVI_S32 file, CVI_U16 addr, CVI_U16 reg, CVI_U16 re
 		temp[1] = reg;
 		break;
 	default:
-		printf("No support of this register width\n");
+		SAMPLE_PRT("No support of this register width\n");
 		return CVI_FAILURE;
 	}
 
@@ -329,7 +329,7 @@ CVI_S32 SAMPLE_COMM_I2C_Read(CVI_S32 file, CVI_U16 addr, CVI_U16 reg, CVI_U16 re
 		return ret;
 	}
 
-	//printf("get val=%x\n", *r_val);
+	//SAMPLE_PRT("get val=%x\n", *r_val);
 
 	return CVI_SUCCESS;
 }

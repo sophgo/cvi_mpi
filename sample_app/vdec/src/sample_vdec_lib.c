@@ -327,7 +327,7 @@ static CVI_S32 vdecInitVBPool(sampleVdec *psvdec)
 			stVbConf.u32MaxPoolCnt = 1;
 			stVbConf.astCommPool[0].u32BlkCnt = 1;
 			 stVbConf.astCommPool[0].u32BlkSize = 1024;
-			 printf("force toogle vb init\n");
+			 SAMPLE_PRT("force toogle vb init\n");
 		}
 
 		s32Ret = SAMPLE_COMM_SYS_Init(&stVbConf);
@@ -713,7 +713,7 @@ CVI_VOID SAMPLE_VDEC_HandleSig(CVI_S32 signo)
 	if (SIGINT == signo || SIGTSTP == signo || SIGTERM == signo) {
 		// SAMPLE_COMM_VO_HdmiStop();
 		SAMPLE_COMM_SYS_Exit();
-		printf("\033[0;31mprogram exit abnormally!\033[0;39m\n");
+		SAMPLE_PRT("\033[0;31mprogram exit abnormally!\033[0;39m\n");
 	}
 
 	exit(0);
@@ -723,20 +723,20 @@ void printVdecHelp(char **argv)
 {
 	CVI_U32 idx;
 
-	printf("// ------------------------------------------------\n");
-	printf("%s --numChn=num-all-chnnels --chn=currChnId -c codec -i bs -o out.yuv\n", argv[0]);
-	printf("EX.\n");
-	printf(" %s -h\n", argv[0]);
-	printf(" %s --numChn=1 --chn=0 -c 264 -i in.264 -o out.yuv\n", argv[0]);
-	printf(" %s --numChn=2 --chn=0 -c 264 -i in0.264 -o out0.yuv --chn=1 -c 264 -i in1.264 -o out1.yuv\n", argv[0]);
-	printf("// ------------------------------------------------\n");
+	SAMPLE_PRT("// ------------------------------------------------\n");
+	SAMPLE_PRT("%s --numChn=num-all-chnnels --chn=currChnId -c codec -i bs -o out.yuv\n", argv[0]);
+	SAMPLE_PRT("EX.\n");
+	SAMPLE_PRT(" %s -h\n", argv[0]);
+	SAMPLE_PRT(" %s --numChn=1 --chn=0 -c 264 -i in.264 -o out.yuv\n", argv[0]);
+	SAMPLE_PRT(" %s --numChn=2 --chn=0 -c 264 -i in0.264 -o out0.yuv --chn=1 -c 264 -i in1.264 -o out1.yuv\n", argv[0]);
+	SAMPLE_PRT("// ------------------------------------------------\n");
 
 	for (idx = 0; idx < sizeof(long_option_ext) / sizeof(optionExt); idx++) {
 		if (long_option_ext[idx].opt.name == NULL)
 			break;
 
-		printf("--%s\n", long_option_ext[idx].opt.name);
-		printf("    %s\n", long_option_ext[idx].help);
+		SAMPLE_PRT("--%s\n", long_option_ext[idx].opt.name);
+		SAMPLE_PRT("    %s\n", long_option_ext[idx].help);
 	}
 }
 

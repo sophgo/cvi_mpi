@@ -23,20 +23,20 @@ VB_POOL g_ahTmvVbPool[VDEC_MAX_CHN_NUM] = { [0 ...(VDEC_MAX_CHN_NUM - 1)] = VB_I
 
 static inline CVI_VOID PRINTF_VDEC_CHN_STATUS(CVI_S32 Chn, VDEC_CHN_STATUS_S stStatus)
 {
-	printf("\033[0;33m ---------------------------------------");
-	printf("------------------------------------------------------------\033[0;39m\n");
-	printf("\033[0;33m chn:%d, Type:%d, bStart:%d, DecodeFrames:%d, LeftPics:%d,",
+	SAMPLE_PRT("\033[0;33m ---------------------------------------");
+	SAMPLE_PRT("------------------------------------------------------------\033[0;39m\n");
+	SAMPLE_PRT("\033[0;33m chn:%d, Type:%d, bStart:%d, DecodeFrames:%d, LeftPics:%d,",
 		Chn, stStatus.enType, stStatus.bStartRecvStream, stStatus.u32DecodeStreamFrames, stStatus.u32LeftPics);
-	printf("LeftBytes:%d, LeftFrames:%d, RecvFrames:%d  \033[0;39m\n",
+	SAMPLE_PRT("LeftBytes:%d, LeftFrames:%d, RecvFrames:%d  \033[0;39m\n",
 		stStatus.u32LeftStreamBytes, stStatus.u32LeftStreamFrames, stStatus.u32RecvStreamFrames);
-	printf("\033[0;33m FormatErr:%d,	s32PicSizeErrSet:%d,  s32StreamUnsprt:%d,",
+	SAMPLE_PRT("\033[0;33m FormatErr:%d,	s32PicSizeErrSet:%d,  s32StreamUnsprt:%d,",
 		stStatus.stVdecDecErr.s32FormatErr, stStatus.stVdecDecErr.s32PicSizeErrSet,
 		stStatus.stVdecDecErr.s32StreamUnsprt);
-	printf("s32PackErr:%d,  u32PrtclNumErrSet:%d,  s32RefErrSet:%d,  s32PicBufSizeErrSet:%d  \033[0;39m\n",
+	SAMPLE_PRT("s32PackErr:%d,  u32PrtclNumErrSet:%d,  s32RefErrSet:%d,  s32PicBufSizeErrSet:%d  \033[0;39m\n",
 		stStatus.stVdecDecErr.s32PackErr, stStatus.stVdecDecErr.s32PrtclNumErrSet,
 		stStatus.stVdecDecErr.s32RefErrSet, stStatus.stVdecDecErr.s32PicBufSizeErrSet);
-	printf("\033[0;33m ----------------------------------------");
-	printf("-----------------------------------------------------------\033[0;39m\n");
+	SAMPLE_PRT("\033[0;33m ----------------------------------------");
+	SAMPLE_PRT("-----------------------------------------------------------\033[0;39m\n");
 }
 
 
@@ -364,15 +364,15 @@ static CVI_S32 SAMPLE_VDEC_GetFrame(VDEC_THREAD_PARAM_S *pstVdecThreadParam)
 			if (pstVdecThreadParam->pDumpFile == NULL) {
 				SAVE_FILE_NAME(cSaveFile, pstVdecThreadParam->s32ChnId,
 					pstVdecThreadParam->outFileName, stVFrame.stVFrame.enPixelFormat);
-				printf("SAVE_FILE_NAME %s\n\n", cSaveFile);
+				SAMPLE_PRT("SAVE_FILE_NAME %s\n\n", cSaveFile);
 
 				pstVdecThreadParam->pDumpFile = fopen(cSaveFile, "wb");
 				if (pstVdecThreadParam->pDumpFile == NULL) {
-					printf("chn %d can't open file %s\n",
+					SAMPLE_PRT("chn %d can't open file %s\n",
 							pstVdecThreadParam->s32ChnId, cSaveFile);
 					return CVI_FAILURE;
 				}
-				printf("\033[0;34m chn %d saving yuv file:%s \033[0;39m\n",
+				SAMPLE_PRT("\033[0;34m chn %d saving yuv file:%s \033[0;39m\n",
 						pstVdecThreadParam->s32ChnId, cSaveFile);
 			}
 
@@ -383,7 +383,7 @@ static CVI_S32 SAMPLE_VDEC_GetFrame(VDEC_THREAD_PARAM_S *pstVdecThreadParam)
 
 		s32Ret = CVI_VDEC_ReleaseFrame(pstVdecThreadParam->s32ChnId, &stVFrame);
 		if (s32Ret != CVI_SUCCESS) {
-			printf("chn %d CVI_VDEC_ReleaseFrame fail for s32Ret=0x%x!\n",
+			SAMPLE_PRT("chn %d CVI_VDEC_ReleaseFrame fail for s32Ret=0x%x!\n",
 					pstVdecThreadParam->s32ChnId, s32Ret);
 		}
 	}
@@ -415,7 +415,7 @@ CVI_VOID *SAMPLE_COMM_VDEC_SendStream(CVI_VOID *pArgs)
 	BOOL jpeg_perf_test =
 			(pstVdecThreadParam->enType == PT_JPEG && pstVdecThreadParam->bDumpYUV == 2);
 
-	printf("\n");
+	SAMPLE_PRT("\n");
 
 	sprintf(TaskName, "chn%dVdecSendFrame", pstVdecThreadParam->s32ChnId);
 	prctl(PR_SET_NAME, TaskName, 0, 0, 0);
@@ -423,10 +423,10 @@ CVI_VOID *SAMPLE_COMM_VDEC_SendStream(CVI_VOID *pArgs)
 	snprintf(cStreamFile, sizeof(cStreamFile), "%s", pstVdecThreadParam->inFileName);
 	if (cStreamFile != 0) {
 		fpStrm = fopen(cStreamFile, "rb");
-		printf("cStreamFile = %s\n", cStreamFile);
+		SAMPLE_PRT("cStreamFile = %s\n", cStreamFile);
 
 		if (fpStrm == NULL) {
-			printf("chn %d can't open file %s in send stream thread!\n",
+			SAMPLE_PRT("chn %d can't open file %s in send stream thread!\n",
 					pstVdecThreadParam->s32ChnId, cStreamFile);
 			pstVdecThreadParam->bFileEnd = CVI_TRUE;
 			return (CVI_VOID *)(CVI_FAILURE);
@@ -439,20 +439,20 @@ CVI_VOID *SAMPLE_COMM_VDEC_SendStream(CVI_VOID *pArgs)
 		s32FileLen = ftell(fpStrm);
 		fseek(fpStrm, 0, SEEK_SET);
 		if (s32FileLen > pstVdecThreadParam->s32MinBufSize) {
-			printf("MinBufSize:%d < FileLen:%d\n", pstVdecThreadParam->s32MinBufSize, s32FileLen);
+			SAMPLE_PRT("MinBufSize:%d < FileLen:%d\n", pstVdecThreadParam->s32MinBufSize, s32FileLen);
 			fclose(fpStrm);
 			return (CVI_VOID *)CVI_FAILURE;
 		}
 	}
 
-	printf("\n \033[0;36m chn %d, stream file:%s, userbufsize: %d \033[0;39m\n",
+	SAMPLE_PRT("\n \033[0;36m chn %d, stream file:%s, userbufsize: %d \033[0;39m\n",
 			pstVdecThreadParam->s32ChnId,
 			pstVdecThreadParam->inFileName,
 			pstVdecThreadParam->s32MinBufSize);
 
 	pu8OriginBuf = malloc(pstVdecThreadParam->s32MinBufSize);
 	if (pu8OriginBuf == NULL) {
-		printf("chn %d can't alloc %d in send stream thread!\n",
+		SAMPLE_PRT("chn %d can't alloc %d in send stream thread!\n",
 				pstVdecThreadParam->s32ChnId,
 				pstVdecThreadParam->s32MinBufSize);
 		fclose(fpStrm);
@@ -463,7 +463,7 @@ CVI_VOID *SAMPLE_COMM_VDEC_SendStream(CVI_VOID *pArgs)
 	u64PTS = pstVdecThreadParam->u64PtsInit;
 	while (1) {
 		if (pstVdecThreadParam->eThreadCtrl == THREAD_CTRL_STOP) {
-			printf("eThreadCtrl = THREAD_CTRL_STOP\n");
+			SAMPLE_PRT("eThreadCtrl = THREAD_CTRL_STOP\n");
 			break;
 		} else if (pstVdecThreadParam->eThreadCtrl == THREAD_CTRL_PAUSE) {
 			sleep(1);
@@ -496,7 +496,7 @@ CVI_VOID *SAMPLE_COMM_VDEC_SendStream(CVI_VOID *pArgs)
 				pu8Buf = pu8OriginBuf;
 			} else {
 				bDecodeEnd = CVI_TRUE;
-				printf("decode end\n");
+				SAMPLE_PRT("decode end\n");
 			}
 		} else {
 			if (!jpeg_perf_test || bSendFirstFrame == CVI_FALSE) {
@@ -510,9 +510,9 @@ CVI_VOID *SAMPLE_COMM_VDEC_SendStream(CVI_VOID *pArgs)
 
 					// if (s32Ret != CVI_SUCCESS) {
 					// 	if (s32ReadLen >= pstVdecThreadParam->s32MinBufSize) {
-					// 		printf("can not find start code! s32ReadLen:%d s32UsedBytes:%d.!\n", s32ReadLen, s32UsedBytes);
+					// 		SAMPLE_PRT("can not find start code! s32ReadLen:%d s32UsedBytes:%d.!\n", s32ReadLen, s32UsedBytes);
 					// 	} else {
-					// 		// printf("stream not a complete frame! s32ReadLen:%d s32UsedBytes:%d.!\n", s32ReadLen, s32UsedBytes);
+					// 		// SAMPLE_PRT("stream not a complete frame! s32ReadLen:%d s32UsedBytes:%d.!\n", s32ReadLen, s32UsedBytes);
 					// 	}
 					// 	s32RemainBufferLen = 0;
 					// 	continue;
@@ -520,7 +520,7 @@ CVI_VOID *SAMPLE_COMM_VDEC_SendStream(CVI_VOID *pArgs)
 				} else if (pstVdecThreadParam->enType == PT_MJPEG || pstVdecThreadParam->enType == PT_JPEG) {
 					s32Ret = mjpegParse(pu8Buf, s32RemainBufferLen, &s32ReadLen, &u32Start);
 					if (s32Ret != CVI_SUCCESS) {
-						printf("can not find JPEG start code! s32ReadLen:%d s32UsedBytes:%d.!\n", s32ReadLen, s32UsedBytes);
+						SAMPLE_PRT("can not find JPEG start code! s32ReadLen:%d s32UsedBytes:%d.!\n", s32ReadLen, s32UsedBytes);
 						if (pstVdecThreadParam->enType == PT_JPEG)
 							break;
 					}
@@ -571,7 +571,7 @@ SendAgain:
 		if ((s32SendRet != CVI_SUCCESS) &&
 			(pstVdecThreadParam->eThreadCtrl == THREAD_CTRL_START)) {
 			if (s32SendRet == CVI_ERR_VDEC_BUSY)
-				printf("timeout in vdec sendstream\n");
+				SAMPLE_PRT("timeout in vdec sendstream\n");
 			usleep(pstVdecThreadParam->s32IntervalTime);
 			goto SendAgain;
 		} else {
@@ -607,11 +607,11 @@ SendAgain:
 		}
 	}
 
-	printf("\033[0;35m chn %d send steam thread return ...  \033[0;39m\n",
+	SAMPLE_PRT("\033[0;35m chn %d send steam thread return ...  \033[0;39m\n",
 			pstVdecThreadParam->s32ChnId);
 
 	pstVdecThreadParam->bFileEnd = CVI_TRUE;
-	printf("File end in chn[%d]\n", pstVdecThreadParam->s32ChnId);
+	SAMPLE_PRT("File end in chn[%d]\n", pstVdecThreadParam->s32ChnId);
 
 	fflush(stdout);
 	if (pu8OriginBuf != CVI_NULL) {
@@ -662,7 +662,7 @@ CVI_VOID SAMPLE_COMM_VDEC_CmdCtrl(VDEC_THREAD_PARAM_S *pstVdecSend, pthread_t *p
 
 WHILE:
 	while (1) {
-		printf("\nSAMPLE_TEST:press 'e' to exit; 'q' to query;\n");
+		SAMPLE_PRT("\nSAMPLE_TEST:press 'e' to exit; 'q' to query;\n");
 		c = getchar();
 
 		if (c == 'e')

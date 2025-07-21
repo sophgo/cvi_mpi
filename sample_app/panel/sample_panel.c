@@ -16,6 +16,7 @@
 #include "cvi_vo.h"
 #include "cvi_mipi_tx.h"
 #include "sample_panel.h"
+#include "sample_comm.h"
 #include "cvi_sys.h"
 
 static int fd;
@@ -134,65 +135,65 @@ static char *s_panel_model_type_arr[] = {
 
 void printdsiHelp(void)
 {
-	printf("\n// ------------------------dsi-control------------------------\n");
-	printf(" 0: dcs send\n");
-	printf(" 1: dcs get\n");
-	printf(" 2: switch to lp\n");
-	printf(" 3: switch to hs\n");
-	printf(" 4: get hs settle settings\n");
-	printf(" 5: set hs settle settings\n");
+	SAMPLE_PRT("\n// ------------------------dsi-control------------------------\n");
+	SAMPLE_PRT(" 0: dcs send\n");
+	SAMPLE_PRT(" 1: dcs get\n");
+	SAMPLE_PRT(" 2: switch to lp\n");
+	SAMPLE_PRT(" 3: switch to hs\n");
+	SAMPLE_PRT(" 4: get hs settle settings\n");
+	SAMPLE_PRT(" 5: set hs settle settings\n");
 }
 
 void printpatternHelp(void)
 {
-	printf("\n// ------------------------show-pattern------------------------\n");
-	printf(" 0: VO_PAT_OFF\n");
-	printf(" 1: VO_PAT_SNOW\n");
-	printf(" 2: VO_PAT_AUTO\n");
-	printf(" 3: VO_PAT_RED\n");
-	printf(" 4: VO_PAT_GREEN\n");
-	printf(" 5: VO_PAT_BLUE\n");
-	printf(" 6: VO_PAT_COLORBAR\n");
-	printf(" 7: VO_PAT_GRAY_GRAD_H\n");
-	printf(" 8: VO_PAT_GRAY_GRAD_V\n");
-	printf(" 9: VO_PAT_BLACK\n");
+	SAMPLE_PRT("\n// ------------------------show-pattern------------------------\n");
+	SAMPLE_PRT(" 0: VO_PAT_OFF\n");
+	SAMPLE_PRT(" 1: VO_PAT_SNOW\n");
+	SAMPLE_PRT(" 2: VO_PAT_AUTO\n");
+	SAMPLE_PRT(" 3: VO_PAT_RED\n");
+	SAMPLE_PRT(" 4: VO_PAT_GREEN\n");
+	SAMPLE_PRT(" 5: VO_PAT_BLUE\n");
+	SAMPLE_PRT(" 6: VO_PAT_COLORBAR\n");
+	SAMPLE_PRT(" 7: VO_PAT_GRAY_GRAD_H\n");
+	SAMPLE_PRT(" 8: VO_PAT_GRAY_GRAD_V\n");
+	SAMPLE_PRT(" 9: VO_PAT_BLACK\n");
 }
 
 void printHelp(char **argv)
 {
 	CVI_U32 idx;
 
-	printf("// ------------------------help------------------------\n");
-	printf("\noptional panel mode support list:\n");
+	SAMPLE_PRT("// ------------------------help------------------------\n");
+	SAMPLE_PRT("\noptional panel mode support list:\n");
 	for (idx = 0; idx < sizeof(s_panel_model_type_arr) / sizeof(char *); idx++) {
-		printf(" %s\n", s_panel_model_type_arr[idx]);
+		SAMPLE_PRT(" %s\n", s_panel_model_type_arr[idx]);
 	}
 
-	printf("\n.for mipi/lvds panel you can cfg lane seq or pnswap");
-	printf("\nEX.\n");
-	printf(" %s --panel=HX8394_EVB --laneid=1,2,0,3,4 --pnswap=1,1,1,1,1 --control_pins=352,353,354\n",
+	SAMPLE_PRT("\n.for mipi/lvds panel you can cfg lane seq or pnswap");
+	SAMPLE_PRT("\nEX.\n");
+	SAMPLE_PRT(" %s --panel=HX8394_EVB --laneid=1,2,0,3,4 --pnswap=1,1,1,1,1 --control_pins=352,353,354\n",
 		    argv[0]);
-	printf("\n.for mipi panel You can also manually set the dsi by -d");
-	printf("\nEX.\n");
-	printf(" %s -d\n\n", argv[0]);
-	printf("\n.After initializing panel, to show specific pattern by --show-pattern");
-	printf("\nEX.\n");
-	printf(" %s --panel=HX8394_EVB --show-pattern=6 (To show colorbar)\n", argv[0]);
-	printf(" %s --panel=HX8394_EVB --show-pattern=0 (To turn off colorbar)\n", argv[0]);
-	printf("\n.After initializing panel, to show any kind of pattern by -s");
-	printf("\nEX.\n");
-	printf(" %s --panel=HX8394_EVB -s\n\n", argv[0]);
+	SAMPLE_PRT("\n.for mipi panel You can also manually set the dsi by -d");
+	SAMPLE_PRT("\nEX.\n");
+	SAMPLE_PRT(" %s -d\n\n", argv[0]);
+	SAMPLE_PRT("\n.After initializing panel, to show specific pattern by --show-pattern");
+	SAMPLE_PRT("\nEX.\n");
+	SAMPLE_PRT(" %s --panel=HX8394_EVB --show-pattern=6 (To show colorbar)\n", argv[0]);
+	SAMPLE_PRT(" %s --panel=HX8394_EVB --show-pattern=0 (To turn off colorbar)\n", argv[0]);
+	SAMPLE_PRT("\n.After initializing panel, to show any kind of pattern by -s");
+	SAMPLE_PRT("\nEX.\n");
+	SAMPLE_PRT(" %s --panel=HX8394_EVB -s\n\n", argv[0]);
 
 	for (idx = 0; idx < sizeof(long_option_ext) / sizeof(optionExt); idx++) {
 		if (long_option_ext[idx].opt.name == NULL) {
 			break;
 		}
 
-		printf("--%s\n", long_option_ext[idx].opt.name);
-		printf("    %s\n", long_option_ext[idx].help);
+		SAMPLE_PRT("--%s\n", long_option_ext[idx].opt.name);
+		SAMPLE_PRT("    %s\n", long_option_ext[idx].help);
 	}
 
-	printf("// ------------------------------------------------\n");
+	SAMPLE_PRT("// ------------------------------------------------\n");
 }
 
 int dsi_init(int devno, const struct dsc_instr *cmds, int size)
@@ -217,7 +218,7 @@ int dsi_init(int devno, const struct dsc_instr *cmds, int size)
 			usleep(instr->delay * 1000);
 
 		if (ret) {
-			printf("dsi init failed at %d instr.\n", i);
+			SAMPLE_PRT("dsi init failed at %d instr.\n", i);
 			return ret;
 		}
 	}
@@ -233,20 +234,20 @@ CVI_S32 SAMPLE_MIPI_TX_ENABLE(void)
 	char *mipi_tx_device = MIPI_TX_NAME;
 	fd = open(mipi_tx_device, O_RDWR | O_NONBLOCK, 0);
 	if (fd == -1) {
-		printf("Cannot open '%s': %d, %s\n", mipi_tx_device, errno, strerror(errno));
+		SAMPLE_PRT("Cannot open '%s': %d, %s\n", mipi_tx_device, errno, strerror(errno));
 		return CVI_FAILURE;
 	}
 #endif
 
 	ret = mipi_tx_disable(fd);
 	if (ret != CVI_SUCCESS) {
-		printf("mipi_tx_disable fail!\n");
+		SAMPLE_PRT("mipi_tx_disable fail!\n");
 		return CVI_FAILURE;
 	}
 
 	ret = mipi_tx_cfg(fd, (struct combo_dev_cfg_s *)g_panel_desc.stdsicfg.dev_cfg);
 	if (ret != CVI_SUCCESS) {
-		printf("mipi_tx_cfg fail!\n");
+		SAMPLE_PRT("mipi_tx_cfg fail!\n");
 		return CVI_FAILURE;
 	}
 
@@ -254,24 +255,24 @@ CVI_S32 SAMPLE_MIPI_TX_ENABLE(void)
 		ret = dsi_init(VoDev, g_panel_desc.stdsicfg.dsi_init_cmds,
 			       g_panel_desc.stdsicfg.dsi_init_cmds_size);
 		if (ret != CVI_SUCCESS) {
-			printf("dsi_init fail!\n");
+			SAMPLE_PRT("dsi_init fail!\n");
 			return CVI_FAILURE;
 		}
 	}
 
 	ret = mipi_tx_set_hs_settle(fd, g_panel_desc.stdsicfg.hs_timing_cfg);
 	if (ret != CVI_SUCCESS) {
-		printf("mipi_tx_set_hs_settle fail!\n");
+		SAMPLE_PRT("mipi_tx_set_hs_settle fail!\n");
 		return CVI_FAILURE;
 	}
 
 	ret = mipi_tx_enable(fd);
 	if (ret != CVI_SUCCESS) {
-		printf("mipi_tx_enable fail!\n");
+		SAMPLE_PRT("mipi_tx_enable fail!\n");
 		return CVI_FAILURE;
 	}
 
-	printf("Init for MIPI-Driver-%s\n", g_panel_desc.panel_mode);
+	SAMPLE_PRT("Init for MIPI-Driver-%s\n", g_panel_desc.panel_mode);
 
 #if !defined(CONFIG_DUAL_OS)
 	close(fd);
@@ -287,18 +288,18 @@ CVI_S32 SAMPLE_PANEL_ShowPattern(VO_DEV VoDev, CVI_S32 patern_cmd)
 	if (patern_cmd >= 0 && patern_cmd < VO_PAT_MAX) {
 		ret = CVI_VO_ShowPattern(VoDev, patern_cmd);
 		if (ret != CVI_SUCCESS) {
-			printf("CVI_VO_ShowPattern failed with %#x!\n", ret);
+			SAMPLE_PRT("CVI_VO_ShowPattern failed with %#x!\n", ret);
 			return ret;
 		}
 	} else if (patern_cmd == VO_PAT_MAX) {
 		do {
 			printpatternHelp();
-			printf(" others: exit\n");
+			SAMPLE_PRT(" others: exit\n");
 			scanf("%d", &patern_cmd);
 			if (patern_cmd >= 0 && patern_cmd < VO_PAT_MAX) {
 				ret = CVI_VO_ShowPattern(VoDev, patern_cmd);
 				if (ret != CVI_SUCCESS) {
-					printf("CVI_VO_ShowPattern failed with %#x!\n", ret);
+					SAMPLE_PRT("CVI_VO_ShowPattern failed with %#x!\n", ret);
 					return CVI_FAILURE;
 				}
 			} else {
@@ -306,7 +307,7 @@ CVI_S32 SAMPLE_PANEL_ShowPattern(VO_DEV VoDev, CVI_S32 patern_cmd)
 			}
 		} while (1);
 	} else {
-		printf("invalid pattern mode parameter\n");
+		SAMPLE_PRT("invalid pattern mode parameter\n");
 		return ret;
 	}
 
@@ -321,44 +322,44 @@ CVI_S32 SAMPLE_PANEL_ENABLE(void)
 	if (g_panel_desc.panel_type == PANEL_MODE_DSI) {
 		ret = SAMPLE_MIPI_TX_ENABLE();
 		if (ret != CVI_SUCCESS) {
-			printf("SAMPLE_MIPI_TX_ENABLE fail!\n");
+			SAMPLE_PRT("SAMPLE_MIPI_TX_ENABLE fail!\n");
 			return CVI_FAILURE;
 		}
 	} else {
 		if (g_panel_desc.panel_type == PANEL_MODE_LVDS) {
 			ret = CVI_VO_SetPubAttr(VoDev, &g_panel_desc.stlvdscfg.stVoPubAttr);
 			if (ret != CVI_SUCCESS) {
-				printf("failed with %#x!\n", ret);
+				SAMPLE_PRT("failed with %#x!\n", ret);
 				return CVI_FAILURE;
 			}
 			ret = CVI_VO_SetLVDSParam(VoDev,  &g_panel_desc.stlvdscfg.LvdsAttr);
 			if (ret != CVI_SUCCESS) {
-				printf("failed with %#x!\n", ret);
+				SAMPLE_PRT("failed with %#x!\n", ret);
 				return CVI_FAILURE;
 			}
 			ret = CVI_VO_GetLVDSParam(VoDev,  &g_panel_desc.stlvdscfg.LvdsAttr);
 			if (ret != CVI_SUCCESS) {
-				printf("failed with %#x!\n", ret);
+				SAMPLE_PRT("failed with %#x!\n", ret);
 				return CVI_FAILURE;
 			}
 		} else if (g_panel_desc.panel_type == PANEL_MODE_BT) {
 			ret = CVI_VO_SetPubAttr(VoDev, &g_panel_desc.stbtcfg.stVoPubAttr);
 			if (ret != CVI_SUCCESS) {
-				printf("failed with %#x!\n", ret);
+				SAMPLE_PRT("failed with %#x!\n", ret);
 				return CVI_FAILURE;
 			}
 			ret = CVI_VO_SetBTParam(VoDev,  &g_panel_desc.stbtcfg.BtAttr);
 			if (ret != CVI_SUCCESS) {
-				printf("failed with %#x!\n", ret);
+				SAMPLE_PRT("failed with %#x!\n", ret);
 				return CVI_FAILURE;
 			}
 			ret = CVI_VO_GetBTParam(VoDev,  &g_panel_desc.stbtcfg.BtAttr);
 			if (ret != CVI_SUCCESS) {
-				printf("failed with %#x!\n", ret);
+				SAMPLE_PRT("failed with %#x!\n", ret);
 				return CVI_FAILURE;
 			}
 		}
-		printf("Init for Driver-%s\n", g_panel_desc.panel_mode);
+		SAMPLE_PRT("Init for Driver-%s\n", g_panel_desc.panel_mode);
 	}
 
 	return CVI_SUCCESS;
@@ -372,29 +373,29 @@ void SAMPLE_DSI_CONTROLE(void)
 	char *mipi_tx_device = MIPI_TX_NAME;
 	fd = open(mipi_tx_device, O_RDWR | O_NONBLOCK, 0);
 	if (fd == -1) {
-		printf("Cannot open '%s': %d, %s\n", mipi_tx_device, errno, strerror(errno));
+		SAMPLE_PRT("Cannot open '%s': %d, %s\n", mipi_tx_device, errno, strerror(errno));
 	}
 #endif
 
 	do {
 		printdsiHelp();
-		printf(" others: exit\n");
+		SAMPLE_PRT(" others: exit\n");
 		scanf("%d", &tmp);
 		if (tmp == 0) {
 			struct cmd_info_s cmd_info;
 			CVI_U8 data[16] = { 0 };
 			int len = 0;
 
-			printf("data size:\n");
+			SAMPLE_PRT("data size:\n");
 			scanf("%d", &tmp);
 			cmd_info.cmd_size = tmp;
 
-			printf("data type: 0x\n");
+			SAMPLE_PRT("data type: 0x\n");
 			scanf("%x", &tmp);
 			cmd_info.data_type = tmp;
 
 			do {
-				printf("data[%d]: 0x\n", len);
+				SAMPLE_PRT("data[%d]: 0x\n", len);
 				scanf("%x", &tmp);
 				data[len++] = tmp;
 			} while (len < cmd_info.cmd_size);
@@ -404,21 +405,21 @@ void SAMPLE_DSI_CONTROLE(void)
 			struct get_cmd_info_s cmd_info;
 			CVI_U8 data[4] = { 0 };
 
-			printf("get data size:\n");
+			SAMPLE_PRT("get data size:\n");
 			scanf("%d", &tmp);
 			cmd_info.get_data_size = tmp;
 
-			printf("data type: 0x\n");
+			SAMPLE_PRT("data type: 0x\n");
 			scanf("%x", &tmp);
 			cmd_info.data_type = tmp;
 
-			printf("data param: 0x\n");
+			SAMPLE_PRT("data param: 0x\n");
 			scanf("%x", &tmp);
 			cmd_info.data_param = tmp;
 
 			cmd_info.get_data = data;
 			mipi_tx_recv_cmd(fd, &cmd_info);
-			printf("data[0]: %#x [1]: %#x [2]: %#x [3]: %#x\n"
+			SAMPLE_PRT("data[0]: %#x [1]: %#x [2]: %#x [3]: %#x\n"
 				, cmd_info.get_data[0], cmd_info.get_data[1]
 				, cmd_info.get_data[2], cmd_info.get_data[3]);
 		} else if (tmp == 2) {
@@ -429,20 +430,20 @@ void SAMPLE_DSI_CONTROLE(void)
 			struct hs_settle_s hs_cfg;
 
 			mipi_tx_get_hs_settle(fd, &hs_cfg);
-			printf("prepare(%d) zero(%d) trail(%d)\n",
+			SAMPLE_PRT("prepare(%d) zero(%d) trail(%d)\n",
 				hs_cfg.prepare, hs_cfg.zero, hs_cfg.trail);
 		} else if (tmp == 5) {
 			struct hs_settle_s hs_cfg;
 
-			printf("prepare:\n");
+			SAMPLE_PRT("prepare:\n");
 			scanf("%d", &tmp);
 			hs_cfg.prepare = tmp;
 
-			printf("zero:\n");
+			SAMPLE_PRT("zero:\n");
 			scanf("%d", &tmp);
 			hs_cfg.zero = tmp;
 
-			printf("trail:\n");
+			SAMPLE_PRT("trail:\n");
 			scanf("%d", &tmp);
 			hs_cfg.trail = tmp;
 
@@ -634,7 +635,7 @@ void SAMPLE_SET_PANEL_DESC(void)
 		g_panel_desc.stbtcfg.BtAttr = stpt1000kbt1120cfg;
 		break;
 	default:
-		printf("default\n");
+		SAMPLE_PRT("default\n");
 		g_panel_desc.panel_type = PANEL_MODE_DSI;
 		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_hx8394_720x1280;
 		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_hx8394_720x1280;
@@ -791,24 +792,24 @@ void SAMPLE_PANEL_I2C_SEND(void)
 	if (g_input_para.panel_model == BT_PANEL_PT1000K_BT656_1280x720_25FPS_74M) {
 		ret = panel_i2c_init(g_input_para.dev_no);
 		if (ret != CVI_SUCCESS) {
-			printf("panel_i2c_init fail");
+			SAMPLE_PRT("panel_i2c_init fail");
 		}
 		for (CVI_U32 i = 0; i < ARRAY_SIZE(bt656_720p25_pt1000k_init_cmds); i++) {
 			ret = panel_write_register(g_input_para.dev_no, bt656_720p25_pt1000k_init_cmds[i].addr,
 				  bt656_720p25_pt1000k_init_cmds[i].data);
 			if (ret != CVI_SUCCESS)
-				printf("i2c_write fail addr[0x%x]\n", bt656_720p25_pt1000k_init_cmds[i].addr);
+				SAMPLE_PRT("i2c_write fail addr[0x%x]\n", bt656_720p25_pt1000k_init_cmds[i].addr);
 		}
 	} else if (g_input_para.panel_model == BT_PANEL_PT1000K_BT1120_1920x1080_25FPS_74M) {
 		ret = panel_i2c_init(g_input_para.dev_no);
 		if (ret != CVI_SUCCESS) {
-			printf("panel_i2c_init fail");
+			SAMPLE_PRT("panel_i2c_init fail");
 		}
 		for (CVI_U32 i = 0; i < ARRAY_SIZE(bt1120_1080p25_pt1000k_init_cmds); i++) {
 			ret = panel_write_register(g_input_para.dev_no, bt1120_1080p25_pt1000k_init_cmds[i].addr,
 				  bt1120_1080p25_pt1000k_init_cmds[i].data);
 			if (ret != CVI_SUCCESS)
-				printf("i2c_write fail addr[0x%x]\n", bt1120_1080p25_pt1000k_init_cmds[i].addr);
+				SAMPLE_PRT("i2c_write fail addr[0x%x]\n", bt1120_1080p25_pt1000k_init_cmds[i].addr);
 		}
 	}
 }
@@ -832,7 +833,7 @@ int main(int argc, char *argv[])
 			break;
 
 		if (idx >= MAX_OPTIONS) {
-			printf("too many options\n");
+			SAMPLE_PRT("too many options\n");
 			return -1;
 		}
 
@@ -841,7 +842,7 @@ int main(int argc, char *argv[])
 
 #if defined(CONFIG_DUAL_OS)
 	if (CVI_SYS_Init() != CVI_SUCCESS) {
-		printf("CVI_SYS_Init failed!\n");
+		SAMPLE_PRT("CVI_SYS_Init failed!\n");
 		return CVI_FAILURE;
 	}
 #endif
@@ -852,34 +853,34 @@ int main(int argc, char *argv[])
 		case 'c':
 			// ret = SAMPLE_PANEL_CONTROL_PINS_CONFIG(optarg);
 			// if (ret != CVI_SUCCESS) {
-			//	printf("panel control_pins config fail!\n");
+			//	SAMPLE_PRT("panel control_pins config fail!\n");
 			//	return ret;
 			// }
 			break;
 		case 'l':
 			ret = SAMPLE_SET_LANEID(optarg);
 			if (ret != CVI_SUCCESS) {
-				printf("invalid laneid parameter\n");
+				SAMPLE_PRT("invalid laneid parameter\n");
 				return ret;
 			}
 			break;
 		case 'p':
 			ret = SAMPLE_SET_PNSWAP(optarg);
 			if (ret != CVI_SUCCESS) {
-				printf("invalid pnswap parameter\n");
+				SAMPLE_PRT("invalid pnswap parameter\n");
 				return ret;
 			}
 			break;
 		case 'm':
 			ret = SAMPLE_SET_PANEL_MODEL(optarg);
 			if (ret != CVI_SUCCESS) {
-				printf("invalid input panel model\n");
+				SAMPLE_PRT("invalid input panel model\n");
 				return ret;
 			}
 			break;
 		case 'd':
 			if (argc > 3) {
-				printf("usage:%s -d. -d can't use in the same time with other command\n", argv[0]);
+				SAMPLE_PRT("usage:%s -d. -d can't use in the same time with other command\n", argv[0]);
 				return CVI_FAILURE;
 			}
 			SAMPLE_DSI_CONTROLE();
@@ -896,7 +897,7 @@ int main(int argc, char *argv[])
 			printHelp(argv);
 			return CVI_SUCCESS;
 		default:
-			printf("ch = %c\n", ch);
+			SAMPLE_PRT("ch = %c\n", ch);
 			printHelp(argv);
 			return CVI_FAILURE;
 		}
@@ -912,9 +913,9 @@ int main(int argc, char *argv[])
 	if (is_pattern) {
 		ret = SAMPLE_PANEL_ShowPattern(g_input_para.dev_no, patern_cmd);
 		if (ret == CVI_SUCCESS)
-			printf("sample_panel exit success!\n");
+			SAMPLE_PRT("sample_panel exit success!\n");
 		else
-			printf("sample_panel exit abnormally!\n");
+			SAMPLE_PRT("sample_panel exit abnormally!\n");
 	}
 
 	if (g_panel_desc.panel_type == PANEL_MODE_BT)
@@ -922,7 +923,7 @@ int main(int argc, char *argv[])
 
 #if defined(CONFIG_DUAL_OS)
 	if (CVI_SYS_Exit() != CVI_SUCCESS) {
-		printf("CVI_SYS_Exit failed!\n");
+		SAMPLE_PRT("CVI_SYS_Exit failed!\n");
 		return CVI_FAILURE;
 	}
 #endif

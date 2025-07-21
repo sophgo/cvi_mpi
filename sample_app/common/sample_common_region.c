@@ -33,7 +33,7 @@ CVI_S32 SAMPLE_COMM_REGION_MST_LoadBmp(const char *filename, BITMAP_S *pstBitmap
 	CVI_U32 i, u32PdataSize;
 
 	if (GetBmpInfo(filename, &bmpFileHeader, &bmpInfo) < 0) {
-		printf("GetBmpInfo err!\n");
+		SAMPLE_PRT("GetBmpInfo err!\n");
 		return CVI_FAILURE;
 	}
 	Bpp = bmpInfo.bmiHeader.biBitCount/8;
@@ -45,7 +45,7 @@ CVI_S32 SAMPLE_COMM_REGION_MST_LoadBmp(const char *filename, BITMAP_S *pstBitmap
 			nColors = bmpInfo.bmiHeader.biClrUsed;
 
 		if (nColors > 256) {
-			printf("Number of indexed palette is over 256.");
+			SAMPLE_PRT("Number of indexed palette is over 256.");
 			return CVI_FAILURE;
 		}
 
@@ -59,7 +59,7 @@ CVI_S32 SAMPLE_COMM_REGION_MST_LoadBmp(const char *filename, BITMAP_S *pstBitmap
 			CVI_U32 u32Pixel =
 				((overlay_palette[i].argbBlue | overlay_palette[i].argbGreen << 8) |
 				(overlay_palette[i].argbRed << 16 | overlay_palette[i].argbAlpha << 24));
-			printf("overlay_palette index(%d) (0x%x).\n", i, u32Pixel);
+			SAMPLE_PRT("overlay_palette index(%d) (0x%x).\n", i, u32Pixel);
 #endif
 		}
 	}
@@ -73,14 +73,14 @@ CVI_S32 SAMPLE_COMM_REGION_MST_LoadBmp(const char *filename, BITMAP_S *pstBitmap
 	} else if (enPixelFormat == PIXEL_FORMAT_8BIT_MODE) {
 		Surface.enColorFmt = OSD_COLOR_FMT_8BIT_MODE;
 	} else {
-		printf("enPixelFormat err %d\n", enPixelFormat);
+		SAMPLE_PRT("enPixelFormat err %d\n", enPixelFormat);
 		return CVI_FAILURE;
 	}
 
 	u32PdataSize = Bpp * (bmpInfo.bmiHeader.biWidth) * (bmpInfo.bmiHeader.biHeight);
 	pstBitmap->pData = malloc(u32PdataSize);
 	if (pstBitmap->pData == NULL) {
-		printf("malloc osd memory err!\n");
+		SAMPLE_PRT("malloc osd memory err!\n");
 		return CVI_FAILURE;
 	}
 
@@ -122,7 +122,7 @@ CVI_S32 SAMPLE_COMM_REGION_MST_UpdateCanvas(const char *filename, BITMAP_S *pstB
 	OSD_BITMAPINFO bmpInfo;
 
 	if (GetBmpInfo(filename, &bmpFileHeader, &bmpInfo) < 0) {
-		printf("GetBmpInfo err!\n");
+		SAMPLE_PRT("GetBmpInfo err!\n");
 		return CVI_FAILURE;
 	}
 
@@ -135,12 +135,12 @@ CVI_S32 SAMPLE_COMM_REGION_MST_UpdateCanvas(const char *filename, BITMAP_S *pstB
 	} else if (enPixelFormat == PIXEL_FORMAT_8BIT_MODE) {
 		Surface.enColorFmt = OSD_COLOR_FMT_RGB8888;
 	} else {
-		printf("Pixel format is not support!\n");
+		SAMPLE_PRT("Pixel format is not support!\n");
 		return CVI_FAILURE;
 	}
 
 	if (pstBitmap->pData == NULL) {
-		printf("malloc osd memory err!\n");
+		SAMPLE_PRT("malloc osd memory err!\n");
 		return CVI_FAILURE;
 	}
 
@@ -615,7 +615,7 @@ CVI_S32 SAMPLE_COMM_REGION_SetBitMap(RGN_HANDLE Handle, const char *filename,
 
 	if (bCompressed) {
 		if (filename == NULL) {
-			printf("OSD_LoadBMP: filename=NULL\n");
+			SAMPLE_PRT("OSD_LoadBMP: filename=NULL\n");
 			return -1;
 		}
 
@@ -626,7 +626,7 @@ CVI_S32 SAMPLE_COMM_REGION_SetBitMap(RGN_HANDLE Handle, const char *filename,
 
 		stBitmap.pData = malloc(u32FileSize);
 		if (stBitmap.pData == NULL) {
-			printf("malloc osd memory err!\n");
+			SAMPLE_PRT("malloc osd memory err!\n");
 			return CVI_FAILURE;
 		}
 
@@ -668,7 +668,7 @@ CVI_S32 SAMPLE_COMM_REGION_GetUpCanvas(RGN_HANDLE Handle, const char *filename)
 		pFile = fopen((char *)filename, "rb");
 
 		if (pFile == NULL) {
-			printf("Open file failed:%s!\n", filename);
+			SAMPLE_PRT("Open file failed:%s!\n", filename);
 			return -1;
 		}
 

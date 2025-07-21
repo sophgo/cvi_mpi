@@ -421,7 +421,7 @@ CVI_S32 SAMPLE_COMM_ISP_Run(CVI_U8 IspDev)
 			char *error = NULL;
 			void (*daemon_init)(unsigned int port);
 
-			printf("Load dynamic library %s success\n", ISPD_LIBNAME);
+			SAMPLE_PRT("Load dynamic library %s success\n", ISPD_LIBNAME);
 
 			dlerror();
 			daemon_init = dlsym(g_ISPDHandle, "isp_daemon2_init");
@@ -430,11 +430,11 @@ CVI_S32 SAMPLE_COMM_ISP_Run(CVI_U8 IspDev)
 				(*daemon_init)(ISPD_CONNECT_PORT);
 				g_ISPDaemon = CVI_TRUE;
 			} else {
-				printf("Run daemon initial fail\n");
+				SAMPLE_PRT("Run daemon initial fail\n");
 				dlclose(g_ISPDHandle);
 			}
 		} else {
-			printf("Load dynamic library %s fail\n", ISPD_LIBNAME);
+			SAMPLE_PRT("Load dynamic library %s fail\n", ISPD_LIBNAME);
 		}
 	}
 #endif //
@@ -600,7 +600,7 @@ CVI_S32 SAMPLE_COMM_ISP_Aflib_Callback(ISP_DEV IspDev)
 	CVI_AF_MOTOR_Register(IspDev, &motorCb);
 
 	if (s32Ret != CVI_SUCCESS) {
-		printf("AF Algo register failed!, error: %d\n", s32Ret);
+		SAMPLE_PRT("AF Algo register failed!, error: %d\n", s32Ret);
 		return s32Ret;
 	}
 	return CVI_SUCCESS;
@@ -699,9 +699,9 @@ CVI_S32 SAMPLE_COMM_ISP_SetSensorMode(SAMPLE_VI_CONFIG_S *pstViConfig)
 		stSnsrMode.f32Fps = stPubAttr.f32FrameRate;
 		stSnsrMode.u8LaneNum = stPubAttr.u8LaneNum;
 		stSnsrMode.u8EnableMaster = stPubAttr.u8EnableMaster;
-		printf("sensor_type %d, lane_num %d, master mode, %d\n", pstViInfo->stSnsInfo.enSnsType,
+		SAMPLE_PRT("sensor_type %d, lane_num %d, master mode, %d\n", pstViInfo->stSnsInfo.enSnsType,
 				stSnsrMode.u8LaneNum, stSnsrMode.u8EnableMaster);
-		printf("stSnsrMode.u16Width %d stSnsrMode.u16Height %d %f wdrMode %d \n",
+		SAMPLE_PRT("stSnsrMode.u16Width %d stSnsrMode.u16Height %d %f wdrMode %d \n",
 				stSnsrMode.u16Width, stSnsrMode.u16Height, stSnsrMode.f32Fps, wdrMode);
 
 		s32Ret = CVI_SNS_SetSnsImgMode(u32SnsId, &stSnsrMode);

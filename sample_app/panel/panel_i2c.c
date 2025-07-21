@@ -9,6 +9,7 @@
 #include <linux/i2c-dev.h>
 #include "cvi_debug.h"
 #include "panel_i2c.h"
+#include "sample_comm.h"
 
 const CVI_U32 panel_addr_byte = 1;
 const CVI_U32 panel_data_byte = 1;
@@ -36,7 +37,7 @@ int panel_i2c_init(VO_DEV VoDev)
 	g_fd[VoDev] = open(acDevFile, O_RDWR);
 
 	if (g_fd[VoDev] < 0) {
-		printf("Open /dev/i2c-%u error!\n", u8DevNum);
+		SAMPLE_PRT("Open /dev/i2c-%u error!\n", u8DevNum);
 		return CVI_FAILURE;
 	}
 	return CVI_SUCCESS;
@@ -84,7 +85,7 @@ int panel_write_register(VO_DEV VoDev, int addr, int data)
 	packets.nmsgs = 1;
 	ret = ioctl(g_fd[VoDev], I2C_RDWR, &packets);
 	if (ret < 0) {
-		printf("I2C_WRITE error!\n");
+		SAMPLE_PRT("I2C_WRITE error!\n");
 		return CVI_FAILURE;
 	};
 
