@@ -29,9 +29,9 @@ endif
 ldflags-y += -lvi -lvpss -lvo -lrgn -lgdc -lpthread -latomic -ldl
 
 ifeq ($(SAMPLE_STATIC),1)
-LIB_DEP := $(MW_LIB)/libsys.a $(MW_LIB)/libmsg.a $(MW_LIB)/libcvilink.a
+LIB_DEP := $(MW_LIB)/libsys.a $(MW_LIB)/libmsg.a $(MW_LIB)/libcvilink.a $(MW_LIB)/libmisc.a
 else
-LIB_DEP := $(MW_LIB)/libsys.so $(MW_LIB)/libmsg.so $(MW_LIB)/libcvilink.so
+LIB_DEP := $(MW_LIB)/libsys.so $(MW_LIB)/libmsg.so $(MW_LIB)/libcvilink.so $(MW_LIB)/libmisc.so
 endif
 
 .PHONY : clean all

@@ -504,17 +504,40 @@ CVI_S32 CVI_EFUSE_IsSecureBootEnabled(void)
 	return !!value;
 }
 
+/**
+ * @brief Get Chip ID by reading register via devmem.
+ *
+ * @return CVI_U32, the chip id.
+ */
+static unsigned int CVI_MISC_GetChipIdFromDevmem(void)
+{
+	CVI_U32 chip = 0;
+	FILE *fp = popen("devmem 0x0300008c", "r");
+
+	if (fp) {
+		char buf[64];
+
+		if (fgets(buf, sizeof(buf), fp)) {
+			chip = strtoul(buf, NULL, 0);
+		}
+		pclose(fp);
+	}
+	return chip;
+}
+
 CVI_S32 CVI_EFUSE_EnableFastBoot(void)
 {
 	CVI_U32 value = 0, data;
 	CVI_S32 ret = 0;
 	CVI_U32 chip = 0;
 
-	CVI_SYS_GetChipId(&chip);
-	if (!IS_CHIP_CV181X(chip) && !IS_CHIP_CV180X(chip)) {
-		CVI_TRACE_SYS(CVI_DBG_DEBUG, "chip id=%d\n", chip);
-		return CVI_FAILURE;
+	if (CVI_EFUSE_IsFastBootEnabled() == CVI_SUCCESS) {
+		printf("Fast Boot is already enabled.\n");
+		return CVI_SUCCESS;
 	}
+
+	chip = CVI_MISC_GetChipIdFromDevmem();
+	CVI_TRACE_SYS(CVI_DBG_DEBUG, "chip id=%x\n", chip);
 
 	ret = _CVI_EFUSE_Read(CVI_EFUSE_SW_INFO, &value, sizeof(value));
 	CVI_TRACE_SYS(CVI_DBG_DEBUG, "ret=%d value=%u\n", ret, value);
@@ -538,17 +561,24 @@ CVI_S32 CVI_EFUSE_EnableFastBoot(void)
         if (ret < 0)
                 return ret;
 
-	if (IS_CHIP_PKG_TYPE_QFN(chip)) {
-		value |= 0x1E1E64; // AUX0
+	if ((chip & 0xFFF0F) == 0x1810C && ((chip >> 4) & 0xF) <= 3) { // 181XC (X <= 3)
+		value |= 0x1E1E64; // CV181X-AUX0
 		if (value != 0x1E1E64) {
-			CVI_TRACE_SYS(CVI_DBG_DEBUG, "CUSTOMER value=%u\n", value);
+			printf("CUSTOMER value=%u\n", value);
+			return CVI_FAILURE;
+		}
+	} else if (((chip & 0xFFF0F) == 0x1800C || (chip & 0xFFF0F) == 0x1800B)
+					&& ((chip >> 4) & 0xF) <= 3) { // CV180X (X <= 3)
+		value |= 0x1E1564; // CV180X-AUX0
+		if (value != 0x1E1564) {
+			printf("CUSTOMER value=%u\n", value);
 			return CVI_FAILURE;
 		}
 	} else {
 		value |= 0x1; // USB_ID
 		if (value != 0x1) {
-			CVI_TRACE_SYS(CVI_DBG_DEBUG, "CUSTOMER value=%u\n", value);
-                        return CVI_FAILURE;
+			printf("CUSTOMER value=%u\n", value);
+			return CVI_FAILURE;
 		}
 	}
 
@@ -570,11 +600,8 @@ CVI_S32 CVI_EFUSE_IsFastBootEnabled(void)
 	CVI_S32 ret = 0;
 	CVI_U32 chip = 0;
 
-	CVI_SYS_GetChipId(&chip);
-	if (!IS_CHIP_CV181X(chip) && !IS_CHIP_CV180X(chip)) {
-		CVI_TRACE_SYS(CVI_DBG_DEBUG, "chip id=%d\n", chip);
-		return CVI_FAILURE;
-	}
+	chip = CVI_MISC_GetChipIdFromDevmem();
+	CVI_TRACE_SYS(CVI_DBG_DEBUG, "chip id=%x\n", chip);
 
 	ret = _CVI_EFUSE_Read(CVI_EFUSE_SW_INFO, &value, sizeof(value));
 	CVI_TRACE_SYS(CVI_DBG_DEBUG, "ret=%d value=%u\n", ret, value);
@@ -593,9 +620,15 @@ CVI_S32 CVI_EFUSE_IsFastBootEnabled(void)
 	if (ret < 0)
 		return ret;
 
-	if (IS_CHIP_PKG_TYPE_QFN(chip)) {
+	if ((chip & 0xFFF0F) == 0x1810C && ((chip >> 4) & 0xF) <= 3) { // 181XC (X <= 3)
 		if (value == 0x1E1E64)
-			return CVI_SUCCESS; // AUX0
+			return CVI_SUCCESS; // CV181X-AUX0
+		else
+			return CVI_FAILURE;
+	} else if (((chip & 0xFFF0F) == 0x1800C || (chip & 0xFFF0F) == 0x1800B)
+					&& ((chip >> 4) & 0xF) <= 3) { // CV180X (X <= 3)
+		if (value == 0x1E1564)
+			return CVI_SUCCESS; // CV180X-AUX0
 		else
 			return CVI_FAILURE;
 	} else {

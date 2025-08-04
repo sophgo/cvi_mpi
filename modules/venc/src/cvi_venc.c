@@ -507,6 +507,53 @@ GET_STREAM_RETRY:
 	return CVI_ERR_VENC_NOBUF;
 }
 
+CVI_S32 CVI_VENC_ReleaseStreamEx(VENC_CHN VeChn, VENC_STREAM_S *pstStream)
+{
+	CVI_S32 s32Ret;
+	CVI_U32 i, j;
+	VENC_STREAM_PACK_S StreamPack;
+	CVI_U32 u32ModFd = MODFD(CVI_ID_VENC, 0, VeChn);
+
+	MOD_CHECK_NULL_PTR(CVI_ID_VENC, pstStream);
+	MOD_CHECK_NULL_PTR(CVI_ID_VENC, pstStream->pstPack);
+
+	VENC_PACK_S *pPack = pstStream->pstPack;
+	for(i = 0; i < pstStream->u32PackCount; i++){
+		if(pPack[i].pu8Addr)
+			CVI_SYS_Munmap(pPack[i].pu8Addr, pPack[i].u32Len);
+	}
+
+	memset(&StreamPack, 0, sizeof(VENC_STREAM_PACK_S));
+	memcpy(&StreamPack.stStream, pstStream, sizeof(VENC_STREAM_S));
+
+	// only copy max(8) sei packs to release
+	for (i = 0, j = 0; i < pstStream->u32PackCount; i++) {
+		if (pstStream->pstPack[i].DataType.enH264EType != H264E_NALU_SEI
+			&& pstStream->pstPack[i].DataType.enH265EType != H265E_NALU_SEI) {
+			continue;
+		}
+
+		if (j >= 8) {
+			break;
+		}
+
+		memcpy(&StreamPack.pstPack[j], &pstStream->pstPack[i], sizeof(VENC_PACK_S));
+		j++;
+	}
+
+	StreamPack.stStream.u32PackCount = j;
+	s32Ret = CVI_MSG_SendSync(u32ModFd, MSG_CMD_VENC_RELEASE_STREAM, (CVI_VOID *)&StreamPack,
+				sizeof(VENC_STREAM_PACK_S), NULL);
+	if (s32Ret != CVI_SUCCESS) {
+		CVI_VENC_ERR("ReleaseStream fail, chn:%d, ret:0x%x\n", VeChn, s32Ret);
+		return s32Ret;
+	}
+
+	CVI_VENC_API_OUT;
+
+	return CVI_SUCCESS;
+}
+
 CVI_S32 CVI_VENC_ReleaseStream(VENC_CHN VeChn, VENC_STREAM_S *pstStream)
 {
 #if 0

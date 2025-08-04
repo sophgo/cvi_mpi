@@ -2993,6 +2993,28 @@ CVI_S32 CVI_ISPD2_CBFunc_SetBinaryData(TJSONRpcContentIn *ptContentIn,
 			ptBinaryInData->u32BufferSize = pRawReplayHandle->u32DataSize;
 		}
 		break;
+	case EBINARYDATA_VI_LDC_BIN_DATA:
+		ISP_DAEMON2_DEBUG_EX(LOG_DEBUG, "Set to recv. ldc vi bin (%u)", u32DataSize);
+
+		ptDevInfo->bKeepBinaryInDataInfoOnce = CVI_TRUE;
+		ptBinaryInData->eDataType = EBINARYDATA_VI_LDC_BIN_DATA;
+		ptBinaryInData->eDataState = EBINARYSTATE_INITIAL;
+		ptBinaryInData->u32Size = u32DataSize;
+		ptBinaryInData->u32RecvSize = 0;
+		ptBinaryInData->pu8Buffer = CVI_NULL;
+		ptBinaryInData->u32BufferSize = u32DataSize;
+		break;
+	case EBINARYDATA_VPSS_LDC_BIN_DATA:
+		ISP_DAEMON2_DEBUG_EX(LOG_DEBUG, "Set to recv. ldc vpss bin (%u)", u32DataSize);
+
+		ptDevInfo->bKeepBinaryInDataInfoOnce = CVI_TRUE;
+		ptBinaryInData->eDataType = EBINARYDATA_VPSS_LDC_BIN_DATA;
+		ptBinaryInData->eDataState = EBINARYSTATE_INITIAL;
+		ptBinaryInData->u32Size = u32DataSize;
+		ptBinaryInData->u32RecvSize = 0;
+		ptBinaryInData->pu8Buffer = CVI_NULL;
+		ptBinaryInData->u32BufferSize = u32DataSize;
+		break;
 	default:
 		ISP_DAEMON2_DEBUG(LOG_DEBUG, "Un-support content id");
 		CVI_ISPD2_Utils_ComposeMessage(ptContentOut, JSONRPC_CODE_INVALID_PARAMS,

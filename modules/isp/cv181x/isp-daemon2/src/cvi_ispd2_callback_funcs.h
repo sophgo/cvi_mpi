@@ -361,11 +361,17 @@ CVI_S32 CVI_ISPD2_CBFunc_ISP_SetAFAttr(TJSONRpcContentIn *ptIn,
 CVI_S32 CVI_ISPD2_CBFunc_ISP_GetAFAttr(TJSONRpcContentIn *ptIn,
 	TJSONRpcContentOut *ptOut, JSONObject *pJsonRes);
 
+// VI & VPSS
+CVI_S32 CVI_ISPD2_CBFunc_VI_VPSS_GetLDCChnSize(TJSONRpcContentIn *ptContentIn,
+	TJSONRpcContentOut *ptContentOut, JSONObject *pJsonResponse);
+
 // VI
 CVI_S32 CVI_ISPD2_CBFunc_VI_SetChnLDCAttr(TJSONRpcContentIn *ptIn,
 	TJSONRpcContentOut *ptOut, JSONObject *pJsonRes);
 CVI_S32 CVI_ISPD2_CBFunc_VI_GetChnLDCAttr(TJSONRpcContentIn *ptIn,
 	TJSONRpcContentOut *ptOut, JSONObject *pJsonRes);
+CVI_S32 CVI_ISPD2_CBFunc_VI_LDCBinData(CVI_S32 ViPipe, CVI_S32 ViChn, TBinaryData *ptBinaryData,
+	TJSONRpcContentOut *ptContentOut, JSONObject *pJsonResponse);
 
 // VPSS
 CVI_S32 CVI_ISPD2_CBFunc_VPSS_SetChnLDCAttr(TJSONRpcContentIn *ptIn,
@@ -376,6 +382,8 @@ CVI_S32 CVI_ISPD2_CBFunc_VPSS_SetGrpProcAmp(TJSONRpcContentIn *ptIn,
 	TJSONRpcContentOut *ptOut, JSONObject *pJsonRes);
 CVI_S32 CVI_ISPD2_CBFunc_VPSS_GetGrpProcAmp(TJSONRpcContentIn *ptIn,
 	TJSONRpcContentOut *ptOut, JSONObject *pJsonRes);
+CVI_S32 CVI_ISPD2_CBFunc_VPSS_LDCBinData(CVI_S32 ViPipe, CVI_S32 ViChn, TBinaryData *ptBinaryData,
+	TJSONRpcContentOut *ptContentOut, JSONObject *pJsonResponse);
 
 // VO
 CVI_S32 CVI_ISPD2_CBFunc_VO_SetGammaInfo(TJSONRpcContentIn *ptIn,
