@@ -297,6 +297,7 @@ typedef struct _SAMPLE_DEV_INFO_S {
 	WDR_MODE_E enWDRMode;
 	CVI_S32 fps;
 	SIZE_S stSize;
+	CVI_BOOL bPatgen;
 	BAYER_FORMAT_E enBayerFormat;
 	SNS_YUV_DATA_SEQ_E enYuvFormat;
 	SNS_DATA_TYPE_E enFormatMode;

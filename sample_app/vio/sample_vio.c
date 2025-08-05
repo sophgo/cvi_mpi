@@ -108,8 +108,8 @@ CVI_S32 SAMPLE_VIO_SYS_INIT(SAMPLE_VI_CONFIG_S *pstViConfig, SNS_INI_CFG_S *pstS
 
 	if (pstRotCfg->rotation_vi == ROTATION_90 || pstRotCfg->rotation_vi == ROTATION_270) {
 		for (CVI_S32 i = 0; i < pstViConfig->s32ViNum; i++) {
-			SAMPLE_VIO_VB_CFG(pstViConfig->astViInfo[i].stDevInfo.stSize.u32Height,
-							pstViConfig->astViInfo[i].stDevInfo.stSize.u32Width, 3, pstVbConfig);
+			SAMPLE_VIO_VB_CFG(pstViConfig->astViInfo[i].stDevInfo.stSize.u32Width,
+							pstViConfig->astViInfo[i].stDevInfo.stSize.u32Height, 3, pstVbConfig);
 		}
 	}
 
@@ -172,11 +172,14 @@ CVI_S32 SAMPLE_VIO_VI_INIT(SAMPLE_VI_CONFIG_S *pstViConfig)
 	SAMPLE_COMM_VI_StartMIPI(pstViConfig);
 
 	for (i = 0; i < gstSnsIniCfg.devNum; i++) {
-		if (CVI_SNS_SetSnsProbe(i) != CVI_SUCCESS) {
-			SAMPLE_PRT("[ERROR] sensor_%d probe failed!\n", i);
-			return CVI_FAILURE;
+		if(!pstViConfig->astViInfo->stDevInfo.bPatgen){
+			if (CVI_SNS_SetSnsProbe(i) != CVI_SUCCESS) {
+				SAMPLE_PRT("[ERROR] sensor_%d probe failed!\n", i);
+				return CVI_FAILURE;
+			}
 		}
 	}
+
 	/************************************************
 	 * Set VI dev config
 	 ************************************************/
@@ -210,9 +213,11 @@ CVI_S32 SAMPLE_VIO_VI_INIT(SAMPLE_VI_CONFIG_S *pstViConfig)
 	 * Set sensor init
 	 ************************************************/
 	for (i = 0; i < gstSnsIniCfg.devNum; i++) {
-		if (CVI_SNS_SetSnsInit(i) != CVI_SUCCESS) {
-			SAMPLE_PRT("[ERROR] sensor_%d init failed!\n", i);
-			return CVI_FAILURE;
+		if(!pstViConfig->astViInfo->stDevInfo.bPatgen){
+			if (CVI_SNS_SetSnsInit(i) != CVI_SUCCESS) {
+				SAMPLE_PRT("[ERROR] sensor_%d init failed!\n", i);
+				return CVI_FAILURE;
+			}
 		}
 	}
 	/************************************************
@@ -233,6 +238,12 @@ CVI_S32 SAMPLE_VIO_VI_DEINIT(SAMPLE_VI_CONFIG_S *pstViConfig)
 {
 	int i = 0;
 	CVI_S32 s32Ret = CVI_SUCCESS;
+
+	s32Ret = SAMPLE_COMM_VI_DestroyIsp(pstViConfig);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_PRT("[ERROR] SAMPLE_COMM_VI_DestroyIsp failed with %#x!\n", s32Ret);
+		return s32Ret;
+	}
 
 	for (i = 0; i < pstViConfig->s32ViNum; i++) {
 		s32Ret = SAMPLE_COMM_VI_StopChn(&pstViConfig->astViInfo[i]);
@@ -257,13 +268,6 @@ CVI_S32 SAMPLE_VIO_VI_DEINIT(SAMPLE_VI_CONFIG_S *pstViConfig)
 			return s32Ret;
 		}
 	}
-
-	s32Ret = SAMPLE_COMM_VI_DestroyIsp(pstViConfig);
-	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_PRT("[ERROR] SAMPLE_COMM_VI_DestroyIsp failed with %#x!\n", s32Ret);
-		return s32Ret;
-	}
-
 	return s32Ret;
 }
 

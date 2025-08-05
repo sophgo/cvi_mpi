@@ -1,7 +1,7 @@
 #!/bin/sh
 
-TEST_PASS="TEST-PASS"
-TEST_FAIL="TEST-FAIL"
+TEST_PASS="PANEL-TEST-PASS"
+TEST_FAIL="PANEL-TEST-FAIL"
 
 SAMPLE_PANEL_BIN=sample_panel
 INPUT_FILE="tmp_input"
@@ -58,5 +58,5 @@ done
 clean_tmp_files
 
 echo "========================================="
-echo "$SAMPLE_PANEL_BIN $result"
+echo "$result"
 echo "========================================="

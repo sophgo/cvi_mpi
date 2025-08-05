@@ -11,7 +11,12 @@
 #include <stdint.h>
 
 #include <cvi_sample_all.h>
+CVI_SIZE_T CVI_Test_Alloc(CVI_U32 len)
+{
+	void *p = malloc(len);
 
+	return (CVI_SIZE_T)p;
+}
 CVI_S32 CVI_Test_PrintBuffer(const CVI_CHAR *string, const CVI_U8 *pu8Input, CVI_U32 u32Length)
 {
 	CVI_U32 i = 0;
@@ -31,13 +36,17 @@ CVI_S32 CVI_Test_PrintBuffer(const CVI_CHAR *string, const CVI_U8 *pu8Input, CVI
 }
 
 // clang-format off
-#define ADD_TEST(name) {#name, name}
 struct _T {
 	const char *name;
 	int (*func)(void);
 } tests[] = {
-	{"efuse", sample_efuse},
+	{"rng", sample_rng},
+	{"hash", sample_hash},
 	{"cipher", sample_cipher},
+	{"mutilcipher", sample_mutiltcipher},
+	{"rsa_enc", sample_rsa_enc},
+	{"rsa_sign", sample_rsa_sign},
+	{"efuse", sample_efuse},
 };
 // clang-format on
 

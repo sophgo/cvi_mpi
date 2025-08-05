@@ -25,7 +25,7 @@ endif
 
 ifeq ($(SUPPORT_ISP_PQTOOL), 1)
 	EXTRA_CFLAGS += -DSUPPORT_ISP_PQTOOL
-	LIBS_ISPD2 = -lcvi_ispd2 -lcvi_json-c -lcvi_bin -lvo -lvpss
+	LIBS_ISPD2 = -lcvi_ispd2 -lcvi_bin -lvo -lvpss
 endif
 
 

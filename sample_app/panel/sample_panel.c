@@ -60,6 +60,7 @@ typedef enum {
 	DSI_PANEL_ST7701,
 	DSI_PANEL_ST7703,
 	LVDS_PANEL_LCM185X56,
+	I80_PANEL_ST7789V3_HW_MCU_240x320_60FPS,
 	BT_PANEL_PT1000K_BT656_1280x720_25FPS_74M,
 	BT_PANEL_PT1000K_BT1120_1920x1080_25FPS_74M,
 	PANEL_MAX
@@ -129,6 +130,7 @@ static char *s_panel_model_type_arr[] = {
 	"ST7701",
 	"ST7703",
 	"LCM185X56",
+	"ST7789V3_HW_MCU_RGB565_240x320_60FPS",
 	"BT_PANEL_PT1000K_BT656_1280x720_25FPS_74M",
 	"BT_PANEL_PT1000K_BT1120_1920x1080_25FPS_74M",
 };
@@ -354,6 +356,12 @@ CVI_S32 SAMPLE_PANEL_ENABLE(void)
 				return CVI_FAILURE;
 			}
 			ret = CVI_VO_GetBTParam(VoDev,  &g_panel_desc.stbtcfg.BtAttr);
+			if (ret != CVI_SUCCESS) {
+				SAMPLE_PRT("failed with %#x!\n", ret);
+				return CVI_FAILURE;
+			}
+		} else if (g_panel_desc.panel_type == PANEL_MODE_MCU) {
+			ret = CVI_VO_SetPubAttr(VoDev, &g_panel_desc.stVoPubAttr);
 			if (ret != CVI_SUCCESS) {
 				SAMPLE_PRT("failed with %#x!\n", ret);
 				return CVI_FAILURE;
@@ -611,6 +619,17 @@ void SAMPLE_SET_PANEL_DESC(void)
 		, .u16Vpw = 2, .u16Hpw = 20, .bIdv = 0, .bIhs = 0, .bIvs = 0};
 		g_panel_desc.stlvdscfg.stVoPubAttr.stSyncInfo = stLcm185x56_SyncInfo;
 		g_panel_desc.stlvdscfg.LvdsAttr = lvds_lcm185x56_cfg;
+		break;
+	case I80_PANEL_ST7789V3_HW_MCU_240x320_60FPS:
+		g_panel_desc.panel_type = PANEL_MODE_MCU;
+		g_panel_desc.stVoPubAttr.enIntfType = VO_INTF_HW_MCU;
+		g_panel_desc.stVoPubAttr.enIntfSync = VO_OUTPUT_USER;
+		VO_SYNC_INFO_S st7789V3_SyncInfo = {.bSynm = 1, .bIop = 1, .u16FrameRate = 60
+		, .u16Vact = 320, .u16Vbb = 5, .u16Vfb = 20
+		, .u16Hact = 240, .u16Hbb = 20, .u16Hfb = 10
+		, .u16Vpw = 5, .u16Hpw = 5, .bIdv = 0, .bIhs = 1, .bIvs = 1};
+		g_panel_desc.stVoPubAttr.stSyncInfo = st7789V3_SyncInfo;
+		g_panel_desc.stVoPubAttr.stMcuCfg = st7789v3Cfg;
 		break;
 	case BT_PANEL_PT1000K_BT656_1280x720_25FPS_74M:
 		g_panel_desc.panel_type = PANEL_MODE_BT;

@@ -9,10 +9,10 @@ result=$TEST_PASS
 check_ret=0
 
 function verify() {
-    grep_result=$(grep -E "TEST-PASS" $OUT_FILE)
-
-    if [ -z "$grep_result" ]; then
+    if grep -q -E "ERROR|failed" "$OUT_FILE"; then
         check_ret=-1
+    else
+        check_ret=0
     fi
 }
 
@@ -68,6 +68,8 @@ for f in $(seq 1 $TEST_TIMES)
 do
     run_all_sensor_test
 done
+
+rm -f /mnt/data/*.yuv /mnt/data/*.raw
 
 echo "========================================="
 echo "$result"

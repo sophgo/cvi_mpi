@@ -3,8 +3,8 @@
 export LD_LIBRARY_PATH=/mnt/sd/auto_test/lib:/mnt/sd/auto_test/lib/3rd:$LD_LIBRARY_PATH
 export UT_BIN_DIR=$(pwd)
 
-TEST_PASS="TEST-PASS"
-TEST_FAIL="TEST-FAIL"
+TEST_PASS="AUDIO-TEST-PASS"
+TEST_FAIL="AUDIO-TEST-FAIL"
 SAMPLE_PANEL_BIN=sample_audio
 OUT_FILE="tmp_output"
 INPUT_FILE="tmp_input"
@@ -139,5 +139,5 @@ done
 # clean_tmp_files
 
 echo "========================================="
-echo "middleware $SAMPLE_PANEL_BIN $result"
+echo "$result"
 echo "========================================="

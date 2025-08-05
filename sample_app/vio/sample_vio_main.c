@@ -29,7 +29,6 @@ CVI_S32 SAMPLE_VIO_TWO_DEV_VO(void)
 	SAMPLE_VI_CONFIG_S stViConfig;
 	SNS_INI_CFG_S stSnsIniCfg;
 	VB_CONFIG_S stVbConfig;
-	VI_PIPE ViPipe = 0;
 	int i = 0;
 	ROTATION_CFG_S stRotationCfg = {ROTATION_0,
 									ROTATION_0,
@@ -150,7 +149,7 @@ CVI_S32 SAMPLE_VIO_TWO_DEV_VO(void)
 
 	if (stViVpssMode == VI_OFFLINE_VPSS_OFFLINE || stViVpssMode == VI_ONLINE_VPSS_OFFLINE) {
 		for (i = 0; i < stViConfig.s32ViNum; i++) {
-			SAMPLE_COMM_VI_UnBind_VPSS(ViPipe, i, i);
+			SAMPLE_COMM_VI_UnBind_VPSS(i, 0, i);
 		}
 	}
 
@@ -175,7 +174,6 @@ CVI_S32 SAMPLE_VIO_VoRotation(void)
 	SNS_INI_CFG_S stSnsIniCfg;
 	VB_CONFIG_S stVbConfig;
 	int i = 0;
-	VI_PIPE ViPipe = 0;
 	ROTATION_CFG_S stRotationCfg = {ROTATION_0,
 									ROTATION_0,
 									ROTATION_90};
@@ -231,7 +229,7 @@ CVI_S32 SAMPLE_VIO_VoRotation(void)
 
 	if (stViVpssMode == VI_OFFLINE_VPSS_OFFLINE || stViVpssMode == VI_ONLINE_VPSS_OFFLINE) {
 		for (i = 0; i < stViConfig.s32ViNum; i++) {
-			SAMPLE_COMM_VI_Bind_VPSS(ViPipe, i, i);
+			SAMPLE_COMM_VI_Bind_VPSS(i, 0, i);
 		}
 	}
 
@@ -266,7 +264,7 @@ CVI_S32 SAMPLE_VIO_VoRotation(void)
 
 	if (stViVpssMode == VI_OFFLINE_VPSS_OFFLINE || stViVpssMode == VI_ONLINE_VPSS_OFFLINE) {
 		for (i = 0; i < stViConfig.s32ViNum; i++) {
-			SAMPLE_COMM_VI_UnBind_VPSS(ViPipe, i, i);
+			SAMPLE_COMM_VI_UnBind_VPSS(i, 0, i);
 		}
 	}
 
@@ -290,7 +288,6 @@ CVI_S32 SAMPLE_VIO_ViVpssAspectRatio(void)
 	SNS_INI_CFG_S stSnsIniCfg;
 	VB_CONFIG_S stVbConfig;
 	int i = 0;
-	VI_PIPE ViPipe = 0;
 	ROTATION_CFG_S stRotationCfg = {ROTATION_0,
 									ROTATION_0,
 									ROTATION_0};
@@ -346,7 +343,7 @@ CVI_S32 SAMPLE_VIO_ViVpssAspectRatio(void)
 
 	if (stViVpssMode == VI_OFFLINE_VPSS_OFFLINE || stViVpssMode == VI_ONLINE_VPSS_OFFLINE) {
 		for (i = 0; i < stViConfig.s32ViNum; i++) {
-			SAMPLE_COMM_VI_Bind_VPSS(ViPipe, i, i);
+			SAMPLE_COMM_VI_Bind_VPSS(i, 0, i);
 		}
 	}
 
@@ -380,7 +377,7 @@ CVI_S32 SAMPLE_VIO_ViVpssAspectRatio(void)
 
 	if (stViVpssMode == VI_OFFLINE_VPSS_OFFLINE || stViVpssMode == VI_ONLINE_VPSS_OFFLINE) {
 		for (i = 0; i < stViConfig.s32ViNum; i++) {
-			SAMPLE_COMM_VI_UnBind_VPSS(ViPipe, i, i);
+			SAMPLE_COMM_VI_UnBind_VPSS(i, 0, i);
 		}
 	}
 
@@ -404,7 +401,6 @@ CVI_S32 SAMPLE_VIO_ViRotation(void)
 	SNS_INI_CFG_S stSnsIniCfg;
 	VB_CONFIG_S stVbConfig;
 	int i = 0;
-	VI_PIPE ViPipe = 0;
 	ROTATION_CFG_S stRotationCfg = {ROTATION_90,
 									ROTATION_0,
 									ROTATION_0};
@@ -460,7 +456,7 @@ CVI_S32 SAMPLE_VIO_ViRotation(void)
 
 	if (stViVpssMode == VI_OFFLINE_VPSS_OFFLINE || stViVpssMode == VI_ONLINE_VPSS_OFFLINE) {
 		for (i = 0; i < stViConfig.s32ViNum; i++) {
-			SAMPLE_COMM_VI_Bind_VPSS(ViPipe, i, i);
+			SAMPLE_COMM_VI_Bind_VPSS(i, 0, i);
 		}
 	}
 
@@ -494,7 +490,7 @@ CVI_S32 SAMPLE_VIO_ViRotation(void)
 
 	if (stViVpssMode == VI_OFFLINE_VPSS_OFFLINE || stViVpssMode == VI_ONLINE_VPSS_OFFLINE) {
 		for (i = 0; i < stViConfig.s32ViNum; i++) {
-			SAMPLE_COMM_VI_UnBind_VPSS(ViPipe, i, i);
+			SAMPLE_COMM_VI_UnBind_VPSS(i, 0, i);
 		}
 	}
 
@@ -518,7 +514,6 @@ CVI_S32 SAMPLE_VIO_VpssRotation(void)
 	SNS_INI_CFG_S stSnsIniCfg;
 	VB_CONFIG_S stVbConfig;
 	int i = 0;
-	VI_PIPE ViPipe = 0;
 	ROTATION_CFG_S stRotationCfg = {ROTATION_0,
 									ROTATION_90,
 									ROTATION_0};
@@ -567,7 +562,7 @@ CVI_S32 SAMPLE_VIO_VpssRotation(void)
 
 	if (stViVpssMode == VI_OFFLINE_VPSS_OFFLINE || stViVpssMode == VI_ONLINE_VPSS_OFFLINE) {
 		for (i = 0; i < stViConfig.s32ViNum; i++) {
-			SAMPLE_COMM_VI_Bind_VPSS(ViPipe, i, i);
+			SAMPLE_COMM_VI_Bind_VPSS(i, 0, i);
 		}
 	}
 
@@ -607,7 +602,7 @@ CVI_S32 SAMPLE_VIO_VpssRotation(void)
 
 	if (stViVpssMode == VI_OFFLINE_VPSS_OFFLINE || stViVpssMode == VI_ONLINE_VPSS_OFFLINE) {
 		for (i = 0; i < stViConfig.s32ViNum; i++) {
-			SAMPLE_COMM_VI_UnBind_VPSS(ViPipe, i, i);
+			SAMPLE_COMM_VI_UnBind_VPSS(i, 0, i);
 		}
 	}
 
@@ -631,7 +626,6 @@ CVI_S32 SAMPLE_VIO_ViVpss_RotationLdc(void)
 	SNS_INI_CFG_S stSnsIniCfg;
 	VB_CONFIG_S stVbConfig;
 	int i = 0;
-	VI_PIPE ViPipe = 0;
 	ROTATION_CFG_S stRotationCfg = {ROTATION_90,
 									ROTATION_0,
 									ROTATION_0};
@@ -704,7 +698,7 @@ CVI_S32 SAMPLE_VIO_ViVpss_RotationLdc(void)
 
 	if (stViVpssMode == VI_OFFLINE_VPSS_OFFLINE || stViVpssMode == VI_ONLINE_VPSS_OFFLINE) {
 		for (i = 0; i < stViConfig.s32ViNum; i++) {
-			SAMPLE_COMM_VI_Bind_VPSS(ViPipe, i, i);
+			SAMPLE_COMM_VI_Bind_VPSS(i, 0, i);
 		}
 	}
 
@@ -738,7 +732,7 @@ CVI_S32 SAMPLE_VIO_ViVpss_RotationLdc(void)
 
 	if (stViVpssMode == VI_OFFLINE_VPSS_OFFLINE || stViVpssMode == VI_ONLINE_VPSS_OFFLINE) {
 		for (i = 0; i < stViConfig.s32ViNum; i++) {
-			SAMPLE_COMM_VI_UnBind_VPSS(ViPipe, i, i);
+			SAMPLE_COMM_VI_UnBind_VPSS(i, 0, i);
 		}
 	}
 

@@ -121,8 +121,8 @@ CVI_S32 SAMPLE_COMM_SnsIni2Vicfg(SNS_INI_CFG_S *pstIniCfg, SAMPLE_VI_CONFIG_S *p
 		viInfo->stDevInfo.enChnMode		    = pstViConfig->stSnsCfg.enChnMode[s32SnsId];
 
 		viInfo->stDevInfo.fps					= pstViConfig->stSnsCfg.f32FrameRate[s32SnsId];
-		viInfo->stDevInfo.stSize.u32Width		= pstViConfig->stSnsCfg.u32ImageWigth[s32SnsId];
-		viInfo->stDevInfo.stSize.u32Height		= pstViConfig->stSnsCfg.u32ImageHeight[s32SnsId];
+		viInfo->stDevInfo.stSize.u32Width		= pstViConfig->astViInfo[0].stDevInfo.bPatgen ? 1920 : pstViConfig->stSnsCfg.u32ImageWigth[s32SnsId];
+		viInfo->stDevInfo.stSize.u32Height		= pstViConfig->astViInfo[0].stDevInfo.bPatgen ? 1080 : pstViConfig->stSnsCfg.u32ImageHeight[s32SnsId];
 
 		chnMax = (viInfo->stDevInfo.enFormatMode != SNS_DATA_TYPE_YUV) ?
 				 1 :
@@ -159,19 +159,20 @@ CVI_S32 SAMPLE_COMM_VI_INI_INIT(SAMPLE_VI_CONFIG_S *pstViConfig, SNS_INI_CFG_S *
 	// Get config from ini if found.
 	s32Ret = CVI_SNS_ParseIni(&stSensorCfg);
 	if (s32Ret == CVI_FAILURE) {
-		SAMPLE_PRT("[ERROR] Parse fail\n");
-		return s32Ret;
-	}
+		SAMPLE_PRT("Not find sensor_cfg.ini in /mnt/data/, use pattern\n");
+		stSensorCfg.sns_ini_cfg.devNum = 1;
+		pstViConfig->astViInfo[0].stDevInfo.bPatgen = CVI_TRUE;
+	} else {
+		s32Ret = CVI_SNS_GetConfigInfo(&stSensorCfg);
+		if (s32Ret == CVI_FAILURE) {
+			SAMPLE_PRT("[ERROR] get sns cfg failed\n");
+			return s32Ret;
+		}
 
-	s32Ret = CVI_SNS_GetConfigInfo(&stSensorCfg);
-	if (s32Ret == CVI_FAILURE) {
-		SAMPLE_PRT("[ERROR] get sns cfg failed\n");
-		return s32Ret;
-	}
-
-	s32Ret = CVI_SNS_SetSnsDrvCfg(&stSensorCfg);
-	if (s32Ret == CVI_FAILURE) {
-		SAMPLE_PRT("[ERROR] set sns_drv failed\n");
+		s32Ret = CVI_SNS_SetSnsDrvCfg(&stSensorCfg);
+		if (s32Ret == CVI_FAILURE) {
+			SAMPLE_PRT("[ERROR] set sns_drv failed\n");
+		}
 	}
 
 	s32Ret = SAMPLE_COMM_INI_SensorCfg(&stSensorCfg);
@@ -233,15 +234,15 @@ CVI_S32 SAMPLE_COMM_VI_INI_INIT(SAMPLE_VI_CONFIG_S *pstViConfig, SNS_INI_CFG_S *
 			pstVbConfig->astCommPool[pstVbConfig->u32MaxPoolCnt].u32BlkCnt = Vb_cnt;
 			pstVbConfig->astCommPool[pstVbConfig->u32MaxPoolCnt].enRemapMode = VB_REMAP_MODE_CACHED;
 			SAMPLE_PRT("[INFO] set VBpool [%d] %d:%d, BlkCnt= %d, Size = %d\n",
-						pstVbConfig->u32MaxPoolCnt, pstViConfig->stSnsCfg.u32ImageWigth[i],
-						pstViConfig->stSnsCfg.u32ImageHeight[i],
+						pstVbConfig->u32MaxPoolCnt, pDevInfo->stSize.u32Width,
+						pDevInfo->stSize.u32Height,
 						pstVbConfig->astCommPool[pstVbConfig->u32MaxPoolCnt].u32BlkCnt,
 						pstVbConfig->astCommPool[pstVbConfig->u32MaxPoolCnt].u32BlkSize);
 			pstVbConfig->u32MaxPoolCnt++;
 		} else {
 			SAMPLE_PRT("[INFO] set VBpool [%d] %d:%d, BlkCnt= %d, Size = %d\n",
-						pstVbConfig->u32MaxPoolCnt, pstViConfig->stSnsCfg.u32ImageWigth[i],
-						pstViConfig->stSnsCfg.u32ImageHeight[i],
+						pstVbConfig->u32MaxPoolCnt, pDevInfo->stSize.u32Width,
+						pDevInfo->stSize.u32Height,
 						pstVbConfig->astCommPool[pstVbConfig->u32MaxPoolCnt].u32BlkCnt,
 						pstVbConfig->astCommPool[pstVbConfig->u32MaxPoolCnt].u32BlkSize);
 		}
@@ -382,6 +383,9 @@ CVI_S32 SAMPLE_COMM_VI_StartMIPI(SAMPLE_VI_CONFIG_S *pstViConfig)
 {
 	CVI_S32 s32Ret = CVI_SUCCESS;
 	/*TODO@CF. Need add sample function.*/
+	if(pstViConfig->astViInfo[0].stDevInfo.bPatgen){
+		return s32Ret;
+	}
 
 	s32Ret = SAMPLE_COMM_VI_ResetSensor(pstViConfig);
 	if (s32Ret != CVI_SUCCESS) {
@@ -424,25 +428,34 @@ CVI_S32 SAMPLE_COMM_VI_StartDev(SAMPLE_VI_INFO_S *pstViInfo)
 	CVI_S32             i;
 	VI_DEV_ATTR_S stViDevAttr;
 	VI_DEV_BIND_PIPE_S stViDevBindAttr;
+	CVI_BOOL bPatgen = CVI_FALSE;
 
 	ViDev = pstViInfo->stDevInfo.ViDev;
+	bPatgen = pstViInfo->stDevInfo.bPatgen;
 
-	stViDevAttr.snrFps = pstViInfo->stDevInfo.fps;
-	stViDevAttr.stSize.u32Width = pstViInfo->stDevInfo.stSize.u32Width;
-	stViDevAttr.stSize.u32Height = pstViInfo->stDevInfo.stSize.u32Height;
-	stViDevAttr.enIntfMode = (VI_INTF_MODE_E)pstViInfo->stDevInfo.enInterFaceMode;
-	stViDevAttr.enInputDataType = (VI_DATA_TYPE_E)pstViInfo->stDevInfo.enFormatMode;
-	stViDevAttr.enDataSeq = (VI_YUV_DATA_SEQ_E)pstViInfo->stDevInfo.enYuvFormat;
-	stViDevAttr.stWDRAttr.enWDRMode = pstViInfo->stDevInfo.enWDRMode;
-	stViDevAttr.enWorkMode = (VI_WORK_MODE_E)pstViInfo->stDevInfo.enChnMode;
-
-	stViDevBindAttr.MipiDev = pstViInfo->stDevInfo.mipiDev;
+	stViDevAttr.snrFps 				= bPatgen ? 25 : pstViInfo->stDevInfo.fps;
+	stViDevAttr.stSize.u32Width 	= pstViInfo->stDevInfo.stSize.u32Width;
+	stViDevAttr.stSize.u32Height 	= pstViInfo->stDevInfo.stSize.u32Height;
+	stViDevAttr.enIntfMode 			= bPatgen ? VI_MODE_MIPI : (VI_INTF_MODE_E)pstViInfo->stDevInfo.enInterFaceMode;
+	stViDevAttr.enInputDataType 	= bPatgen ? VI_DATA_TYPE_RGB : (VI_DATA_TYPE_E)pstViInfo->stDevInfo.enFormatMode;
+	stViDevAttr.enDataSeq 			= bPatgen ? VI_DATA_SEQ_VUVU : (VI_YUV_DATA_SEQ_E)pstViInfo->stDevInfo.enYuvFormat;
+	stViDevAttr.stWDRAttr.enWDRMode = bPatgen ? WDR_MODE_NONE : pstViInfo->stDevInfo.enWDRMode;
+	stViDevAttr.enWorkMode 			= bPatgen ? VI_WORK_MODE_1Multiplex : (VI_WORK_MODE_E)pstViInfo->stDevInfo.enChnMode;
+	stViDevBindAttr.MipiDev 		= bPatgen ? 0 : pstViInfo->stDevInfo.mipiDev;
 
 	for (i = 0; i < VI_MAX_PIPE_NUM; i++) {
 		if (pstViInfo->stPipeInfo.aPipe[i] >= 0  && pstViInfo->stPipeInfo.aPipe[i] < VI_MAX_PIPE_NUM) {
 			stViDevBindAttr.PipeId[s32PipeCnt] = pstViInfo->stPipeInfo.aPipe[i];
 			s32PipeCnt++;
 			stViDevBindAttr.u32Num = s32PipeCnt;
+		}
+	}
+
+	if (bPatgen) {
+		s32Ret = CVI_VI_EnablePatgen(pstViInfo->stDevInfo.ViDev);
+		if (s32Ret != CVI_SUCCESS) {
+			SAMPLE_PRT("set patgen failed\n");
+			return s32Ret;
 		}
 	}
 
@@ -482,11 +495,6 @@ CVI_S32 SAMPLE_COMM_VI_StopDev(SAMPLE_VI_INFO_S *pstViInfo)
 	CVI_VI_UnRegChnFlipMirrorCallBack(0, ViDev);
 	CVI_VI_UnRegPmCallBack(ViDev);
 	memset(&ViPmData[ViDev], 0, sizeof(struct VI_PM_DATA_S));
-	s32Ret = SAMPLE_COMM_ISP_Sensor_UnRegiter_callback(ViDev);
-	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_PRT("SAMPLE_COMM_ISP_Sensor_UnRegiter_callback failed with %#x!\n", s32Ret);
-		return s32Ret;
-	}
 
 	return CVI_SUCCESS;
 }
@@ -586,10 +594,12 @@ CVI_S32 SAMPLE_COMM_VI_StartChn(SAMPLE_VI_INFO_S *pstViInfo)
 		return CVI_FAILURE;
 	}
 
-	s32Ret = CVI_SNS_SetVIFlipMirrorCB(ViPipe, ViDev);
-	if (s32Ret!= CVI_SUCCESS) {
-		SAMPLE_PRT("CVI_SNS_SetVIFlipMirrorCB failed with %#x!\n", s32Ret);
-		return CVI_FAILURE;
+	if(!pstViInfo->stDevInfo.bPatgen){
+		s32Ret = CVI_SNS_SetVIFlipMirrorCB(ViPipe, ViDev);
+		if (s32Ret!= CVI_SUCCESS) {
+			SAMPLE_PRT("CVI_SNS_SetVIFlipMirrorCB failed with %#x!\n", s32Ret);
+			return CVI_FAILURE;
+		}
 	}
 
 	s32Ret = CVI_VI_EnableChn(ViPipe, ViChn);
@@ -1165,6 +1175,9 @@ CVI_S32 SAMPLE_COMM_VI_CreateIsp(SAMPLE_VI_CONFIG_S *pstViConfig)
 	}
 
 	for (int i = 0; i < pstViConfig->s32ViNum; i++) {
+		if(pstViConfig->astViInfo[i].stDevInfo.bPatgen){
+			continue;
+		}
 		s32Ret = SAMPLE_COMM_VI_StartIsp(pstViConfig, i);
 		if (s32Ret != CVI_SUCCESS) {
 			SAMPLE_PRT("SAMPLE_COMM_VI_StartIsp failed !\n");
@@ -1186,6 +1199,9 @@ CVI_S32 SAMPLE_COMM_VI_CreateIsp(SAMPLE_VI_CONFIG_S *pstViConfig)
 #endif
 
 	for (int i = 0; i < pstViConfig->s32ViNum; i++) {
+		if(pstViConfig->astViInfo[i].stDevInfo.bPatgen){
+			continue;
+		}
 		s32Ret = SAMPLE_COMM_ISP_Run(i);
 		if (s32Ret != CVI_SUCCESS) {
 			CVI_TRACE_LOG(CVI_DBG_ERR, "ISP_Run failed with %#x!\n", s32Ret);
@@ -1206,6 +1222,9 @@ CVI_S32 SAMPLE_COMM_VI_DestroyIsp(SAMPLE_VI_CONFIG_S *pstViConfig)
 	}
 
 	for (int i = 0; i < pstViConfig->s32ViNum; i++) {
+		if(pstViConfig->astViInfo[i].stDevInfo.bPatgen){
+			continue;
+		}
 		SAMPLE_COMM_ISP_Stop(i);
 	}
 

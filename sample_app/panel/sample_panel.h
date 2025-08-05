@@ -30,6 +30,7 @@ extern "C" {
 #include "dsi_gm8775c.h"
 #include "dsi_lt9611.h"
 #include "lvds_lcm185x56.h"
+#include "hw_mcu_st7789v3.h"
 #include "bt656_pt1000k.h"
 #include "bt1120_pt1000k.h"
 #include "panel_i2c.h"
@@ -65,6 +66,7 @@ struct panel_desc_s {
 		dsi_panel_desc stdsicfg;
 		lvds_panel_desc stlvdscfg;
 		bt_panel_desc stbtcfg;
+		VO_PUB_ATTR_S stVoPubAttr;
 	};
 };
 

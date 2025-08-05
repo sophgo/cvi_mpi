@@ -723,6 +723,8 @@ CVI_S32 SAMPLE_VI_Setup(CVI_BOOL isPatgen, SENSOR_CFG_S *cfg, SIZE_S *pstSize)
 		/* fill the sensor orientation */
 		stChnAttr.bMirror = false;
 		stChnAttr.bFlip = false;
+		stChnAttr.stFrameRate.s32SrcFrameRate = -1;
+		stChnAttr.stFrameRate.s32DstFrameRate = -1;
 
 		s32Ret = CVI_VI_SetChnAttr(ViPipe, ViChn, &stChnAttr);
 		if (s32Ret != CVI_SUCCESS) {
@@ -2217,6 +2219,18 @@ again:
 
 	if (fpOutput)
 			fclose(fpOutput);
+
+	CVI_SYS_UnBind(&stSrcChn, &stDestChn);
+
+	SAMPLE_VI_Destory(&sensor_cfg);
+
+	CVI_VPSS_StopGrp(VpssGrp);
+	CVI_VPSS_DisableChn(VpssGrp, VpssChn);
+	CVI_VPSS_DestroyGrp(VpssGrp);
+
+	CVI_VENC_StopRecvFrame(VencChn);
+	CVI_VENC_DestroyChn(VencChn);
+	goto exit1;
 exit6:
 	CVI_VENC_StopRecvFrame(VencChn);
 	CVI_VENC_DestroyChn(VencChn);

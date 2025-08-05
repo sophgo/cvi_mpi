@@ -215,6 +215,7 @@ CVI_S32 SAMPLE_VPSS_Simple(CVI_VOID)
 	CVI_CHAR *pFileNameIn = SAMPLE_VPSS_DEFAULT_FILE_IN;
 	CVI_CHAR aszFileNameOut[64];
 	VPSS_MODE_S stVPSSMode = {.enMode = VPSS_MODE_SINGLE, .aenInput[0] = VPSS_INPUT_MEM};
+	VI_VPSS_MODE_S stViVpssMode = {0};
 
 	/************************************************
 	 * step1:  Init SYS and common VB
@@ -245,6 +246,14 @@ CVI_S32 SAMPLE_VPSS_Simple(CVI_VOID)
 	if (s32Ret != CVI_SUCCESS) {
 		SAMPLE_PRT("CVI_VB_Init failed!\n");
 		goto exit0;
+	}
+
+	stViVpssMode.aenMode[0] = VI_OFFLINE_VPSS_OFFLINE;
+	stViVpssMode.aenMode[1] = VI_OFFLINE_VPSS_OFFLINE;
+	s32Ret = CVI_SYS_SetVIVPSSMode(&stViVpssMode);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_PRT("CVI_SYS_SetVIVPSSMode failed with %#x!\n", s32Ret);
+		goto exit1;
 	}
 
 	/************************************************
@@ -373,6 +382,7 @@ CVI_S32 SAMPLE_VPSS_MultiChn(CVI_VOID)
 	CVI_CHAR *pFileNameIn = SAMPLE_VPSS_DEFAULT_FILE_IN;
 	CVI_CHAR aszFileNameOut[64];
 	VPSS_MODE_S stVPSSMode = {.enMode = VPSS_MODE_SINGLE, .aenInput[0] = VPSS_INPUT_MEM};
+	VI_VPSS_MODE_S stViVpssMode = {0};
 
 	/************************************************
 	 * step1:  Init SYS and common VB
@@ -412,6 +422,14 @@ CVI_S32 SAMPLE_VPSS_MultiChn(CVI_VOID)
 	if (s32Ret != CVI_SUCCESS) {
 		SAMPLE_PRT("CVI_VB_Init failed!\n");
 		goto exit0;
+	}
+
+	stViVpssMode.aenMode[0] = VI_OFFLINE_VPSS_OFFLINE;
+	stViVpssMode.aenMode[1] = VI_OFFLINE_VPSS_OFFLINE;
+	s32Ret = CVI_SYS_SetVIVPSSMode(&stViVpssMode);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_PRT("CVI_SYS_SetVIVPSSMode failed with %#x!\n", s32Ret);
+		goto exit1;
 	}
 
 	/************************************************
@@ -549,6 +567,7 @@ CVI_S32 SAMPLE_VPSS_ChnCrop(CVI_VOID)
 	CVI_CHAR *pFileNameIn = SAMPLE_VPSS_DEFAULT_FILE_IN;
 	CVI_CHAR aszFileNameOut[64];
 	VPSS_MODE_S stVPSSMode = {.enMode = VPSS_MODE_SINGLE, .aenInput[0] = VPSS_INPUT_MEM};
+	VI_VPSS_MODE_S stViVpssMode = {0};
 
 	/************************************************
 	 * step1:  Init SYS and common VB
@@ -584,6 +603,14 @@ CVI_S32 SAMPLE_VPSS_ChnCrop(CVI_VOID)
 	if (s32Ret != CVI_SUCCESS) {
 		SAMPLE_PRT("CVI_VB_Init failed!\n");
 		goto exit0;
+	}
+
+	stViVpssMode.aenMode[0] = VI_OFFLINE_VPSS_OFFLINE;
+	stViVpssMode.aenMode[1] = VI_OFFLINE_VPSS_OFFLINE;
+	s32Ret = CVI_SYS_SetVIVPSSMode(&stViVpssMode);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_PRT("CVI_SYS_SetVIVPSSMode failed with %#x!\n", s32Ret);
+		goto exit1;
 	}
 
 	/************************************************
@@ -722,6 +749,7 @@ CVI_S32 SAMPLE_VPSS_AspectRatio(CVI_VOID)
 	CVI_CHAR *pFileNameIn = SAMPLE_VPSS_DEFAULT_FILE_IN;
 	CVI_CHAR aszFileNameOut[64];
 	VPSS_MODE_S stVPSSMode = {.enMode = VPSS_MODE_SINGLE, .aenInput[0] = VPSS_INPUT_MEM};
+	VI_VPSS_MODE_S stViVpssMode = {0};
 
 	/************************************************
 	 * step1:  Init SYS and common VB
@@ -752,6 +780,14 @@ CVI_S32 SAMPLE_VPSS_AspectRatio(CVI_VOID)
 	if (s32Ret != CVI_SUCCESS) {
 		SAMPLE_PRT("CVI_VB_Init failed!\n");
 		goto exit0;
+	}
+
+	stViVpssMode.aenMode[0] = VI_OFFLINE_VPSS_OFFLINE;
+	stViVpssMode.aenMode[1] = VI_OFFLINE_VPSS_OFFLINE;
+	s32Ret = CVI_SYS_SetVIVPSSMode(&stViVpssMode);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_PRT("CVI_SYS_SetVIVPSSMode failed with %#x!\n", s32Ret);
+		goto exit1;
 	}
 
 	/************************************************
@@ -881,6 +917,7 @@ CVI_S32 SAMPLE_VPSS_DrawRect(CVI_VOID)
 	CVI_CHAR *pFileNameIn = SAMPLE_VPSS_DEFAULT_FILE_IN;
 	CVI_CHAR aszFileNameOut[64];
 	VPSS_MODE_S stVPSSMode = {.enMode = VPSS_MODE_SINGLE, .aenInput[0] = VPSS_INPUT_MEM};
+	VI_VPSS_MODE_S stViVpssMode = {0};
 
 	/************************************************
 	 * step1:  Init SYS and common VB
@@ -911,6 +948,14 @@ CVI_S32 SAMPLE_VPSS_DrawRect(CVI_VOID)
 	if (s32Ret != CVI_SUCCESS) {
 		SAMPLE_PRT("CVI_VB_Init failed!\n");
 		goto exit0;
+	}
+
+	stViVpssMode.aenMode[0] = VI_OFFLINE_VPSS_OFFLINE;
+	stViVpssMode.aenMode[1] = VI_OFFLINE_VPSS_OFFLINE;
+	s32Ret = CVI_SYS_SetVIVPSSMode(&stViVpssMode);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_PRT("CVI_SYS_SetVIVPSSMode failed with %#x!\n", s32Ret);
+		goto exit1;
 	}
 
 	/************************************************

@@ -325,6 +325,12 @@ CVI_S32 SAMPLE_VIO_VI_DEINIT(SAMPLE_VI_CONFIG_S *pstViConfig)
 	int i = 0;
 	CVI_S32 s32Ret = CVI_SUCCESS;
 
+	s32Ret = SAMPLE_COMM_VI_DestroyIsp(pstViConfig);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_PRT("[ERROR] SAMPLE_COMM_VI_DestroyIsp failed with %#x!\n", s32Ret);
+		return s32Ret;
+	}
+
 	for (i = 0; i < pstViConfig->s32ViNum; i++) {
 		s32Ret = SAMPLE_COMM_VI_StopChn(&pstViConfig->astViInfo[i]);
 		if (s32Ret != CVI_SUCCESS) {
@@ -347,12 +353,6 @@ CVI_S32 SAMPLE_VIO_VI_DEINIT(SAMPLE_VI_CONFIG_S *pstViConfig)
 			SAMPLE_PRT("[ERROR] SAMPLE_COMM_VI_StopDev failed with %#x!\n", s32Ret);
 			return s32Ret;
 		}
-	}
-
-	s32Ret = SAMPLE_COMM_VI_DestroyIsp(pstViConfig);
-	if (s32Ret != CVI_SUCCESS) {
-		SAMPLE_PRT("[ERROR] SAMPLE_COMM_VI_DestroyIsp failed with %#x!\n", s32Ret);
-		return s32Ret;
 	}
 
 	return s32Ret;
@@ -476,7 +476,6 @@ CVI_S32 SAMPLE_REGION_VI_VPSS_VO_START(CVI_VOID)
 	SNS_INI_CFG_S stSnsIniCfg;
 	VB_CONFIG_S stVbConfig;
 	int i = 0;
-	VI_PIPE ViPipe = 0;
 	ROTATION_E rotation_vi = ROTATION_0;
 	ROTATION_E rotation_vpss = ROTATION_0;
 	ROTATION_E rotation_vo = ROTATION_90;
@@ -532,7 +531,7 @@ CVI_S32 SAMPLE_REGION_VI_VPSS_VO_START(CVI_VOID)
 
 	if (stViVpssMode == VI_OFFLINE_VPSS_OFFLINE || stViVpssMode == VI_ONLINE_VPSS_OFFLINE) {
 		for (i = 0; i < stViConfig.s32ViNum; i++) {
-			SAMPLE_COMM_VI_Bind_VPSS(ViPipe, i, i);
+			SAMPLE_COMM_VI_Bind_VPSS(i, 0, i);
 		}
 	}
 
@@ -568,7 +567,7 @@ CVI_VOID SAMPLE_REGION_VI_VPSS_VO_END(CVI_VOID)
 	SAMPLE_COMM_VO_StopVO(&stVoConfig);
 
 	for (i = 0; i < stViConfig.s32ViNum; i++) {
-		SAMPLE_COMM_VI_UnBind_VPSS(0, i, i);
+		SAMPLE_COMM_VI_UnBind_VPSS(i, 0, i);
 	}
 
 	SAMPLE_VIO_VI_DEINIT(&stViConfig);
