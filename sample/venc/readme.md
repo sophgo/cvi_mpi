@@ -57,7 +57,7 @@ sample_venc --numChn=1 --chn=0 -c 264 --getBsMode=1 --statTime=2 --gop=50 --srcF
 |--vbMode                          |   if enable VB pool mode. 0 = common, 1 = module, 2 = private, 3 = user                              |
 |--yuvFolder                       |   yuv files folder                                                                                   |
 |--bindmode                        |   bind mode. 0 = VENC_BIND_DISABLE, 1 = VENC_BIND_VI, 2 = VENC_BIND_VPSS                             |
-|--pixel_format                    |   0: 420 planar, 1: 422 planar, 2: NV12, 3: NV21                                                     |
+|--pixel_format                    |   0: 420 planar, 1: 422 planar, 2: NV12, 3: NV21 4: NV16 5: NV61 6: YUYV 7:UYVY 8: YVYU 9:VYUY       |
 |--posX                            |   x axis of start position, need to be multiple of 16 (used for crop)                                |
 |--posY                            |   y axis of start position, need to be multiple of 16 (used for crop)                                |
 |--inWidth                         |   width of input frame (used for crop)                                                               |

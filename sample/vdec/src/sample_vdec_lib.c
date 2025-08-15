@@ -137,7 +137,7 @@ CVI_S32 vencStartBindVpss(sampleVdec *psvdec)
 		pIc->height = height;
 		SAMPLE_PRT("size = %d x %d\n", width, height);
 
-		sprintf(pIc->output_path, "chn%d_%s_720p", idx, pvdcic->output_path);
+		snprintf(pIc->output_path, 2 * sizeof(pIc->output_path), "chn%d_%s_720p", idx, pvdcic->output_path);
 		SAMPLE_PRT("output_path = %s\n", pIc->output_path);
 
 		sprintf(pIc->codec, "%s", "mjp"); // now only support mjp

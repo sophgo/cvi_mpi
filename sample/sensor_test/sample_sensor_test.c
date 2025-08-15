@@ -433,13 +433,13 @@ static CVI_S32 sensor_dump_raw(void)
 				}
 
 				snprintf(img_name, sizeof(img_name),
-						"./vi_%d_%s_%s_w_%d_h_%d_x_%d_y_%d_tv_%ld_%ld.raw",
+						"./vi_%d_%s_%s_w_%d_h_%d_x_%d_y_%d_tv_%" PRIdMAX "_%" PRIdMAX ".raw",
 						dev, (j == 0) ? "LE" : "SE", order_id,
 						stVideoFrame[j].stVFrame.u32Width,
 						stVideoFrame[j].stVFrame.u32Height,
 						stVideoFrame[j].stVFrame.s16OffsetLeft,
 						stVideoFrame[j].stVFrame.s16OffsetTop,
-						tv1.tv_sec, tv1.tv_usec);
+						(intmax_t)tv1.tv_sec,  (intmax_t)tv1.tv_usec);
 
 				CVI_TRACE_LOG(CVI_DBG_WARN, "dump image %s\n", img_name);
 

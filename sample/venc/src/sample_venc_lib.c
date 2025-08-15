@@ -146,8 +146,8 @@ static optionExt venc_long_option_ext[] = {
 		"yuv files folder"},
 	{{"bindmode", optional_argument, NULL, 0},    ARG_UINT,	  0,   2,
 		"bind mode"},
-	{{"pixel_format", optional_argument, NULL, 0}, ARG_INT,	  0,   3,
-		"0: 420 planar, 1: 422 planar, 2: NV12, 3: NV21"},
+	{{"pixel_format", optional_argument, NULL, 0}, ARG_INT,	  0,   9,
+		"0: 420 planar, 1: 422 planar, 2: NV12, 3: NV21, 4: NV16, 5: NV61 6: YUYV, 7: UYVY, 8: YVYU, 9: VYUY"},
 	{{"posX", optional_argument, NULL, 0},        ARG_INT,    0, 3840,
 		"x axis of start position, need to be multiple of 16 (used for crop)"},
 	{{"posY", optional_argument, NULL, 0},        ARG_INT,    0, 3840,
@@ -456,6 +456,24 @@ static PIXEL_FORMAT_E vencMapPixelFormat(CVI_S32 pixel_format)
 	case 3:
 		enPixelFormat = PIXEL_FORMAT_NV21;
 		break;
+	case 4:
+		enPixelFormat = PIXEL_FORMAT_NV16;
+		break;
+	case 5:
+		enPixelFormat = PIXEL_FORMAT_NV61;
+		break;
+	case 6:
+		enPixelFormat = PIXEL_FORMAT_YUYV;
+		break;
+	case 7:
+		enPixelFormat = PIXEL_FORMAT_UYVY;
+		break;
+	case 8:
+		enPixelFormat = PIXEL_FORMAT_YVYU;
+		break;
+	case 9:
+		enPixelFormat = PIXEL_FORMAT_VYUY;
+		break;
 	default:
 		CVI_VENC_WARN("Unknown input pixel format. Assume YUV420P.\n");
 		enPixelFormat = PIXEL_FORMAT_YUV_PLANAR_420;
@@ -471,6 +489,12 @@ static CVI_U32 getSrcFrameSizeByPixelFormat(CVI_U32 width, CVI_U32 height, PIXEL
 
 	switch (enPixelFormat) {
 	case PIXEL_FORMAT_YUV_PLANAR_422:
+	case PIXEL_FORMAT_YUYV:
+	case PIXEL_FORMAT_UYVY:
+	case PIXEL_FORMAT_YVYU:
+	case PIXEL_FORMAT_VYUY:
+	case PIXEL_FORMAT_NV16:
+	case PIXEL_FORMAT_NV61:
 		size = width * height * 2;
 		break;
 	case PIXEL_FORMAT_YUV_PLANAR_420:
@@ -658,7 +682,7 @@ CVI_S32 venc_main(int argc, char **argv)
 			psv->chnCtx[0].chnIc.getstream_timeout = -1;
 			psv->chnCtx[0].chnIc.sendframe_timeout = 20000;
 			snprintf(yuvFilename, MAX_STRING_LEN, "%s", psv->chnCtx[0].chnIc.input_path);
-			snprintf(psv->chnCtx[0].chnIc.input_path, MAX_STRING_LEN, "%s%s",
+			snprintf(psv->chnCtx[0].chnIc.input_path, 2 * MAX_STRING_LEN, "%s%s",
 				 pcic->yuvFolder, yuvFilename);
 			psv->chnCtx[0].chnIc.bCreateChn = bCreateChn;
 
@@ -2675,7 +2699,7 @@ static CVI_U32 _SAMPLE_VENC_INIT_CHANNEL(sampleVenc *psv, CVI_U32 chnNum)
 	}
 
 	SAMPLE_COMM_VENC_GetFilePostfix(pvecc->enPayLoad, file_ext);
-	snprintf(pIc->outputFileName, MAX_STRING_LEN, "%s%s",
+	snprintf(pIc->outputFileName, 2 * MAX_STRING_LEN, "%s%s",
 			pIc->output_path, file_ext);
 
 	CVI_VENC_FLOW("Begin to send frames ..., bsMode = %d\n", pIc->bsMode);
@@ -3206,12 +3230,30 @@ static CVI_S32 cviReadSrcFrame(VIDEO_FRAME_S *pstVFrame, FILE *fp)
 		bCbWidthShift = 1;
 		bCrWidthShift = 1;
 		break;
+
 	case PIXEL_FORMAT_NV12:
 	case PIXEL_FORMAT_NV21:
 		u32CbCrReadSrcHeight = pstVFrame->u32Height >> 1;
 		bCbWidthShift = 0;
 		bCrWidthShift = 31;
 		break;
+
+	case PIXEL_FORMAT_YUYV:
+	case PIXEL_FORMAT_UYVY:
+	case PIXEL_FORMAT_YVYU:
+	case PIXEL_FORMAT_VYUY:
+		u32CbCrReadSrcHeight = 0;
+		bCbWidthShift = 31;
+		bCrWidthShift = 31;
+		break;
+
+	case PIXEL_FORMAT_NV16:
+	case PIXEL_FORMAT_NV61:
+		u32CbCrReadSrcHeight = pstVFrame->u32Height;
+		bCbWidthShift = 0;
+		bCrWidthShift = 31;
+		break;
+
 	case PIXEL_FORMAT_YUV_PLANAR_420:
 	default:
 		u32CbCrReadSrcHeight = pstVFrame->u32Height >> 1;
@@ -3251,7 +3293,11 @@ static CVI_S32 cviReadSrcFrame(VIDEO_FRAME_S *pstVFrame, FILE *fp)
 		// Luma
 		for (j = 0; j < pstVFrame->u32Height; j++) {
 			frm_ptr = pstVFrame->pu8VirAddr[0] + j * pstVFrame->u32Stride[0];
-			to_read = pstVFrame->u32Width;
+			if (pstVFrame->enPixelFormat == PIXEL_FORMAT_YUYV || pstVFrame->enPixelFormat == PIXEL_FORMAT_UYVY ||
+				pstVFrame->enPixelFormat == PIXEL_FORMAT_YVYU || pstVFrame->enPixelFormat == PIXEL_FORMAT_VYUY)
+				to_read = pstVFrame->u32Stride[0];
+			else
+				to_read = pstVFrame->u32Width;
 			read_byte = fread((void *)frm_ptr, 1, to_read, fp);
 			if (read_byte != to_read) {
 				CVI_VENC_ERR("Luma, (row %d) fread %zu %d failed\n",

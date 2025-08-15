@@ -392,7 +392,7 @@ static CVI_S32 dump_raw(VI_PIPE ViPipe, CVI_U16 *bayerBuffer,
 			ViPipe, order_id,
 			width,
 			height,
-			16, tv1.tv_sec, tv1.tv_usec
+			16, (long int)tv1.tv_sec, (long int)tv1.tv_usec
 			);
 
 	output = fopen(img_name, "wb");

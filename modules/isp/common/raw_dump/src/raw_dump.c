@@ -268,7 +268,7 @@ static CVI_S32 dump_one(VI_PIPE ViPipe, const char *pathPrefix)
 	CVI_U8 frmNum = 1;
 
 	char prefix[FILE_NAME_MAX_LENGTH] = {0};
-	char name[FILE_NAME_MAX_LENGTH] = {0};
+	char name[FILE_NAME_MAX_LENGTH * 2] = {0};
 	FILE *output = NULL;
 
 	VIDEO_FRAME_INFO_S stVideoFrame[2] = {};
@@ -276,7 +276,7 @@ static CVI_S32 dump_one(VI_PIPE ViPipe, const char *pathPrefix)
 
 	get_file_name_prefix(prefix, FILE_NAME_MAX_LENGTH);
 
-	snprintf(name, FILE_NAME_MAX_LENGTH, "%s/%s", pathPrefix, prefix);
+	snprintf(name, FILE_NAME_MAX_LENGTH * 2, "%s/%s", pathPrefix, prefix);
 
 	dump_log(ViPipe, name);
 
@@ -309,7 +309,7 @@ static CVI_S32 dump_one(VI_PIPE ViPipe, const char *pathPrefix)
 		frmNum = 2;
 	}
 
-	snprintf(name, FILE_NAME_MAX_LENGTH, "%s/%s.raw", pathPrefix, prefix);
+	snprintf(name, FILE_NAME_MAX_LENGTH * 2, "%s/%s.raw", pathPrefix, prefix);
 
 	output = fopen(name, "wb");
 	GOTO_FAIL_IF(output == NULL, fail);
@@ -327,7 +327,7 @@ static CVI_S32 dump_one(VI_PIPE ViPipe, const char *pathPrefix)
 
 	fclose(output);
 
-	snprintf(name, FILE_NAME_MAX_LENGTH, "%s/%s.txt", pathPrefix, prefix);
+	snprintf(name, FILE_NAME_MAX_LENGTH * 2, "%s/%s.txt", pathPrefix, prefix);
 
 	output = fopen(name, "a");
 	GOTO_FAIL_IF(output == NULL, fail);
@@ -425,7 +425,7 @@ static void *dump_smooth_raw_thread(void *param)
 {
 	RAW_DUMP_INFO_S *pstRawDumpInfo = (RAW_DUMP_INFO_S *) param;
 
-	char name[FILE_NAME_MAX_LENGTH] = {0};
+	char name[FILE_NAME_MAX_LENGTH * 2] = {0};
 	FILE *output = NULL;
 
 	CVI_U8 TotalFrameCnt = pstRawDumpInfo->u32TotalFrameCnt;
@@ -433,7 +433,7 @@ static void *dump_smooth_raw_thread(void *param)
 
 	LOGOUT("dump raw thread start...\n");
 
-	snprintf(name, FILE_NAME_MAX_LENGTH, "%s/%s_roi=%d,%d,%d,%d,%d.raw",
+	snprintf(name, FILE_NAME_MAX_LENGTH * 2, "%s/%s_roi=%d,%d,%d,%d,%d.raw",
 		pstRawDumpInfo->pathPrefix, fileNamePrefix,
 		TotalFrameCnt, RoiRect.s32X, RoiRect.s32Y, RoiRect.u32Width, RoiRect.u32Height);
 
@@ -566,7 +566,7 @@ static CVI_S32 dump_smooth_raw(VI_PIPE ViPipe, const RAW_DUMP_INFO_S *pstRawDump
 {
 	CVI_S32 s32Ret = CVI_SUCCESS;
 
-	char name[FILE_NAME_MAX_LENGTH] = {0};
+	char name[FILE_NAME_MAX_LENGTH * 2] = {0};
 	FILE *output = NULL;
 
 	VB_POOL fullVbPoolID = VB_INVALID_POOLID;
@@ -680,7 +680,7 @@ static CVI_S32 dump_smooth_raw(VI_PIPE ViPipe, const RAW_DUMP_INFO_S *pstRawDump
 	LOGOUT("create vb fifo pool: %d, blkCnt: %d, blkSize: %d\n", vbFifoPoolID, cfg.u32BlkCnt, cfg.u32BlkSize);
 
 	get_file_name_prefix(fileNamePrefix, FILE_NAME_MAX_LENGTH);
-	snprintf(name, FILE_NAME_MAX_LENGTH, "%s/%s", pstRawDumpInfo->pathPrefix, fileNamePrefix);
+	snprintf(name, FILE_NAME_MAX_LENGTH * 2, "%s/%s", pstRawDumpInfo->pathPrefix, fileNamePrefix);
 
 	pthread_t dumpThread;
 
@@ -839,7 +839,7 @@ static CVI_S32 dump_smooth_raw(VI_PIPE ViPipe, const RAW_DUMP_INFO_S *pstRawDump
 
 	if (!pstRawDumpInfo->bDump2Remote) {
 
-		snprintf(name, FILE_NAME_MAX_LENGTH, "%s/%s.raw", pstRawDumpInfo->pathPrefix, fileNamePrefix);
+		snprintf(name, FILE_NAME_MAX_LENGTH * 2, "%s/%s.raw", pstRawDumpInfo->pathPrefix, fileNamePrefix);
 
 		output = fopen(name, "wb");
 		GOTO_FAIL_IF(output == NULL, fail);
@@ -864,7 +864,7 @@ static CVI_S32 dump_smooth_raw(VI_PIPE ViPipe, const RAW_DUMP_INFO_S *pstRawDump
 		fclose(output);
 	}
 
-	snprintf(name, FILE_NAME_MAX_LENGTH, "%s/%s.txt", pstRawDumpInfo->pathPrefix, fileNamePrefix);
+	snprintf(name, FILE_NAME_MAX_LENGTH * 2, "%s/%s.txt", pstRawDumpInfo->pathPrefix, fileNamePrefix);
 
 	output = fopen(name, "a");
 	GOTO_FAIL_IF(output == NULL, fail);
@@ -892,11 +892,11 @@ static CVI_S32 dump_smooth_raw(VI_PIPE ViPipe, const RAW_DUMP_INFO_S *pstRawDump
 
 	if (pstRawDumpInfo->bDump2Remote) {
 
-		snprintf(name, FILE_NAME_MAX_LENGTH, "%s/%s", pstRawDumpInfo->pathPrefix, fileNamePrefix);
+		snprintf(name, FILE_NAME_MAX_LENGTH * 2, "%s/%s", pstRawDumpInfo->pathPrefix, fileNamePrefix);
 
 		send_log_to_remote(name);
 
-		snprintf(name, FILE_NAME_MAX_LENGTH, "%s/%s.raw", pstRawDumpInfo->pathPrefix, fileNamePrefix);
+		snprintf(name, FILE_NAME_MAX_LENGTH * 2, "%s/%s.raw", pstRawDumpInfo->pathPrefix, fileNamePrefix);
 
 		send_raw(name, stVideoFrameFullStart[0].stVFrame.u32Length[0] * frm_num);
 

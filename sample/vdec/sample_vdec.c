@@ -103,7 +103,7 @@ static CVI_S32 SAMPLE_VDEC(sampleVdec *psvdec)
 				pvdcic->enType = PT_MJPEG;
 			}
 			psvdec->chnCtx[u8ChnIdx].stSampleVdecAttr.enType = pvdcic->enType;
-			snprintf(pvdcic->input_path, MAX_STRING_LEN, "%s%s",
+			snprintf(pvdcic->input_path, 2 * MAX_STRING_LEN, "%s%s",
 				 pic->bitStreamFolder, bitStreamFilename);
 
 			s32Ret = checkInputConfig(pic);

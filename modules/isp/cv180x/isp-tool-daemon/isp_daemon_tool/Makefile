@@ -36,6 +36,8 @@ ifeq ($(TARGET_MACHINE), aarch64-linux-gnu)
 SDK_VER := 64bit
 else ifeq ($(TARGET_MACHINE), arm-linux-gnueabihf)
 SDK_VER := 32bit
+else ifeq ($(TARGET_MACHINE), arm-none-linux-musleabihf)
+SDK_VER := musl
 else ifeq ($(TARGET_MACHINE), riscv64-unknown-linux-gnu)
 SDK_VER := musl_riscv64
 else ifeq ($(TARGET_MACHINE), riscv64-unknown-linux-musl)

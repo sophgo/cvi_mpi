@@ -355,6 +355,10 @@ CVI_S32 isp_feature_ctrl_post_eof(VI_PIPE ViPipe)
 		preFrameIdx = MAX_ALGO_RESULT_QUEUE_NUM - 1;
 	}
 
+	if (pstIspCtx->enModelType == TEAISP_MODEL_MOTION) {
+		u8IspTimingDelay++;
+	}
+
 	// apply to be blc, single sensor be post sbm on, dual sensor be post online,
 	// so be post param effect together
 	aeDelayIdx = (pstIspCtx->frameCnt + pstAeResult->u8MeterFramePeriod

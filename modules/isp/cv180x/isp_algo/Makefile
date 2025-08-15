@@ -68,6 +68,8 @@ else ifeq ($(TARGET_MACHINE), riscv64-unknown-linux-musl)
 	LOCAL_CFLAGS += -DSDK_LIB_BIT=64
 else ifeq ($(TARGET_MACHINE), arm-linux-gnueabihf)
 	LOCAL_CFLAGS += -DSDK_LIB_BIT=32
+else ifeq ($(TARGET_MACHINE), arm-none-linux-musleabihf)
+	LOCAL_CFLAGS += -DSDK_LIB_BIT=32
 else
 	LOCAL_CFLAGS += -DSDK_LIB_BIT=64
 endif
