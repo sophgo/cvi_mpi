@@ -122,17 +122,12 @@ CVI_S32 CVI_LOG_GetLevelConf(LOG_LEVEL_CONF_S *pstConf)
 
 CVI_S32 CVI_SYS_GetCurPTS(CVI_U64 *pu64CurPTS)
 {
-	struct timespec ts;
-
 	if (!pu64CurPTS) {
 		CVI_TRACE_SYS(CVI_DBG_ERR, "NULL pointer\n");
 		return CVI_ERR_SYS_NULL_PTR;
 	}
 
-	clock_gettime(CLOCK_MONOTONIC, &ts);
-	*pu64CurPTS = ts.tv_sec*1000000 + ts.tv_nsec/1000;
-
-	return CVI_SUCCESS;
+	return platform_sys_gettimestamp(pu64CurPTS);
 }
 
 

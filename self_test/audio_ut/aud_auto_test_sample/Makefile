@@ -49,10 +49,6 @@ ifeq ($(CONFIG_ENABLE_SDK_ASAN), y)
 USE_CVIAUDIO_STATIC = no
 endif
 
-ifeq ($(CONFIG_ENABLE_FREERTOS), y)
-LIBS += -lcvi_audio
-endif
-
 LIBS += -lsys
 
 ifeq ($(USE_CVIAUDIO_STATIC), yes)

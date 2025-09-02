@@ -30,6 +30,10 @@ ifeq ($(SDK_VER),32bit)
 TARGET_VENC_WITH_ASAN = sample_venc_asan
 else ifeq ($(SDK_VER), 64bit)
 TARGET_VENC_WITH_ASAN = sample_venc_asan
+else ifeq ($(SDK_VER), glibc_arm64)
+TARGET_VENC_WITH_ASAN = sample_venc_asan
+else ifeq ($(SDK_VER), glibc_arm)
+TARGET_VENC_WITH_ASAN = sample_venc_asan
 else
 TARGET_VENC_WITH_ASAN =
 TARGET_VCODEC_WITH_ASAN =

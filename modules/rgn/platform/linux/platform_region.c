@@ -291,14 +291,23 @@ struct cvi_rgn_bitmap {
 };
 CVI_S32 platform_rgn_updatecanvas(RGN_HANDLE Handle)
 {
-	CVI_S32 fd = -1, s32Ret, s32IonLen;
+	CVI_S32 fd = -1, s32Ret;
 	struct rgn_canvas *canvas;
-	RGN_ATTR_S stRegion;
-	struct cvi_rgn_bitmap *pstBitmaps;
-	CVI_U32 u32Bpp, i = 0, j = 0;
 
 	// Driver control
 	fd = get_rgn_fd();
+
+#if !defined(CONFIG_SUSPEND)
+	s32Ret = rgn_update_canvas(fd, Handle);
+	if (s32Ret != CVI_SUCCESS) {
+		CVI_TRACE_RGN(CVI_DBG_ERR, "Update RGN canvas fail.\n");
+		return s32Ret;
+	}
+#else
+	CVI_S32 s32IonLen;
+	RGN_ATTR_S stRegion;
+	struct cvi_rgn_bitmap *pstBitmaps;
+	CVI_U32 u32Bpp, i = 0, j = 0;
 
 	s32Ret = _cvi_rgn_get_ion_len(fd, Handle, &s32IonLen);
 	if (s32Ret != CVI_SUCCESS) {
@@ -490,7 +499,7 @@ CVI_S32 platform_rgn_updatecanvas(RGN_HANDLE Handle)
 		pthread_mutex_unlock(&canvas_q_lock);
 		return s32Ret;
 	}
-
+#endif
 	pthread_mutex_lock(&canvas_q_lock);
 	if (!STAILQ_EMPTY(&canvas_q)) {
 		STAILQ_FOREACH(canvas, &canvas_q, stailq) {

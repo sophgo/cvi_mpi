@@ -44,5 +44,7 @@ CVI_S32 Platform_VO_UnRegPmCallBack(VO_DEV VoDev);
 CVI_BOOL Platform_VO_IsEnabled(VO_DEV VoDev);
 CVI_S32 Platform_VO_SetGammaInfo(VO_GAMMA_INFO_S *pinfo);
 CVI_S32 Platform_VO_GetGammaInfo(VO_GAMMA_INFO_S *pinfo);
+CVI_S32 Platform_VO_Suspend(void);
+CVI_S32 Platform_VO_Resume(void);
 
 #endif

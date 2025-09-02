@@ -213,9 +213,16 @@ static CVI_S32 VI_SnsIni2Vicfg(VI_UT_CTX *pUtCtx, SNS_INI_CFG_S *pstIniCfg, VI_C
 			viInfo->stDevInfo.enFormatMode		= (VI_DATA_TYPE_E)pstViConfig->stSnsCfg.enFormatMode[s32SnsId];
 			viInfo->stDevInfo.enInterFaceMode	= (VI_INTF_MODE_E)pstViConfig->stSnsCfg.enInterFaceMode[s32SnsId];
 			viInfo->stDevInfo.enChnMode		= (VI_WORK_MODE_E)pstViConfig->stSnsCfg.enChnMode[s32SnsId];
-			viInfo->stDevInfo.enYuvScene		= pstViConfig->stSnsCfg.bBypassIsp[s32SnsId]
+
+			if (viInfo->stDevInfo.enFormatMode == VI_DATA_TYPE_YUV) {
+				viInfo->stDevInfo.enYuvScene = pUtCtx->isWithIsp
+									? VI_ISP_YUV_SCENE_ISP
+									: VI_ISP_YUV_SCENE_BYPASS;
+			} else {
+				viInfo->stDevInfo.enYuvScene = pstViConfig->stSnsCfg.bBypassIsp[s32SnsId]
 									? VI_ISP_YUV_SCENE_BYPASS
 									: VI_ISP_YUV_SCENE_ISP;
+			}
 		}
 
 		viInfo->stDevInfo.bPatgen = pUtCtx->isPatgen;
@@ -488,9 +495,8 @@ static CVI_S32 vi_ut_start_dev(VI_INFO_S *pstViInfo)
 	if (pstViInfo->stDevInfo.bMuxDev) {
 		stViDevAttrEx.bMuxDev = true;
 		stViDevAttrEx.phyDev = pstViInfo->stDevInfo.s32AttchDev;
-		stViDevAttrEx.u8SnsrNum = 3;
 		for (i = 0; i < SWITCH_GPIO_NUM; i++) {
-			stViDevAttrEx.stGpioCfg[i].bEnable = pstViInfo->stDevInfo.s32SwitchPort[i] ? true : false;
+			stViDevAttrEx.stGpioCfg[i].bEnable = (pstViInfo->stDevInfo.s32SwitchPort[i]) ? true : false;
 			stViDevAttrEx.stGpioCfg[i].s32GpioPort = pstViInfo->stDevInfo.s32SwitchPort[i];
 			stViDevAttrEx.stGpioCfg[i].s32GpioPin = pstViInfo->stDevInfo.s32SwitchPin[i];
 			stViDevAttrEx.stGpioCfg[i].s32GpioPol = pstViInfo->stDevInfo.s32SwitchPol[i];
@@ -623,7 +629,7 @@ CVI_S32 vi_ut_start_chn(VI_INFO_S *pstViInfo)
 			/* fill the sensor orientation */
 			stChnAttr.bMirror = false;
 			stChnAttr.bFlip = false;
-			stChnAttr.bSingleVb = pstViInfo->stDevInfo.bMuxDev;
+			stChnAttr.bSingleVb = true;//pstViInfo->stDevInfo.bMuxDev;
 
 			s32Ret = CVI_VI_SetChnAttr(ViPipe, ViChn, &stChnAttr);
 			if (s32Ret != CVI_SUCCESS) {
@@ -1189,14 +1195,14 @@ CVI_S32 vi_ut_multi_vi_init(VI_UT_CTX *pUtCtx)
 		snsrId = atomic_load(&pUtCtx->multiInit.snsrId);
 		if (snsrId == 0) {
 			isInit = true;
-			sleep(2); // Sleep for 2s to avoid busy loop
+			sleep(1); // Sleep for 2s to avoid busy loop
 		} else if (snsrId == pViConfig->s32ViNum) {
 			if (cnt++ > 5 || !pUtCtx->isAutoTest) {
 				UT_PRT("isAutoTest[%d], Test[%d]\n", pUtCtx->isAutoTest, cnt);
 				break;
 			}
 			isInit = false;
-			sleep(2); // Sleep for 2s to avoid busy loop
+			sleep(1); // Sleep for 2s to avoid busy loop
 		}
 
 		if (!isInit) {

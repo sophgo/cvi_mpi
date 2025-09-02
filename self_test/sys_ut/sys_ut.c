@@ -560,6 +560,7 @@ CVI_S32 main(CVI_S32 argc, char *argv[])
 	CVI_S32 s32Ret;
 
 	s32Ret = sys_ut_init();
+
 	if (s32Ret != CVI_SUCCESS) {
 		UT_PRT("sys_ut_init fail, ret=%d\n", s32Ret);
 		return -1;

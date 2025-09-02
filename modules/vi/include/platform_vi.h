@@ -78,7 +78,8 @@ CVI_S32 platform_vi_trig_ahd(VI_PIPE ViPipe, CVI_U8 u8AHDSignal);
 CVI_S32 platform_vi_setextchnattr(VI_PIPE ViPipe, VI_CHN ViChn, const VI_EXT_CHN_ATTR_S *pstExtChnAttr);
 CVI_S32 platform_vi_getextchnattr(VI_PIPE ViPipe, VI_CHN ViChn, VI_EXT_CHN_ATTR_S *pstExtChnAttr);
 CVI_S32 platform_vi_setbypassfrm(CVI_U32 snr_num, CVI_U8 bypass_num);
-
+CVI_S32 platform_vi_setdevrxframecount(VI_DEV ViDev, CVI_U32 u32RxFrameCount);
+CVI_S32 platform_vi_getdevrxframecount(VI_DEV ViDev, CVI_U32 *pu32FrameCount);
 #ifdef __cplusplus
 #if __cplusplus
 }

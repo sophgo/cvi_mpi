@@ -66,6 +66,7 @@ optional panel mode support list:
  OTA7290B_1920
  OTA7290B
  ST7701
+ ST7701_480x640
  ST7703
  LCM185X56
 ```

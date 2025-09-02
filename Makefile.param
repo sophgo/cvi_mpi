@@ -48,9 +48,15 @@ else ifeq ($(SDK_VER), musl_riscv64)
   KERNEL_INC := $(KERNEL_DIR)/riscv/usr/include
   OPT_LEVEL := -Os
   OPT_LEVEL += -march=rv64imafdcvxthead -mcmodel=medany -mabi=lp64d
-else ifeq ($(SDK_VER), musl)
-  export CROSS_COMPILE = $(CROSS_COMPILE_MUSL)
+else ifeq ($(SDK_VER), musl_arm)
+  export CROSS_COMPILE = $(CROSS_COMPILE_MUSL_ARM)
   KERNEL_INC := $(KERNEL_DIR)/arm/usr/include
+else ifeq ($(SDK_VER), glibc_arm)
+  export CROSS_COMPILE = $(CROSS_COMPILE_GLIBC_ARM)
+  KERNEL_INC := $(KERNEL_DIR)/arm/usr/include
+else ifeq ($(SDK_VER), glibc_arm64)
+  export CROSS_COMPILE = $(CROSS_COMPILE_GLIBC_ARM64)
+  KERNEL_INC := $(KERNEL_DIR)/arm64/usr/include
 endif
 
 
@@ -117,6 +123,10 @@ OS_TYPE:=LINUX
 ifeq ($(CONFIG_DUAL_OS), y)
 OS_TYPE = DUAL_OS
 CFLAGS += -DCONFIG_DUAL_OS
+endif
+
+ifeq ($(CONFIG_SUSPEND), y)
+CFLAGS += -DCONFIG_SUSPEND
 endif
 
 ifeq ($(CONFIG_DEBUG_INFO), y)

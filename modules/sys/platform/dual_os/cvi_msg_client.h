@@ -23,7 +23,7 @@ CVI_S32 CVI_MSG_Init(CVI_VOID);
  */
 CVI_S32 CVI_MSG_Deinit(CVI_VOID);
 
-
+CVI_S32 CVI_MSG_IsInited(CVI_VOID);
 /* CVI_MSG_SendSync: Send sync messages, this api will block and wait
 for the other end's message command to be processed before returning
  *

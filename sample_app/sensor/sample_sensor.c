@@ -94,6 +94,12 @@ CVI_S32 sample_sensor_stop_isp()
 			} else {
 				continue;
 			}
+			u32SnsId = g_au32IspSnsId[ViPipe];
+			s32Ret = CVI_SNS_UnRegCallback(u32SnsId, ViPipe);
+			if (s32Ret!= CVI_SUCCESS) {
+				SAMPLE_PRT("CVI_SNS_UnRegCallback error id: %d s32Ret %d\n", ViPipe, s32Ret);
+			}
+
 			if (g_DisIsp[ViPipe]) {
 				SAMPLE_PRT("Isp_%d have not create!\n", ViPipe);
 				continue;
@@ -106,16 +112,10 @@ CVI_S32 sample_sensor_stop_isp()
 				}
 				pthread_join(g_IspPid[ViPipe], NULL);
 				g_IspPid[ViPipe] = 0;
-				u32SnsId = g_au32IspSnsId[ViPipe];
 
 				if (u32SnsId > VI_MAX_PIPE_NUM) {
 					SAMPLE_PRT("%s: invalid sensor id: %d\n", __func__, u32SnsId);
 					return CVI_FAILURE;
-				}
-
-				s32Ret = CVI_SNS_UnRegCallback(u32SnsId, ViPipe);
-				if (s32Ret!= CVI_SUCCESS) {
-					SAMPLE_PRT("CVI_SNS_UnRegCallback error id: %d s32Ret %d\n", ViPipe, s32Ret);
 				}
 
 				stAeLib.s32Id = ViPipe;
@@ -260,10 +260,6 @@ void _PLAT_ERR_Exit(void)
 
 	if (g_stViConfig.s32WorkingViNum != 0) {
 		for (i = 0; i < g_stViConfig.s32WorkingViNum; i++) {
-			s32Ret = CVI_SNS_UnRegCallback(i, i);
-			if (s32Ret == CVI_FAILURE) {
-				SAMPLE_PRT("[ERROR] dev_%d ISP unregister callback failed\n", i);
-			}
 			if (g_stViConfig.astViInfo[i].stChnInfo.ViChn < VI_MAX_CHN_NUM) {
 				if (g_stViConfig.astViInfo[i].stPipeInfo.enMastPipeMode == VI_OFFLINE_VPSS_OFFLINE
 				    || g_stViConfig.astViInfo[i].stPipeInfo.enMastPipeMode == VI_ONLINE_VPSS_OFFLINE) {

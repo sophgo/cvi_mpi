@@ -66,29 +66,29 @@ static CVI_VOID scanf_raw_replay_info(VI_UT_CTX *pUtCtx)
 
 	if (!pUtCtx->isAutoTest) {
 		if (!picInfo->usrBlk[0] && !picInfo->usrBlk[1]) {
-			UT_PRT("is_hdr_input? (0:no, 1:yes): ");
+			UT_PRT("is_hdr_input? (0:no, 1:yes):\n");
 			scanf("%d", &value);
 			picInfo->isHdrOn = value ? true : false;
-			UT_PRT("is_dpcm? (0:no, 1: yes): ");
+			UT_PRT("is_dpcm? (0:no, 1: yes):\n");
 			scanf("%d", &value);
 			pUtCtx->isDpcmOn = value ? true : false;
 		}
 
-		UT_PRT("LE filename: ");
+		UT_PRT("LE filename:\n");
 		scanf("%s", picInfo->file[0]);
 		if (picInfo->isHdrOn) {
-			UT_PRT("SE filename: ");
+			UT_PRT("SE filename:\n");
 			scanf("%s", picInfo->file[1]);
 		}
 
 		if (!picInfo->usrBlk[0] && !picInfo->usrBlk[1]) {
-			UT_PRT("img width: ");
+			UT_PRT("img width:\n");
 			scanf("%d", &picInfo->u32ImgWidth);
-			UT_PRT("img height: ");
+			UT_PRT("img height:\n");
 			scanf("%d", &picInfo->u32ImgHeight);
-			UT_PRT("bayer format BG(0)/GB(1)/GR(2)/RG(3): ");
+			UT_PRT("bayer format BG(0)/GB(1)/GR(2)/RG(3):\n");
 			scanf("%d", &picInfo->bayFormat);
-			UT_PRT("FrameRate: (user trig set 0): ");
+			UT_PRT("FrameRate: (user trig set 0):\n");
 			scanf("%d", &picInfo->s32FrmRate);
 		}
 	} else {
@@ -102,7 +102,7 @@ static CVI_VOID scanf_raw_replay_info(VI_UT_CTX *pUtCtx)
 		strcpy(picInfo->file[0], "res/2k_ballon_bayer_12_GR.bin");
 	}
 
-	UT_PRT("[RawReplay] FPS(%d) isHdr(%d), ImageSize(%dx%d), file_path(%s, %s)",
+	UT_PRT("[RawReplay] FPS(%d) isHdr(%d), ImageSize(%dx%d), file_path(%s, %s)\n",
 		picInfo->s32FrmRate,
 		picInfo->isHdrOn, picInfo->u32ImgWidth, picInfo->u32ImgHeight,
 		picInfo->file[0], picInfo->file[1]);
@@ -158,7 +158,7 @@ static CVI_S32 case_raw_replay(CVI_VOID *p)
 		s32Ret = vi_ut_get_chn_frame(0, 0, false);
 	} else if (pUtCtx->rawReplayInfo.s32FrmRate == 0) {
 		while (exit != 255) {
-			UT_PRT("User trig(input 255 exit): ");
+			UT_PRT("User trig(input 255 exit):");
 			scanf("%d", &exit);
 
 			if (exit == 255)
@@ -196,6 +196,22 @@ static CVI_S32 case_sensor_onthefly(CVI_VOID *p)
 	return s32Ret;
 }
 
+static CVI_VOID scanf_fe_dram_post_dram_info(VI_UT_CTX *pUtCtx)
+{
+	CVI_U32 value = 0;
+
+	if (!pUtCtx->isAutoTest) {
+		UT_PRT("is_with_isp(Rgb always with isp, only ctrl yuv)? (0:no, 1: yes):\n");
+		scanf("%d", &value);
+		pUtCtx->isWithIsp = value ? true : false;
+	} else {
+		pUtCtx->isSkipSensor = true;
+		pUtCtx->isWithIsp = false;
+	}
+
+	UT_PRT("[FE_DRAM_POST_DRAM] isWithIsp(%d)\n", pUtCtx->isWithIsp);
+}
+
 static CVI_S32 case_sensor_fe_dram_post_dram(CVI_VOID *p)
 {
 	CVI_S32 s32Ret = CVI_SUCCESS;
@@ -203,6 +219,8 @@ static CVI_S32 case_sensor_fe_dram_post_dram(CVI_VOID *p)
 
 	pUtCtx->viVpssMode = VI_OFFLINE_VPSS_OFFLINE;
 	pUtCtx->isDpcmOn = true;
+
+	scanf_fe_dram_post_dram_info(pUtCtx);
 
 	s32Ret = vi_test(pUtCtx);
 	if (s32Ret != CVI_SUCCESS) {
@@ -463,11 +481,11 @@ static CVI_VOID scanf_smooth_dump_info(VI_UT_CTX *pUtCtx)
 	VI_SMOOTH_INFO_S *smoothInfo = &pUtCtx->smoothInfo;
 
 	if (!pUtCtx->isAutoTest) {
-		UT_PRT("The vi dev to dump =");
+		UT_PRT("The vi dev to dump =\n");
 		scanf("%d", &smoothInfo->u32Dev);
-		UT_PRT("The ring buf number to create =");
+		UT_PRT("The ring buf number to create =\n");
 		scanf("%d", &smoothInfo->u32BlkCnt);
-		UT_PRT("The total frame number to get =");
+		UT_PRT("The total frame number to get =\n");
 		scanf("%d", &smoothInfo->u32TotalFrameCnt);
 	} else {
 		smoothInfo->u32Dev = 0;
@@ -475,7 +493,7 @@ static CVI_VOID scanf_smooth_dump_info(VI_UT_CTX *pUtCtx)
 		smoothInfo->u32TotalFrameCnt = 2;
 	}
 
-	UT_PRT("[SmoothDump] dev(%d) blkCnt(%d), totalFrameCnt(%d)",
+	UT_PRT("[SmoothDump] dev(%d) blkCnt(%d), totalFrameCnt(%d)\n",
 		smoothInfo->u32Dev,
 		smoothInfo->u32BlkCnt,
 		smoothInfo->u32TotalFrameCnt);
@@ -702,7 +720,7 @@ static CVI_VOID scanf_chn_rotation_info(VI_UT_CTX *pUtCtx)
 		scanf("%d", &pRotaInfo->pipe);
 		UT_PRT("input Chn:\n");
 		scanf("%d", &pRotaInfo->chn);
-		UT_PRT("Rotation 0(0)/1(90)/2(180)/3(270): ");
+		UT_PRT("Rotation 0(0)/1(90)/2(180)/3(270):\n");
 		scanf("%d", &pRotaInfo->rotation);
 	} else {
 		pRotaInfo->pipe = 0;
@@ -771,9 +789,9 @@ static CVI_VOID scanf_flip_mirror_info(VI_UT_CTX *pUtCtx)
 		scanf("%d", &pflipMirrorInfo->pipe);
 		UT_PRT("input Chn:\n");
 		scanf("%d", &pflipMirrorInfo->chn);
-		UT_PRT("flip enable/disable(1/0): ");
+		UT_PRT("flip enable/disable(1/0):\n");
 		scanf("%d", &pflipMirrorInfo->flip);
-		UT_PRT("mirror enable/disable(1/0): ");
+		UT_PRT("mirror enable/disable(1/0):\n");
 		scanf("%d", &pflipMirrorInfo->mirror);
 	} else {
 		pflipMirrorInfo->pipe = 0;
@@ -850,23 +868,23 @@ static CVI_VOID scanf_chn_ldc_info(VI_UT_CTX *pUtCtx)
 		UT_PRT("input Chn:\n");
 		scanf("%d", &pLdcInfo->chn);
 
-		UT_PRT("Keep AspectRatio 1(Y)/0(N): ");
+		UT_PRT("Keep AspectRatio 1(Y)/0(N):\n");
 		scanf("%d", &tmp);
 		pLdcInfo->ldcAttr.stAttr.bAspect = tmp;
 		if (pLdcInfo->ldcAttr.stAttr.bAspect) {
-			UT_PRT("Ratio (0 ~ 100): ");
+			UT_PRT("Ratio (0 ~ 100):\n");
 			scanf("%d", &pLdcInfo->ldcAttr.stAttr.s32XYRatio);
 		} else {
-			UT_PRT("XRatio (0 ~ 100): ");
+			UT_PRT("XRatio (0 ~ 100):\n");
 			scanf("%d", &pLdcInfo->ldcAttr.stAttr.s32XRatio);
-			UT_PRT("YRatio (0 ~ 100): ");
+			UT_PRT("YRatio (0 ~ 100):\n");
 			scanf("%d", &pLdcInfo->ldcAttr.stAttr.s32YRatio);
 		}
-		UT_PRT("XOffset (-511 ~ 511): ");
+		UT_PRT("XOffset (-511 ~ 511):\n");
 		scanf("%d", &pLdcInfo->ldcAttr.stAttr.s32CenterXOffset);
-		UT_PRT("YOffset (-511 ~ 511): ");
+		UT_PRT("YOffset (-511 ~ 511):\n");
 		scanf("%d", &pLdcInfo->ldcAttr.stAttr.s32CenterYOffset);
-		UT_PRT("DistortionRatio (-300 ~ 500): ");
+		UT_PRT("DistortionRatio (-300 ~ 500):\n");
 		scanf("%d", &pLdcInfo->ldcAttr.stAttr.s32DistortionRatio);
 	} else {
 		pLdcInfo->pipe = 0;

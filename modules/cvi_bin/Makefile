@@ -61,8 +61,8 @@ endif
 
 .PHONY : clean all gencode check
 
-all : check gencode
-target : $(TARGET_A) $(TARGET_SO)
+all : gencode
+target : check $(TARGET_A) $(TARGET_SO)
 
 gencode: $(PARAM_PRE)
 
@@ -112,7 +112,7 @@ $(TARGET_SO): $(OBJS)
 check:
 	@echo ">>>>>> check start"
 	@echo "profile: $(PROFILE)"
-	@if [ $(check_git_repo_ret) == 0 ]; then \
+	@if [ "$(check_git_repo_ret)" == "0" ]; then \
 		echo "git repo: Yes"; \
 		echo "commit_id: $(commit_id)"; \
 		echo "gerrit_id: $(gerrit_id)"; \
@@ -120,7 +120,7 @@ check:
 		echo "git repo: No"; \
 	fi
 	@echo "md5 value: $(md5_result)"
-	@if [ $(md5_result) == -1 ]; then \
+	@if [ "$(md5_result)" == "-1" ]; then \
 		echo "Error: md5 is -1, please check the the md5!"; \
 		exit 1; \
 	fi
@@ -132,6 +132,7 @@ clean:
 	@rm -f $(SDIR)/*.autogen.*
 	@rm -f $(HDIR)/*.autogen.*
 	@rm -rf $(TMP_FOLDER)
+	@rm -f python/cvi_bin_struct.h
 
 -include $(DEPS)
 -include $(PARAM_DEP)

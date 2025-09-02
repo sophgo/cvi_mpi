@@ -49,7 +49,7 @@ CVI_S32 platform_vb_exit(void)
 	CVI_U32 u32ModFd = MODFD(CVI_ID_VB, 0, 0);
 
 	// Only exit once.
-	if (!atomic_compare_exchange_strong(&vb_inited, &expect, false))
+	if (!atomic_compare_exchange_strong(&vb_inited, &expect, false) && !CVI_MSG_IsInited())
 		return CVI_SUCCESS;
 
 	s32Ret = CVI_MSG_SendSync(u32ModFd, MSG_CMD_VB_EXIT, NULL, 0, NULL);

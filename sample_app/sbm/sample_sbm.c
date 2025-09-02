@@ -141,13 +141,15 @@ static CVI_S32 SAMPLE_VENC_SetNameSaveStream(VENC_GET_STEAM_PROC_INFO_S *pStream
 static CVI_VOID SAMPLE_FD_IsSet(VENC_GET_STEAM_PROC_INFO_S *pStreamProcInfo,
 	fd_set *read_fds, VENC_GET_STEAM_PARA_S *para)
 {
-	CVI_S32 i;
+	CVI_S32 i, s32Ret;
 
 	for (i = 0; (i < pStreamProcInfo->ChnTotal) && (i < VENC_MAX_CHN_NUM); i++) {
 		if (FD_ISSET(pStreamProcInfo->VencFd[i], read_fds)) {
 			pStreamProcInfo->VencChn = para->VencChn[i];
-			SAMPLE_VENC_SaveOneChannelStream(pStreamProcInfo->VencChn,
+			s32Ret = SAMPLE_VENC_SaveOneChannelStream(pStreamProcInfo->VencChn,
 				pStreamProcInfo->FileFp[i]);
+			if(s32Ret)
+				SAMPLE_PRT("venc save stream fail, chn:%d\n",i);
 		}
 	}
 }
@@ -175,8 +177,11 @@ static CVI_VOID *SAMPLE_VENC_GetVencStreamProc(CVI_VOID *Para)
 	while (pPara->ThreadStart == CVI_TRUE) {
 #if defined(CONFIG_DUAL_OS)
 		for (i = 0; (i < pPara->Cnt) && (i < VENC_MAX_CHN_NUM); i++) {
-			SAMPLE_VENC_SaveOneChannelStream(pPara->VencChn[i],
+			s32Ret = SAMPLE_VENC_SaveOneChannelStream(pPara->VencChn[i],
 				pPara->Fp[i]);
+			if(s32Ret){
+				SAMPLE_PRT("save venc stream fail, chn:%d\n", i);
+			}
 		}
 #else
 		fd_set ReadFds;
@@ -1104,8 +1109,12 @@ again:
 			cnt++;
 			goto again;
 		} else {
-			if (FD_ISSET(VencFd, &ReadFds))
-				SAMPLE_VENC_SaveOneChannelStream(VencChn, fpOutput);
+			if (FD_ISSET(VencFd, &ReadFds)){
+				s32Ret = SAMPLE_VENC_SaveOneChannelStream(VencChn, fpOutput);
+				if(s32Ret){
+					SAMPLE_PRT("save venc stream fail, chn:%d\n", VencChn);
+				}
+			}
 		}
 #endif
 	}
@@ -2206,8 +2215,12 @@ again:
 			SAMPLE_PRT("get venc stream time out, try get again\n");
 			goto again;
 		} else {
-			if (FD_ISSET(VencFd, &ReadFds))
-				SAMPLE_VENC_SaveOneChannelStream(VencChn, fpOutput);
+			if (FD_ISSET(VencFd, &ReadFds)){
+				s32Ret = SAMPLE_VENC_SaveOneChannelStream(VencChn, fpOutput);
+				if(s32Ret){
+					SAMPLE_PRT("save venc stream fail, chn:%d\n", VencChn);
+				}
+			}
 		}
 #endif
 		SAMPLE_PRT("Save file:%s\n", astJpegName);

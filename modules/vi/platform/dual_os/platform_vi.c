@@ -1079,6 +1079,28 @@ free_json:
 	return s32Ret;
 }
 
+CVI_S32 platform_vi_setdevrxframecount(VI_DEV ViDev, CVI_U32 u32RxFrameCount)
+{
+	UNUSED(ViDev);
+	UNUSED(u32RxFrameCount);
+
+	CVI_TRACE_VI(CVI_DBG_ERR, "dual os not support\n");
+
+	return CVI_SUCCESS;
+}
+
+CVI_S32 platform_vi_getdevrxframecount(VI_DEV ViDev, CVI_U32 *pu32FrameCount)
+{
+	UNUSED(ViDev);
+	UNUSED(pu32FrameCount);
+
+	CVI_TRACE_VI(CVI_DBG_ERR, "dual os not support\n");
+
+	*pu32FrameCount = 0;
+
+	return CVI_SUCCESS;
+}
+
 /**
  * @deprecated
  */

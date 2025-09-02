@@ -1131,12 +1131,6 @@ CVI_S32 cvi_audio_set_dbg_record(ST_AudioUnitTestCfg *testCfg)
 
 	CVI_AI_EnableVqe(0, 0);
 
-	if (s32Ret != CVI_SUCCESS) {
-		PRINTF("fail to set talk attr\n");
-		PRINTF("skip NR_AGC..\n");
-		goto Pattern_EOF_ERR;
-	}
-
 	CVI_S32 s32SizeInput = 0;
 
 	CVI_S32 s32SizeGetOut = 0;
@@ -1178,6 +1172,7 @@ CVI_S32 cvi_audio_set_dbg_record(ST_AudioUnitTestCfg *testCfg)
 
 	SAFE_FREE_BUF(GetFrameBuff);
 	SAFE_FREE_BUF(audio_buffer);
+
 Pattern_EOF:
 	fclose(fp_test_output);
 	fclose(fp_test_input);
@@ -1185,7 +1180,7 @@ Pattern_EOF:
 	_transform_pcm_to_wave("record.raw", channel, rate, 16, output_filenamewav1);
 	_transform_pcm_to_wave("vqeplay.raw", channel, rate, 16, output_filenamewav2);
 	/* Start transferring to wav format----------end */
-
+	CVI_AI_DisableVqe(0, 0);
 	PRINTF("Pattern_EOF[%d]\n", count);
 
 	if (testCfg->bOptCfg == CVI_TRUE) {
@@ -1196,11 +1191,6 @@ Pattern_EOF:
 	}
 
 	return CVI_SUCCESS;
-Pattern_EOF_ERR:
-	fclose(fp_test_output);
-	fclose(fp_test_input);
-	PRINTF("Pattern_EOF_ERR[%d]\n", count);
-	return CVI_FAILURE;
 SKIP_ALGO:
 	fclose(fp_test_output);
 	fclose(fp_test_input);

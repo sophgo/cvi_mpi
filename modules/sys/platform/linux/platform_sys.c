@@ -601,3 +601,19 @@ CVI_S32 platform_sys_getlevelconf(LOG_LEVEL_CONF_S *pstConf)
 	return CVI_SUCCESS;
 }
 
+CVI_S32 platform_sys_gettimestamp(CVI_U64 *pu64CurPTS)
+{
+    CVI_S32 fd = -1;
+    CVI_S32 ret;
+
+    if ((fd = get_base_fd()) == -1)
+        return CVI_ERR_SYS_NOTREADY;
+
+    ret = ioctl(fd, BASE_GET_TIMESTAMP, pu64CurPTS);
+    if (ret) {
+        CVI_TRACE_SYS(CVI_DBG_ERR, "ioctl BASE_GET_TIMESTAMP failed\n");
+        return ret;
+    }
+
+    return CVI_SUCCESS;
+}

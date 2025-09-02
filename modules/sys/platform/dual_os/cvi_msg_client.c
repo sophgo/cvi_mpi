@@ -93,7 +93,9 @@ CVI_VOID MSG_Run_Heartbeat_Thread(CVI_VOID)
 CVI_VOID MSG_Exit_Heartbeat_Thread(CVI_VOID)
 {
 	g_bMsgHeartbeatStartFlg = CVI_FALSE;
-	pthread_join(g_msgHeartbeatThread, CVI_NULL);
+	if (g_msgHeartbeatThread) {
+		pthread_join(g_msgHeartbeatThread, CVI_NULL);
+	}
 }
 
 CVI_VOID CVI_MSG_RegisterSNSCallback(MsgSnsCallback callback)
@@ -193,6 +195,19 @@ CVI_S32 CVI_MSG_Init(CVI_VOID)
 	MSG_Run_Heartbeat_Thread();
 
 	return 0;
+}
+
+// TODO:
+CVI_S32 CVI_MSG_IsInited(CVI_VOID)
+{
+	CVI_S32 s32Ret;
+
+	s32Ret = CVI_IPCMSG_Connect(&g_mMediaMsgId, "CVI_MMF_MSG", MEDIA_MSG_HandleMessage);
+	if (s32Ret != CVI_SUCCESS) {
+		return 0;
+	}
+
+	return 1;
 }
 
 CVI_S32 CVI_MSG_Deinit(CVI_VOID)

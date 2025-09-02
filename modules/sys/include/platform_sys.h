@@ -50,5 +50,5 @@ CVI_S32 platform_sys_setlevelconf(LOG_LEVEL_CONF_S *pstConf);
 
 CVI_S32 platform_sys_getlevelconf(LOG_LEVEL_CONF_S *pstConf);
 
-
+CVI_S32 platform_sys_gettimestamp(CVI_U64 *pu64CurPTS);
 #endif

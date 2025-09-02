@@ -10,20 +10,25 @@ INPUT_FILE="tmp_input"
 result=$TEST_PASS
 check_ret=0
 
-LINEAR_UT_TEST="1 5 6 7 10 12 13 14"
-WDR_UT_TEST="1 6 7 10 12 13 14"
-WDR_LINEAR_UT="6 10 12"
-YUV_UT="6 10 13 14"
-MIPI_SWITCH_UT="6 10 11"
+TEST_CASES_linear="1 5 6 7 10 12 13 14"
+TEST_CASES_wdr="1 6 7 10 12 13 14"
+TEST_CASES_wdr_linear="6 10 12"
+TEST_CASES_wdr_wdr="6 10 12"
+TEST_CASES_yuv="6 10 13 14"
+TEST_CASES_mipi_switch="6 10 11"
+TEST_CASES_multi_init="22"
 
-INI_SRC_LINEAR_PATH=$BASEDIR/../res/sensor_cfg.ini.327_linear
-INI_SRC_WDR_PATH=$BASEDIR/../res/sensor_cfg.ini.327_wdr
-INI_SRC_WDR_LINEAR_PATH=$BASEDIR/../res/sensor_cfg.ini.327_wdr_4653
-INI_SRC_YUV_PATH=$BASEDIR/../res/sensor_cfg.ini.pr2100
-INI_SRC_TRIPLE_MIPI_SWITCH_PATH=$BASEDIR/../res/sensor_cfg.ini.327_triple_mipi_switch
-INI_SRC_TWO_MIPI_SWITCH_PATH=$BASEDIR/../res/sensor_cfg.ini.327_two_mipi_switch
-INI_SRC_TWO_NORMAL_MIPI_SWITCH_PATH=$BASEDIR/../res/sensor_cfg.ini.327_two_mipi_switch_normal
 INI_DST_PATH=/mnt/data/sensor_cfg.ini
+
+INI_PATH_linear=$BASEDIR/../res/sensor_cfg.ini.327_linear
+INI_PATH_wdr=$BASEDIR/../res/sensor_cfg.ini.327_wdr
+INI_PATH_wdr_linear=$BASEDIR/../res/sensor_cfg.ini.327_wdr_4653
+INI_PATH_wdr_wdr=$BASEDIR/../res/sensor_cfg.ini.327_wdr_327_wdr
+INI_PATH_yuv=$BASEDIR/../res/sensor_cfg.ini.pr2100
+
+MIPI_SWITCH_INIS="$BASEDIR/../res/sensor_cfg.ini.327_triple_mipi_switch \
+                  $BASEDIR/../res/sensor_cfg.ini.327_two_mipi_switch \
+                  $BASEDIR/../res/sensor_cfg.ini.327_two_mipi_switch_normal"
 
 function verify() {
     grep_result=$(grep "] pass" $OUT_FILE)
@@ -37,12 +42,13 @@ function clean_tmp_files() {
     rm -rf $OUT_FILE $INPUT_FILE
 }
 
-function run_ut_linear_test() {
+function run_ut_test() {
+    mode=$1
+    ini_path=$2
+    tests=$3
 
-    cp $INI_SRC_LINEAR_PATH $INI_DST_PATH
-
-    for i in $LINEAR_UT_TEST
-    do
+    cp $ini_path $INI_DST_PATH
+    for i in $tests; do
         echo "========== test $i =========="
         cat /sys/kernel/debug/ion/cvi_carveout_heap_dump/summary
         $UT_BIN_DIR/$UT_BIN_NAME $i < $INPUT_FILE | tee $OUT_FILE
@@ -51,89 +57,13 @@ function run_ut_linear_test() {
             result=$TEST_FAIL
             return 1
         fi
-
         sleep $SLEEP_SECONDS
     done
-}
-
-function run_ut_wdr_test() {
-
-    cp $INI_SRC_WDR_PATH $INI_DST_PATH
-
-    for i in $WDR_UT_TEST
-    do
-        echo "========== test $i =========="
-        cat /sys/kernel/debug/ion/cvi_carveout_heap_dump/summary
-        $UT_BIN_DIR/$UT_BIN_NAME $i < $INPUT_FILE | tee $OUT_FILE
-        verify
-        if [ $check_ret != 0 ]; then
-            result=$TEST_FAIL
-            return 1
-        fi
-
-        sleep $SLEEP_SECONDS
-    done
-}
-
-function run_ut_wdr_linear_test() {
-
-    cp $INI_SRC_WDR_LINEAR_PATH $INI_DST_PATH
-
-    for i in $WDR_LINEAR_UT
-    do
-        cat /sys/kernel/debug/ion/cvi_carveout_heap_dump/summary
-        echo "========== test $i =========="
-        $UT_BIN_DIR/$UT_BIN_NAME $i < $INPUT_FILE | tee $OUT_FILE
-        verify
-        if [ $check_ret != 0 ]; then
-            result=$TEST_FAIL
-            return 1
-        fi
-
-        sleep $SLEEP_SECONDS
-    done
-}
-
-function run_ut_yuv_test() {
-    cp $INI_SRC_YUV_PATH $INI_DST_PATH
-
-    for i in $YUV_UT
-    do
-        cat /sys/kernel/debug/ion/cvi_carveout_heap_dump/summary
-        echo "========== test $i =========="
-        $UT_BIN_DIR/$UT_BIN_NAME $i < $INPUT_FILE | tee $OUT_FILE
-        verify
-        if [ $check_ret != 0 ]; then
-            result=$TEST_FAIL
-            return 1
-        fi
-
-        sleep $SLEEP_SECONDS
-    done
-
 }
 
 function run_ut_mipi_switch_test() {
-    for ini_path in \
-        $INI_SRC_TRIPLE_MIPI_SWITCH_PATH \
-        $INI_SRC_TWO_MIPI_SWITCH_PATH \
-        $INI_SRC_TWO_NORMAL_MIPI_SWITCH_PATH
-    do
-        cp $ini_path $INI_DST_PATH
-
-        for i in $MIPI_SWITCH_UT
-        do
-            cat /sys/kernel/debug/ion/cvi_carveout_heap_dump/summary
-            echo "========== test $i =========="
-            $UT_BIN_DIR/$UT_BIN_NAME $i < $INPUT_FILE | tee $OUT_FILE
-            verify
-            if [ $check_ret != 0 ]; then
-                result=$TEST_FAIL
-                return 1
-            fi
-
-            sleep $SLEEP_SECONDS
-        done
+    for ini_path in $MIPI_SWITCH_INIS; do
+        run_ut_test "mipi_switch" "$ini_path" "$TEST_CASES_mipi_switch" || return 1
     done
 }
 
@@ -143,10 +73,12 @@ touch $INPUT_FILE
 
 for t in $(seq 1 $TEST_TIMES)
 do
-    run_ut_linear_test || break
-    run_ut_wdr_test || break
-    run_ut_wdr_linear_test || break
-    run_ut_yuv_test || break
+    run_ut_test "linear"      "$INI_PATH_linear"      "$TEST_CASES_linear"      || break
+    run_ut_test "wdr"         "$INI_PATH_wdr"         "$TEST_CASES_wdr"         || break
+    run_ut_test "wdr_linear"  "$INI_PATH_wdr_linear"  "$TEST_CASES_wdr_linear"  || break
+    run_ut_test "wdr_wdr"     "$INI_PATH_wdr_wdr"     "$TEST_CASES_wdr_wdr"     || break
+    run_ut_test "yuv"         "$INI_PATH_yuv"         "$TEST_CASES_yuv"         || break
+    run_ut_test "multi_init"  "$INI_PATH_wdr_linear"  "$TEST_CASES_multi_init"  || break
     run_ut_mipi_switch_test || break
 done
 

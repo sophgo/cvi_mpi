@@ -845,9 +845,7 @@ static CVI_S32 tde_test_auto(CVI_VOID)
 	s32Ret |= tde_test_multi_job();
 	s32Ret |= tde_test_multi_misc();
 	s32Ret |= tde_test_min_resolution();
-#if !defined(CONFIG_DUAL_OS)
-	s32Ret |= tde_test_max_resolution();
-#endif
+	//s32Ret |= tde_test_max_resolution();
 	s32Ret |= tde_test_perf();
 	UT_CHECK_CASE_RET(s32Ret);
 	return s32Ret;

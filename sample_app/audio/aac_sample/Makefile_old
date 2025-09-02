@@ -84,6 +84,12 @@ endif
 ifeq ($(SDK_VER), 32bit)
 AAC_LDFLAGS += -L $(PWD)/32bit
 endif
+ifeq ($(SDK_VER), glibc_arm64)
+AAC_LDFLAGS += -L $(PWD)/glibc_arm64
+endif
+ifeq ($(SDK_VER), glibc_arm)
+AAC_LDFLAGS += -L $(PWD)/glibc_arm
+endif
 
 ifeq ($(SDK_VER), uclibc)
 AAC_LDFLAGS += -L $(PWD)/uclibc

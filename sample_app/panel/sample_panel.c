@@ -58,6 +58,7 @@ typedef enum {
 	DSI_PANEL_OTA7290B_1920,
 	DSI_PANEL_OTA7290B,
 	DSI_PANEL_ST7701,
+	DSI_PANEL_ST7701_480x640,
 	DSI_PANEL_ST7703,
 	LVDS_PANEL_LCM185X56,
 	I80_PANEL_ST7789V3_HW_MCU_240x320_60FPS,
@@ -128,6 +129,7 @@ static char *s_panel_model_type_arr[] = {
 	"OTA7290B_1920",
 	"OTA7290B",
 	"ST7701",
+	"ST7701_480x640",
 	"ST7703",
 	"LCM185X56",
 	"ST7789V3_HW_MCU_RGB565_240x320_60FPS",
@@ -531,6 +533,13 @@ void SAMPLE_SET_PANEL_DESC(void)
 		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_st7701_480x800;
 		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_st7701_480x800;
 		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_st7701_480x800);
+		break;
+	case DSI_PANEL_ST7701_480x640:
+		g_panel_desc.panel_type = PANEL_MODE_DSI;
+		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_st7701_480x640;
+		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_st7701_480x640;
+		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_st7701_480x640;
+		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_st7701_480x640);
 		break;
 	case DSI_PANEL_ST7703:
 		g_panel_desc.panel_type = PANEL_MODE_DSI;

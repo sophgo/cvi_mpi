@@ -1299,6 +1299,7 @@ exit:
 }
 #endif
 
+
 CVI_S32 SAMPLE_VENC_START(sampleVenc *psv)
 {
 	commonInputCfg *pcic = &psv->commonIc;
@@ -2017,7 +2018,7 @@ static CVI_VOID *SAMPLE_VENC_GetVencStreamProc(CVI_VOID *pArgs)
 
 	if (strlen(pIc->motionMapBinFile) > 0) {
 		pIc->motionMapFile = fopen(pIc->motionMapBinFile, "r");
-		if (pIc->motionMapBinFile == NULL) {
+		if (pIc->motionMapFile == NULL) {
 			SAMPLE_PRT("open roi bin file fail\n");
 			return (CVI_VOID *) CVI_FAILURE;
 		}
@@ -2025,7 +2026,7 @@ static CVI_VOID *SAMPLE_VENC_GetVencStreamProc(CVI_VOID *pArgs)
 
 	if (strlen(pIc->aiMapBinFile) > 0) {
 		pIc->aiMapFile = fopen(pIc->aiMapBinFile, "r");
-		if (pIc->aiMapBinFile == NULL) {
+		if (pIc->aiMapFile == NULL) {
 			SAMPLE_PRT("open roi bin file fail\n");
 			return (CVI_VOID *) CVI_FAILURE;
 		}

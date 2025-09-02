@@ -403,3 +403,13 @@ int vi_sdk_dump_register(int fd, int pipe, struct ip_info *ip_info)
 {
 	return SDK_CTRL_SET_CFG(fd, ip_info, sizeof(struct ip_info), VI_SDK_DUMP_REGISTER, -1, pipe, -1, -1);
 }
+
+int vi_sdk_set_dev_rx_frame_count(int fd, int dev, uint32_t count)
+{
+	return SDK_CTRL_SET_CFG(fd, &count, sizeof(uint32_t), VI_SDK_SET_DEV_RX_FRAME_COUNT, dev, -1, -1, -1);
+}
+
+int vi_sdk_get_dev_rx_frame_count(int fd, int dev, uint32_t *count)
+{
+	return SDK_CTRL_SET_CFG(fd, count, sizeof(uint32_t), VI_SDK_GET_DEV_RX_FRAME_COUNT, dev, -1, -1, -1);
+}

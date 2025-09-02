@@ -65,4 +65,7 @@ int vi_sdk_get_chn_flip_mirror(int fd, struct vi_chn_flip_mirror_cfg *cfg);
 int vi_sdk_attach_vbpool(int fd, struct vi_vb_pool_cfg *cfg);
 int vi_sdk_detach_vbpool(int fd, struct vi_vb_pool_cfg *cfg);
 int vi_sdk_dump_register(int fd, int pipe, struct ip_info *ip_info);
+int vi_sdk_set_dev_rx_frame_count(int fd, int dev, uint32_t count);
+int vi_sdk_get_dev_rx_frame_count(int fd, int dev, uint32_t *count);
+
 #endif // MODULES_VPU_INCLUDE_VI_IOCTL_H_

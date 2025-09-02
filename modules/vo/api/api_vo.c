@@ -208,3 +208,13 @@ CVI_S32 CVI_VO_GetGammaInfo(VO_GAMMA_INFO_S *pinfo)
 {
 	return Platform_VO_GetGammaInfo(pinfo);
 }
+
+CVI_S32 CVI_VO_Suspend(void)
+{
+	return Platform_VO_Suspend();
+}
+
+CVI_S32 CVI_VO_Resume(void)
+{
+	return Platform_VO_Resume();
+}

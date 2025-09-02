@@ -3,7 +3,6 @@
 
 #include <cvi_comm_mipi_tx.h>
 
-#define PANEL_NAME "NETEASE-2"
 
 #define ST7703_NETEASE_VACT		480
 #define ST7703_NETEASE_VSA		6

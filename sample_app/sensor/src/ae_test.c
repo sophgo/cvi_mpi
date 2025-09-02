@@ -906,6 +906,16 @@ static void sensor_ae_test_init(void)
 	memset(&sensorInfo, 0, sizeof(_SENSOR_INFO_S) * MAX_SENSOR_NUM);
 
 	init_sensor_info();
+
+	// disable lsc
+	ISP_MESH_SHADING_ATTR_S stMeshShadingAttr;
+
+	for (int i = 0; i < g_stSensorCfg.sns_ini_cfg.devNum; i++) {
+		memset(&stMeshShadingAttr, 0, sizeof(stMeshShadingAttr));
+		CVI_ISP_GetMeshShadingAttr(i, &stMeshShadingAttr);
+		stMeshShadingAttr.Enable = CVI_FALSE;
+		CVI_ISP_SetMeshShadingAttr(i, &stMeshShadingAttr);
+	}
 }
 
 CVI_S32 sensor_ae_test(void)

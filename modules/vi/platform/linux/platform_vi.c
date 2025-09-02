@@ -1418,6 +1418,38 @@ free_json:
 	return s32Ret;
 }
 
+CVI_S32 platform_vi_setdevrxframecount(VI_DEV ViDev, CVI_U32 u32RxFrameCount)
+{
+	CVI_S32 s32Ret = CVI_SUCCESS;
+	CVI_S32 fd = -1;
+
+	fd = get_vi_fd();
+
+	s32Ret = vi_sdk_set_dev_rx_frame_count(fd, ViDev, u32RxFrameCount);
+	if (s32Ret != CVI_SUCCESS) {
+		CVI_TRACE_VI(CVI_DBG_ERR, "vi_sdk_set_dev_rx_frame_count fail\n");
+		return s32Ret;
+	}
+
+	return s32Ret;
+}
+
+CVI_S32 platform_vi_getdevrxframecount(VI_DEV ViDev, CVI_U32 *pu32FrameCount)
+{
+	CVI_S32 s32Ret = CVI_SUCCESS;
+	CVI_S32 fd = -1;
+
+	fd = get_vi_fd();
+
+	s32Ret = vi_sdk_get_dev_rx_frame_count(fd, ViDev, pu32FrameCount);
+	if (s32Ret != CVI_SUCCESS) {
+		CVI_TRACE_VI(CVI_DBG_ERR, "vi_sdk_get_dev_rx_frame_count fail\n");
+		return s32Ret;
+	}
+
+	return s32Ret;
+}
+
 /**
  * @deprecated
  */

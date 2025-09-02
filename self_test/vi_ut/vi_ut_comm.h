@@ -169,6 +169,7 @@ typedef struct _VI_UT_CTX {
 	CVI_BOOL isBindVb;
 	CVI_BOOL isMultiInit;
 	CVI_BOOL isRawReplay;
+	CVI_BOOL isWithIsp;
 	CVI_BOOL isOnlineSc;
 	CVI_BOOL is_use_isp_raw_replay;
 } VI_UT_CTX;

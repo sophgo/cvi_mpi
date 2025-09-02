@@ -126,6 +126,8 @@ CVI_S32 CVI_VI_GetDevAttrEx(VI_DEV ViDev, VI_DEV_ATTR_EX_S *pstDevAttrEx)
 
 CVI_S32 CVI_VI_SetDevBindAttr(VI_DEV ViDev, const VI_DEV_BIND_PIPE_S *pstDevBindAttr)
 {
+	CVI_U8 i = 0;
+
 	CHECK_VI_DEVID_VALID(ViDev);
 	CHECK_VI_NULL_PTR(pstDevBindAttr);
 
@@ -142,6 +144,13 @@ CVI_S32 CVI_VI_SetDevBindAttr(VI_DEV ViDev, const VI_DEV_BIND_PIPE_S *pstDevBind
 	if (pstDevBindAttr->MipiDev > VI_MAX_PHY_DEV_NUM - 1) {
 		CVI_TRACE_VI(CVI_DBG_ERR, "MipiDev(%d) is invalid\n", pstDevBindAttr->MipiDev);
 		return CVI_ERR_VI_INVALID_PARA;
+	}
+
+	for (i = 0; i < pstDevBindAttr->u32Num; i++) {
+		if (pstDevBindAttr->PipeId[i] > VI_MAX_PIPE_NUM - 1 || pstDevBindAttr->PipeId[i] < 0) {
+			CVI_TRACE_VI(CVI_DBG_ERR, "pipe_id(%d) is invalid\n", pstDevBindAttr->PipeId[i]);
+			return CVI_ERR_VI_INVALID_PARA;
+		}
 	}
 
 	return platform_vi_setdevbindattr(ViDev, pstDevBindAttr);
@@ -709,4 +718,29 @@ CVI_S32 CVI_VI_GetExtChnAttr(VI_PIPE ViPipe, VI_CHN ViChn, VI_EXT_CHN_ATTR_S *ps
 	CHECK_VI_NULL_PTR(pstExtChnAttr);
 
 	return platform_vi_getextchnattr(ViPipe, ViChn, pstExtChnAttr);
+}
+
+CVI_S32 CVI_VI_SINGEL_FRAME_ENABLE(bool enable)
+{
+	if (enable != CVI_TRUE && enable != CVI_FALSE) {
+		CVI_TRACE_VI(CVI_DBG_ERR, "Invalid parameter: enable(%d)\n", enable);
+		return CVI_ERR_VI_INVALID_PARA;
+	}
+
+	return platform_vi_setdevrxframecount(0, enable ? 1 : 0);
+}
+
+CVI_S32 CVI_VI_SetDevRxFrameCount(VI_DEV ViDev, CVI_U32 u32FrameCount)
+{
+	CHECK_VI_DEVID_VALID(ViDev);
+
+	return platform_vi_setdevrxframecount(ViDev, u32FrameCount);
+}
+
+CVI_S32 CVI_VI_GetDevRxFrameCount(VI_DEV ViDev, CVI_U32 *pu32FrameCount)
+{
+	CHECK_VI_DEVID_VALID(ViDev);
+	CHECK_VI_NULL_PTR(pu32FrameCount);
+
+	return platform_vi_getdevrxframecount(ViDev, pu32FrameCount);
 }
