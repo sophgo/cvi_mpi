@@ -27,6 +27,8 @@ typedef struct {
 
 	// Pre-Raw
 	ISP_BLACK_LEVEL_ATTR_S blc;
+	ISP_LBLC_ATTR_S lblc;
+	ISP_LBLC_LUT_ATTR_S lblcLut;
 	ISP_MESH_SHADING_ATTR_S mlsc;
 	ISP_MESH_SHADING_GAIN_LUT_ATTR_S mlscLUT;
 	ISP_STATISTICS_CFG_S StatCfg;
@@ -71,6 +73,10 @@ typedef struct {
 	ISP_CA_ATTR_S ca;
 	ISP_CA2_ATTR_S ca2;
 	ISP_YCONTRAST_ATTR_S ycontrast;
+
+	// TEAISP
+	TEAISP_BNR_ATTR_S teaisp_bnr;
+	TEAISP_BNR_NP_S teaisp_bnr_np;
 
 	// other
 	ISP_CMOS_NOISE_CALIBRATION_S np;

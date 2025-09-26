@@ -21,6 +21,7 @@
 #include "base_uapi.h"
 #include "sys_uapi.h"
 #include "sys_internal.h"
+#include "gdc_mesh.h"
 
 #define MMF_VERSION  (CVI_CHIP_NAME MMF_VER_PRIX MK_VERSION(VER_X, VER_Y, VER_Z) VER_D)
 
@@ -245,6 +246,7 @@ CVI_S32 platform_sys_exit(CVI_VOID)
 	}
 	sys_dev_close();
 	base_dev_close();
+	gdc_free_all_tsk_mesh();
 
 	CVI_TRACE_SYS(CVI_DBG_INFO, "-\n");
 

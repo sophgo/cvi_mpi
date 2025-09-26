@@ -4,6 +4,10 @@
 #include "cvi_msg_client.h"
 #include "cvi_errno.h"
 
+#ifndef UNUSED
+#define UNUSED(x) ((void)(x))
+#endif
+
 #define CHECK_MIPI_TX_NULL_PTR(ptr)							\
 	do {									\
 		if (ptr == NULL) {						\
@@ -191,6 +195,18 @@ int platform_mipi_tx_disable(int fd)
 	}
 
 	return s32Ret;
+}
+
+int platform_mipi_tx_suspend(int fd)
+{
+	UNUSED(fd);
+	return 0;
+}
+
+int platform_mipi_tx_resume(int fd)
+{
+	UNUSED(fd);
+	return 0;
 }
 
 int platform_mipi_tx_set_hs_settle(int fd, const struct hs_settle_s *hs_cfg)

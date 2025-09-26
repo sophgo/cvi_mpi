@@ -201,6 +201,7 @@ static CVI_S32 _vi_update_ldc_mesh(VI_PIPE ViPipe, VI_CHN ViChn, const VI_LDC_AT
 	CVI_S32	fd = get_vi_fd();
 	struct vi_chn_ldc_cfg cfg;
 
+	cfg.ViPipe = ViPipe;
 	cfg.ViChn = ViChn;
 	cfg.enRotation = enRotation;
 	cfg.stLDCAttr = *pstLDCAttr;

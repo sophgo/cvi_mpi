@@ -441,6 +441,7 @@ CVI_S32 SAMPLE_COMM_VI_StartDev(SAMPLE_VI_INFO_S *pstViInfo)
 	stViDevAttr.enDataSeq 			= bPatgen ? VI_DATA_SEQ_VUVU : (VI_YUV_DATA_SEQ_E)pstViInfo->stDevInfo.enYuvFormat;
 	stViDevAttr.stWDRAttr.enWDRMode = bPatgen ? WDR_MODE_NONE : pstViInfo->stDevInfo.enWDRMode;
 	stViDevAttr.enWorkMode 			= bPatgen ? VI_WORK_MODE_1Multiplex : (VI_WORK_MODE_E)pstViInfo->stDevInfo.enChnMode;
+	stViDevAttr.enBayerFormat		= (BAYER_FORMAT_E)pstViInfo->stDevInfo.enBayerFormat;
 	stViDevBindAttr.MipiDev 		= bPatgen ? 0 : pstViInfo->stDevInfo.mipiDev;
 
 	for (i = 0; i < VI_MAX_PIPE_NUM; i++) {

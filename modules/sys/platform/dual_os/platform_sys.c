@@ -15,6 +15,7 @@
 #include "cvi_msg_client.h"
 #include "base_uapi.h"
 #include "cvi_msg_client.h"
+#include "gdc_mesh.h"
 
 
 #define BASE_DEV_NAME "/dev/soph-base"
@@ -264,6 +265,7 @@ CVI_S32 platform_sys_exit(CVI_VOID)
 		CVI_TRACE_SYS(CVI_DBG_ERR, "msg deinit fail, s32Ret:%x\n", s32Ret);
 	}
 	_base_dev_close();
+	gdc_free_all_tsk_mesh();
 
 	CVI_TRACE_SYS(CVI_DBG_INFO, "-\n");
 

@@ -32,7 +32,7 @@ CVI_S32 SAMPLE_VIO_TWO_DEV_VO(void)
 	int i = 0;
 	ROTATION_CFG_S stRotationCfg = {ROTATION_0,
 									ROTATION_0,
-									ROTATION_0};
+									ROTATION_90};
 
 	/************************************************
 	 * step1:  Init SYS
@@ -768,7 +768,7 @@ void SAMPLE_VIO_Usage(char *sPrgNm)
 	SAMPLE_PRT("\t 1)VI (Offline) - VPSS(Offline, Keep Aspect Ratio) - VO.\n");
 	SAMPLE_PRT("\t 2)VI (Offline, Rotation) - VPSS(Offline, Keep Aspect Ratio) - VO.\n");
 	SAMPLE_PRT("\t 3)VI (Offline) - VPSS(Offline, Rotation) - VO.\n");
-	SAMPLE_PRT("\t 4)VI (Offline, Two devs) - VPSS(Offline) - VO.\n");
+	SAMPLE_PRT("\t 4)VI (Offline, Two devs) - VPSS(Offline) - VO(Rotation).\n");
 	SAMPLE_PRT("\t 5)VI (Offline, Rotation, Ldc) - VPSS(Offline, Rotation, Ldc) - VO.\n");
 }
 

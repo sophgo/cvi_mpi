@@ -187,7 +187,6 @@ long get_diff_in_us(struct timespec t1, struct timespec t2);
 
 // ++++++++ If you want to change these interfaces, please contact the isp team. ++++++++
 CVI_VOID CVI_VI_SET_DIS_INFO(struct dis_info dis_i);
-CVI_S32 CVI_VI_SetBypassFrm(VI_PIPE ViPipe, CVI_U8 bypass_num);
 CVI_VOID CVI_VI_SetMotionLV(struct mlv_info mlevel_i);
 // -------- If you want to change these interfaces, please contact the isp team. --------
 

@@ -311,7 +311,7 @@ CVI_S32 SAMPLE_VIO_VPSS_INIT(SAMPLE_VI_CONFIG_S *pstViConfig,
 
 		stVpssGrpAttr.stFrameRate.s32SrcFrameRate    = -1;
 		stVpssGrpAttr.stFrameRate.s32DstFrameRate    = -1;
-		stVpssGrpAttr.enPixelFormat		     = PIXEL_FORMAT_NV21;
+		stVpssGrpAttr.enPixelFormat		     = PIXEL_FORMAT_NV12;
 		if (pstRotCfg->rotation_vi == ROTATION_90 || pstRotCfg->rotation_vi == ROTATION_270) {
 			stVpssGrpAttr.u32MaxW			     = pstViInfo->stDevInfo.stSize.u32Height;
 			stVpssGrpAttr.u32MaxH			     = pstViInfo->stDevInfo.stSize.u32Width;

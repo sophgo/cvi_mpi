@@ -510,6 +510,8 @@ static CVI_S32 isp_set_paramstruct(VI_PIPE ViPipe, ISP_Parameter_Structures *pst
 
 	// PRE_RAW
 	CVI_ISP_SetBlackLevelAttr(ViPipe, &pstParaBuf->blc);
+	CVI_ISP_SetLblcAttr(ViPipe, &pstParaBuf->lblc);
+	CVI_ISP_SetLblcLutAttr(ViPipe, &pstParaBuf->lblcLut);
 	CVI_ISP_SetMeshShadingAttr(ViPipe, &pstParaBuf->mlsc);
 	CVI_ISP_SetMeshShadingGainLutAttr(ViPipe, &pstParaBuf->mlscLUT);
 	CVI_ISP_SetStatisticsConfig(ViPipe, &pstParaBuf->StatCfg);
@@ -554,6 +556,10 @@ static CVI_S32 isp_set_paramstruct(VI_PIPE ViPipe, ISP_Parameter_Structures *pst
 	CVI_ISP_SetCAAttr(ViPipe, &pstParaBuf->ca);
 	CVI_ISP_SetCA2Attr(ViPipe, &pstParaBuf->ca2);
 	CVI_ISP_SetYContrastAttr(ViPipe, &pstParaBuf->ycontrast);
+
+	// TEAISP
+	CVI_TEAISP_BNR_SetAttr(ViPipe, &pstParaBuf->teaisp_bnr);
+	CVI_TEAISP_BNR_SetNoiseProfileAttr(ViPipe, &pstParaBuf->teaisp_bnr_np);
 
 	// Other
 	CVI_ISP_SetNoiseProfileAttr(ViPipe, &pstParaBuf->np);
@@ -600,6 +606,8 @@ static CVI_S32 isp_get_paramstruct(VI_PIPE ViPipe, ISP_Parameter_Structures *pst
 
 	// PRE_RAW
 	CVI_ISP_GetBlackLevelAttr(ViPipe, &pstParaBuf->blc);
+	CVI_ISP_GetLblcAttr(ViPipe, &pstParaBuf->lblc);
+	CVI_ISP_GetLblcLutAttr(ViPipe, &pstParaBuf->lblcLut);
 	CVI_ISP_GetMeshShadingAttr(ViPipe, &pstParaBuf->mlsc);
 	CVI_ISP_GetMeshShadingGainLutAttr(ViPipe, &pstParaBuf->mlscLUT);
 	CVI_ISP_GetStatisticsConfig(ViPipe, &pstParaBuf->StatCfg);
@@ -644,6 +652,10 @@ static CVI_S32 isp_get_paramstruct(VI_PIPE ViPipe, ISP_Parameter_Structures *pst
 	CVI_ISP_GetCAAttr(ViPipe, &pstParaBuf->ca);
 	CVI_ISP_GetCA2Attr(ViPipe, &pstParaBuf->ca2);
 	CVI_ISP_GetYContrastAttr(ViPipe, &pstParaBuf->ycontrast);
+
+	// TEAISP
+	CVI_TEAISP_BNR_GetAttr(ViPipe, &pstParaBuf->teaisp_bnr);
+	CVI_TEAISP_BNR_GetNoiseProfileAttr(ViPipe, &pstParaBuf->teaisp_bnr_np);
 
 	// Other
 	CVI_ISP_GetNoiseProfileAttr(ViPipe, &pstParaBuf->np);

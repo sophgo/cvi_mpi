@@ -57,6 +57,9 @@ else ifeq ($(SDK_VER), glibc_arm)
 else ifeq ($(SDK_VER), glibc_arm64)
   export CROSS_COMPILE = $(CROSS_COMPILE_GLIBC_ARM64)
   KERNEL_INC := $(KERNEL_DIR)/arm64/usr/include
+else ifeq ($(SDK_VER), musl_arm64)
+  export CROSS_COMPILE = $(CROSS_COMPILE_MUSL_ARM64)
+  KERNEL_INC := $(KERNEL_DIR)/arm64/usr/include
 endif
 
 

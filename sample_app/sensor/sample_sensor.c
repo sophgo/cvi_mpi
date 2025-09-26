@@ -1173,10 +1173,22 @@ CVI_S32 sensor_dump_yuv(void)
 
 CVI_S32 sensor_flip_mirror(void)
 {
-	CVI_S32 s32Ret = CVI_SUCCESS;
+	int flip;
+	int mirror;
+	int chnID;
+	int dev;
 
-	//todo:add flip/mirror func
-	return s32Ret;
+	SAMPLE_PRT("[INFO] dev(0~1): ");
+	scanf("%d", &dev);
+	SAMPLE_PRT("[INFO] Flip enable/disable(1/0): ");
+	scanf("%d", &flip);
+	SAMPLE_PRT("[INFO] Mirror enable/disable(1/0): ");
+	scanf("%d", &mirror);
+	chnID = 0;
+	CVI_VI_SetChnFlipMirror(dev, chnID, flip, mirror);
+
+	return CVI_SUCCESS;
+
 }
 
 CVI_S32 sensor_linear_wdr_switch(void)

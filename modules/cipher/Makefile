@@ -21,6 +21,9 @@ override INCS := -I$(MW_INC) \
 ifeq ($(CROSS_COMPILE), arm-none-linux-musleabihf-)
 LIBS = $(OPENSSL_PATH)/libcrypto-musl_arm.a
 LOCAL_OPT_LEVEL = -O3
+else ifeq ($(CROSS_COMPILE), aarch64-none-linux-musl-)
+LIBS = $(OPENSSL_PATH)/libcrypto-musl_arm64.a
+LOCAL_OPT_LEVEL = -O3
 else ifeq ($(CROSS_COMPILE), riscv64-unknown-linux-gnu-)
 LIBS = $(OPENSSL_PATH)/libcrypto-riscv64.a
 LOCAL_OPT_LEVEL = -O3

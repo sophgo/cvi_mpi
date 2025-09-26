@@ -2310,27 +2310,27 @@ CVI_S32 SAMPLE_COMM_VENC_SetSvcParam(
 				SAMPLE_PRT("GetSvcParam failed!\n");
 				return CVI_FAILURE;
 		}
-		pstSvcParam->fg_protect_en = pIc->fg_protect_en;
-		pstSvcParam->fg_dealt_qp = pIc->fg_dealt_qp;
+		pstSvcParam->bFgProtectEn = pIc->fg_protect_en;
+		pstSvcParam->u32FgDealtQp = pIc->fg_dealt_qp;
 		if (pIc->complex_scene_detect_en) {
-				pstSvcParam->complex_scene_detect_en = pIc->complex_scene_detect_en;
+				pstSvcParam->bComplexSceneDetectEn = pIc->complex_scene_detect_en;
 				if (pIc->complex_scene_hight_th > pIc->complex_scene_low_th &&
 				pIc->complex_scene_low_th) {
-						pstSvcParam->complex_scene_hight_th = pIc->complex_scene_hight_th;
-						pstSvcParam->complex_scene_low_th = pIc->complex_scene_low_th;
+						pstSvcParam->u32ComplexSceneHightTh = pIc->complex_scene_hight_th;
+						pstSvcParam->u32ComplexSceneLowTh = pIc->complex_scene_low_th;
 				}
 				if (pIc->complex_min_percent > pIc->middle_min_percent &&
 				pIc->middle_min_percent) {
-						pstSvcParam->middle_min_percent = pIc->middle_min_percent;
-						pstSvcParam->complex_min_percent = pIc->complex_min_percent;
+						pstSvcParam->u32MiddleMinPercent = pIc->middle_min_percent;
+						pstSvcParam->u32ComplexMinPercent = pIc->complex_min_percent;
 				}
 		}
-		pstSvcParam->smart_ai_en = pIc->smart_ai_en;
-		if (pstSvcParam->smart_ai_en){
-			memcpy(pstSvcParam->obj_tab, pIc->obj_tab, sizeof(pIc->obj_tab));
-			memcpy(pstSvcParam->dqp_table, pIc->dqp_tab, sizeof(pIc->dqp_tab));
-			pstSvcParam->dqp_vaild = 1;
-			pstSvcParam->obj_tab_size = pIc->obj_size;
+		pstSvcParam->bSmartAiEn = pIc->smart_ai_en;
+		if (pstSvcParam->bSmartAiEn){
+			memcpy(pstSvcParam->s8ObjTab, pIc->obj_tab, sizeof(pIc->obj_tab));
+			memcpy(pstSvcParam->s32DqpTable, pIc->dqp_tab, sizeof(pIc->dqp_tab));
+			pstSvcParam->u32DqpVaild = 1;
+			pstSvcParam->u32ObjTabSize = pIc->obj_size;
 		}
 		s32Ret = CVI_VENC_SetSvcParam(VencChn, pstSvcParam);
 		if (s32Ret != CVI_SUCCESS) {
