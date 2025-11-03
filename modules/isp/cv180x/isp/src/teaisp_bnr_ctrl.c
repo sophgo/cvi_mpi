@@ -229,7 +229,7 @@ static void *bnr_work_thread(void *arg)
 	struct teaisp_bnr_ctrl_runtime *runtime = _get_bnr_ctrl_runtime(ViPipe);
 	TEAISP_BNR_HANDLE_S *handle = (TEAISP_BNR_HANDLE_S *)(uintptr_t) runtime->handle;
 
-	CVI_U32 u32ISO = 0;
+	CVI_S32 s32ISO = 0;
 	CVI_U32 u32UpdateCnt = 0;
 
 	struct teaisp_bnr_config bnr_cfg;
@@ -243,17 +243,18 @@ static void *bnr_work_thread(void *arg)
 			break;
 		}
 
-		u32ISO = runtime->u32CurrentISO;
+		s32ISO = (CVI_S32)runtime->u32CurrentISO;
 		teaisp_bnr_ctrl_get_bnr_attr(ViPipe, &bnr_attr);
 
 		TEAISP_BNR_MODEL_S *temp = list_entry(handle->model_info_head.next, TEAISP_BNR_MODEL_S, list);
+		CVI_S32 offsetISO = bnr_attr->offsetISO;
 
-		if (!bnr_attr->enable || u32ISO < temp->model_info.enterISO) {
+		if (!bnr_attr->enable || s32ISO < temp->model_info.enterISO + offsetISO) {
 
 			if (runtime->is_teaisp_bnr_running) {
 
 				if (bnr_attr->enable && handle->pcurr_model == temp &&
-					u32ISO > (temp->model_info.enterISO - temp->model_info.tolerance)) {
+					s32ISO > (temp->model_info.enterISO + offsetISO - temp->model_info.tolerance)) {
 					continue;
 				}
 
@@ -302,7 +303,7 @@ static void *bnr_work_thread(void *arg)
 
 			list_for_each_prev(pos, &handle->model_info_head) {
 				temp = list_entry(pos, TEAISP_BNR_MODEL_S, list);
-				if (u32ISO >= temp->model_info.enterISO) {
+				if (s32ISO >= temp->model_info.enterISO + offsetISO) {
 					break;
 				}
 			}
@@ -312,12 +313,12 @@ static void *bnr_work_thread(void *arg)
 #ifndef ENABLE_PRELOAD_BNR_MODEL
 				// load model && set api info
 				//ISP_LOG_INFO("load model: %s, %d, %d\n",
-				printf("load model: %s, %d, %d\n",
-					temp->model_info.path, temp->model_info.enterISO, temp->model_info.tolerance);
+				printf("load model: %s, %d, %d\n", temp->model_info.path,
+					temp->model_info.enterISO + offsetISO, temp->model_info.tolerance);
 				teaisp_bnr_load_model(ViPipe, temp->model_info.path, &temp->model);
 #else
-				printf("enter model: %s, %d, %d\n",
-					temp->model_info.path, temp->model_info.enterISO, temp->model_info.tolerance);
+				printf("enter model: %s, %d, %d\n", temp->model_info.path,
+					temp->model_info.enterISO + offsetISO, temp->model_info.tolerance);
 #endif
 				u32UpdateCnt = 0;
 				runtime->bnr_cfg.blend = 0x0;
@@ -330,19 +331,19 @@ static void *bnr_work_thread(void *arg)
 				TEAISP_BNR_MODEL_S *pprev = CVI_NULL;
 #endif
 				ISP_LOG_INFO("ISO: %d, next model enterISO: %d, curr model enterISO: %d, %d\n",
-					runtime->u32CurrentISO, temp->model_info.enterISO,
-					handle->pcurr_model->model_info.enterISO,
+					runtime->u32CurrentISO, temp->model_info.enterISO + offsetISO,
+					handle->pcurr_model->model_info.enterISO + offsetISO,
 					handle->pcurr_model->model_info.tolerance);
 
-				if (temp->model_info.enterISO > handle->pcurr_model->model_info.enterISO) {
+				if (temp->model_info.enterISO + offsetISO > handle->pcurr_model->model_info.enterISO + offsetISO) {
 #ifndef ENABLE_PRELOAD_BNR_MODEL
 					pprev = handle->pcurr_model;
 #endif
 					handle->pcurr_model = temp;
 				}
 
-				if (temp->model_info.enterISO < handle->pcurr_model->model_info.enterISO &&
-					u32ISO < (handle->pcurr_model->model_info.enterISO -
+				if (temp->model_info.enterISO + offsetISO < handle->pcurr_model->model_info.enterISO + offsetISO &&
+					s32ISO < (handle->pcurr_model->model_info.enterISO + offsetISO -
 						handle->pcurr_model->model_info.tolerance)) {
 #ifndef ENABLE_PRELOAD_BNR_MODEL
 					pprev = handle->pcurr_model;
@@ -355,12 +356,12 @@ static void *bnr_work_thread(void *arg)
 					// load model && set api info
 					//ISP_LOG_INFO("load model: %s, %d, %d\n",
 					printf("load model: %s, %d, %d\n",
-						temp->model_info.path, temp->model_info.enterISO,
+						temp->model_info.path, temp->model_info.enterISO + offsetISO,
 						temp->model_info.tolerance);
 					teaisp_bnr_load_model(ViPipe, temp->model_info.path, &temp->model);
 #else
-					printf("enter model: %s, %d, %d\n",
-						temp->model_info.path, temp->model_info.enterISO, temp->model_info.tolerance);
+					printf("enter model: %s, %d, %d\n", temp->model_info.path,
+						temp->model_info.enterISO + offsetISO, temp->model_info.tolerance);
 #endif
 					//u32UpdateCnt = 0;
 					//runtime->bnr_cfg.blend = 0x0;

@@ -17,7 +17,7 @@
 	"buf1-blk-cnt": 0,
 	"vi-vpss-mode": 1,
 	"max-use-tpu-num": 1,
-	"model": "./cvi_models/retinaface_mnet0.25_342_608.cvimodel",
+	"model": "./cvi_models/scrfd_det_face_432_768_INT8_cv181x.cvimodel",
 	"teaisp-pq-model": "./cvi_models/aipq_sym_mars_BF16.cvimodel",
 	"replay-mode": false,
 	"replay-param": "./replay.json",

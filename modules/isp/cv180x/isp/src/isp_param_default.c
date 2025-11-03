@@ -186,6 +186,7 @@ static CVI_VOID setTEAISPBnr(VI_PIPE ViPipe)
 	INIT_V(attr, enable, 0)
 	INIT_V(attr, enOpType, 0);
 	INIT_V(attr, UpdateInterval, 1);
+	INIT_V(attr, offsetISO, 0);
 
 	INIT_A(attr, FilterMotionStr2D, 230,
 	230, 230, 230, 230, 230, 230, 230, 230, 230, 230, 230, 230, 230, 230, 230, 230);

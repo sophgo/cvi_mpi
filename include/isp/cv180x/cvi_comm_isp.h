@@ -2811,8 +2811,8 @@ typedef enum _TEAISP_MODE_E {
 #define TEAISP_MODEL_PATH_LEN (128)
 typedef struct _TEAISP_BNR_MODEL_INFO_S {
 	char path[TEAISP_MODEL_PATH_LEN];
-	CVI_U32 enterISO;
-	CVI_U32 tolerance;
+	CVI_S32 enterISO;
+	CVI_S32 tolerance;
 } TEAISP_BNR_MODEL_INFO_S;
 
 typedef struct _TEAISP_BNR_MANUAL_ATTR_S {
@@ -2837,6 +2837,7 @@ typedef struct _TEAISP_BNR_ATTR_S {
 	CVI_BOOL enable; /*RW; Range:[0x0, 0x1]*/
 	ISP_OP_TYPE_E enOpType;
 	CVI_U8 UpdateInterval; /*RW; Range:[0x1, 0xFF]*/
+	CVI_S32 offsetISO; /*RW; Range:[-0x400000, 0x400000]; used for enterISO, enterISO += offsetISO*/
 	TEAISP_BNR_MANUAL_ATTR_S stManual;
 	TEAISP_BNR_AUTO_ATTR_S stAuto;
 } TEAISP_BNR_ATTR_S;

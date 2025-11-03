@@ -20,6 +20,7 @@
 #include "cvi_region.h"
 #include "hashmap.h"
 #include "rgn_ioctl.h"
+#include "osdc.h"
 
 struct rgn_canvas {
 	STAILQ_ENTRY(rgn_canvas) stailq;
@@ -38,6 +39,17 @@ static void rgn_init(void)
 	STAILQ_INIT(&canvas_q);
 }
 
+#if defined(CONFIG_SUSPEND)
+static CVI_S32 _cvi_rgn_get_ion_len(CVI_S32 fd, RGN_HANDLE Handle, CVI_S32 *pS32Len)
+{
+	CVI_S32 s32Ret = CVI_SUCCESS;
+
+	MOD_CHECK_NULL_PTR(CVI_ID_RGN, pS32Len);
+	s32Ret = rgn_get_ion_len(fd, Handle, pS32Len);
+
+	return s32Ret;
+}
+#endif
 /**************************************************************************
  *   Public APIs.
  **************************************************************************/
@@ -262,6 +274,11 @@ CVI_S32 CVI_RGN_GetCanvasInfo(RGN_HANDLE Handle, RGN_CANVAS_INFO_S *pstCanvasInf
 	return CVI_SUCCESS;
 }
 
+struct cvi_rgn_bitmap {
+	CVI_VOID *pBitmapVAddr;
+	CVI_U32 u32BitmapSize;
+};
+
 CVI_S32 CVI_RGN_UpdateCanvas(RGN_HANDLE Handle)
 {
 	CVI_S32 fd = -1;
@@ -270,12 +287,208 @@ CVI_S32 CVI_RGN_UpdateCanvas(RGN_HANDLE Handle)
 
 	// Driver control
 	fd = get_rgn_fd();
+#if !defined(CONFIG_SUSPEND)
 	s32Ret = rgn_update_canvas(fd, Handle);
 	if (s32Ret != CVI_SUCCESS) {
 		CVI_TRACE_RGN(CVI_DBG_INFO, "Update RGN canvas fail.\n");
 		return s32Ret;
 	}
+#else
+	CVI_S32 s32IonLen;
+	RGN_ATTR_S stRegion;
+	struct cvi_rgn_bitmap *pstBitmaps;
+	CVI_U32 u32Bpp, i = 0, j = 0;
 
+	s32Ret = _cvi_rgn_get_ion_len(fd, Handle, &s32IonLen);
+	if (s32Ret != CVI_SUCCESS) {
+		CVI_TRACE_RGN(CVI_DBG_WARN, "Get RGN ion length fail.\n");
+		return s32Ret;
+	}
+
+	s32Ret = rgn_get_attr(fd, Handle, &stRegion);
+	if (s32Ret != CVI_SUCCESS) {
+		CVI_TRACE_RGN(CVI_DBG_ERR, "Get RGN attr fail.\n");
+		return s32Ret;
+	}
+	if (stRegion.unAttr.stOverlay.stCompressInfo.enOSDCompressMode == OSD_COMPRESS_MODE_SW) {
+		CVI_TRACE_RGN(CVI_DBG_ERR, "Not support OSD_COMPRESS_MODE_SW yet.\n");
+		return CVI_ERR_RGN_ILLEGAL_PARAM;
+	}
+
+	pthread_mutex_lock(&canvas_q_lock);
+	if (!STAILQ_EMPTY(&canvas_q)) {
+		STAILQ_FOREACH(canvas, &canvas_q, stailq) {
+			if (canvas->Handle == Handle) {
+				break;
+			}
+		}
+	} else {
+		CVI_TRACE_RGN(CVI_DBG_ERR, "No corresponding Handle(%d) found.\n", Handle);
+		pthread_mutex_unlock(&canvas_q_lock);
+		return CVI_ERR_RGN_ILLEGAL_PARAM;
+	}
+	pthread_mutex_unlock(&canvas_q_lock);
+
+	if (stRegion.unAttr.stOverlay.stCompressInfo.enOSDCompressMode == OSD_COMPRESS_MODE_HW) {
+		RGN_CANVAS_CMPR_ATTR_S *pstCanvasCmprAttr = NULL;
+		RGN_CMPR_OBJ_ATTR_S *pstObjAttr = NULL;
+		CVI_S32 status;
+		OSDC_Canvas_Attr_S osdc_canvas;
+		OSDC_DRAW_OBJ_S *obj_vec;
+		CVI_U32 bs_size;
+
+		//cmpr canvas info is stored in ion which needs to be flush before reading
+		CVI_SYS_IonFlushCache(canvas->u64PhyAddr,
+			canvas->pu8VirtAddr, canvas->u32Size);
+		pstCanvasCmprAttr = (RGN_CANVAS_CMPR_ATTR_S *)canvas->pu8VirtAddr;
+		pstObjAttr = (RGN_CMPR_OBJ_ATTR_S *)(canvas->pu8VirtAddr +
+			sizeof(RGN_CANVAS_CMPR_ATTR_S));
+
+		for (i = 0; i < pstCanvasCmprAttr->u32ObjNum; ++i) {
+			if (pstObjAttr[i].enObjType == RGN_CMPR_LINE) {
+				CVI_TRACE_RGN(CVI_DBG_DEBUG, "start(%d %d) end(%d %d) Thick(%d) Color(0x%x)\n",
+					pstObjAttr[i].stLine.stPointStart.s32X,
+					pstObjAttr[i].stLine.stPointStart.s32Y,
+					pstObjAttr[i].stLine.stPointEnd.s32X,
+					pstObjAttr[i].stLine.stPointEnd.s32Y,
+					pstObjAttr[i].stLine.u32Thick,
+					pstObjAttr[i].stLine.u32Color);
+			} else if (pstObjAttr[i].enObjType == RGN_CMPR_RECT) {
+				CVI_TRACE_RGN(CVI_DBG_DEBUG,
+					"xywh(%d %d %d %d) Thick(%d) Color(0x%x) is_fill(%d)\n",
+					pstObjAttr[i].stRgnRect.stRect.s32X,
+					pstObjAttr[i].stRgnRect.stRect.s32Y,
+					pstObjAttr[i].stRgnRect.stRect.u32Width,
+					pstObjAttr[i].stRgnRect.stRect.u32Height,
+					pstObjAttr[i].stRgnRect.u32Thick,
+					pstObjAttr[i].stRgnRect.u32Color,
+					pstObjAttr[i].stRgnRect.u32IsFill);
+			} else if (pstObjAttr[i].enObjType == RGN_CMPR_BIT_MAP) {
+				CVI_TRACE_RGN(CVI_DBG_DEBUG, "xywh(%d %d %d %d) u32BitmapPAddr(%"PRIx32")\n",
+					pstObjAttr[i].stBitmap.stRect.s32X,
+					pstObjAttr[i].stBitmap.stRect.s32Y,
+					pstObjAttr[i].stBitmap.stRect.u32Width,
+					pstObjAttr[i].stBitmap.stRect.u32Height,
+					pstObjAttr[i].stBitmap.u32BitmapPAddr);
+			}
+		}
+
+		osdc_canvas.width = stRegion.unAttr.stOverlay.stSize.u32Width;
+		osdc_canvas.height = stRegion.unAttr.stOverlay.stSize.u32Height;
+		osdc_canvas.bg_color_code = stRegion.unAttr.stOverlay.u32BgColor;
+		switch (stRegion.unAttr.stOverlay.enPixelFormat) {
+		case PIXEL_FORMAT_ARGB_8888:
+			osdc_canvas.format = OSD_ARGB8888;
+			u32Bpp = 4;
+			break;
+
+		case PIXEL_FORMAT_ARGB_4444:
+			osdc_canvas.format = OSD_ARGB4444;
+			u32Bpp = 2;
+			break;
+
+		case PIXEL_FORMAT_ARGB_1555:
+			osdc_canvas.format = OSD_ARGB1555;
+			u32Bpp = 2;
+			break;
+
+		case PIXEL_FORMAT_8BIT_MODE:
+			osdc_canvas.format = OSD_LUT8;
+			u32Bpp = 1;
+			break;
+
+		default:
+			osdc_canvas.format = OSD_ARGB1555;
+			u32Bpp = 2;
+			break;
+		}
+
+		obj_vec = calloc(sizeof(OSDC_DRAW_OBJ_S) * pstCanvasCmprAttr->u32ObjNum, 1);
+		if (!obj_vec) {
+			CVI_TRACE_RGN(CVI_DBG_ERR, "calloc size (%zu) failed!\n",
+							sizeof(OSDC_DRAW_OBJ_S) * pstCanvasCmprAttr->u32ObjNum);
+			return CVI_ERR_RGN_NOBUF;
+		}
+		pstBitmaps = (struct cvi_rgn_bitmap *)calloc(pstCanvasCmprAttr->u32ObjNum,
+						sizeof(struct cvi_rgn_bitmap));
+		if (!pstBitmaps) {
+			CVI_TRACE_RGN(CVI_DBG_ERR, "calloc size (%zu) failed!\n",
+							pstCanvasCmprAttr->u32ObjNum * sizeof(struct cvi_rgn_bitmap));
+			free(obj_vec);
+			return CVI_ERR_RGN_NOBUF;
+		}
+
+		for (i = 0; i < pstCanvasCmprAttr->u32ObjNum; ++i) {
+			if (pstObjAttr[i].enObjType == RGN_CMPR_LINE) {
+				OSDC_SetLineObjAttr(&osdc_canvas, &obj_vec[i],
+				pstObjAttr[i].stLine.u32Color,
+					pstObjAttr[i].stLine.stPointStart.s32X,
+					pstObjAttr[i].stLine.stPointStart.s32Y,
+					pstObjAttr[i].stLine.stPointEnd.s32X,
+					pstObjAttr[i].stLine.stPointEnd.s32Y,
+					pstObjAttr[i].stLine.u32Thick);
+			} else if (pstObjAttr[i].enObjType == RGN_CMPR_RECT) {
+				OSDC_SetRectObjAttr(&osdc_canvas, &obj_vec[i],
+					pstObjAttr[i].stRgnRect.u32Color,
+					pstObjAttr[i].stRgnRect.stRect.s32X,
+					pstObjAttr[i].stRgnRect.stRect.s32Y,
+					pstObjAttr[i].stRgnRect.stRect.u32Width,
+					pstObjAttr[i].stRgnRect.stRect.u32Height,
+					pstObjAttr[i].stRgnRect.u32IsFill,
+					pstObjAttr[i].stRgnRect.u32Thick);
+			} else if (pstObjAttr[i].enObjType == RGN_CMPR_BIT_MAP) {
+				pstBitmaps[j].u32BitmapSize = pstObjAttr[i].stBitmap.stRect.u32Width *
+								pstObjAttr[i].stBitmap.stRect.u32Height * u32Bpp;
+				pstBitmaps[j].pBitmapVAddr = CVI_SYS_MmapCache(pstObjAttr[i].stBitmap.u32BitmapPAddr,
+								pstBitmaps[j].u32BitmapSize);
+
+				OSDC_SetBitmapObjAttr(&osdc_canvas, &obj_vec[i],
+					pstBitmaps[j++].pBitmapVAddr,
+					pstObjAttr[i].stBitmap.stRect.s32X,
+					pstObjAttr[i].stBitmap.stRect.s32Y,
+					pstObjAttr[i].stBitmap.stRect.u32Width,
+					pstObjAttr[i].stBitmap.stRect.u32Height,
+					false);
+			}
+		}
+
+		status = OSDC_DrawCmprCanvas(&osdc_canvas, &obj_vec[0], pstCanvasCmprAttr->u32ObjNum,
+			canvas->pu8VirtAddr, s32IonLen,  &bs_size);
+		if (status != 1) {
+			CVI_TRACE_RGN(CVI_DBG_ERR, "Region(%d) needs ion size(%d), current size(%d)!\n",
+				Handle, bs_size, s32IonLen);
+			OSDC_DrawCmprCanvas(&osdc_canvas, &obj_vec[0], 0,
+				canvas->pu8VirtAddr, s32IonLen,  &bs_size);
+		}
+		if (j) {
+			for (i = 0; i < j; i++) {
+				CVI_SYS_Munmap(pstBitmaps[i].pBitmapVAddr, pstBitmaps[i].u32BitmapSize);
+			}
+		}
+		free(pstBitmaps);
+		// store bitstream size in bit[32:63], after driver gets it,
+		// it should be restored to image width and height
+		/*use ioctl instead*/
+		// *((unsigned int *)canvas->pu8VirtAddr + 1) = bs_size;
+
+		s32Ret = rgn_set_compress_size(fd, Handle, bs_size);
+		if (s32Ret != CVI_SUCCESS) {
+			CVI_TRACE_RGN(CVI_DBG_ERR, "Set compress size fail.\n");
+			pthread_mutex_unlock(&canvas_q_lock);
+			return s32Ret;
+		}
+		free(obj_vec);
+	}
+
+	CVI_SYS_IonFlushCache(canvas->u64PhyAddr, canvas->pu8VirtAddr, canvas->u32Size);
+
+	s32Ret = rgn_update_canvas(fd, Handle);
+	if (s32Ret != CVI_SUCCESS) {
+		CVI_TRACE_RGN(CVI_DBG_ERR, "Update RGN canvas fail.\n");
+		pthread_mutex_unlock(&canvas_q_lock);
+		return s32Ret;
+	}
+#endif
 	pthread_mutex_lock(&canvas_q_lock);
 	if (!STAILQ_EMPTY(&canvas_q)) {
 		STAILQ_FOREACH(canvas, &canvas_q, stailq) {

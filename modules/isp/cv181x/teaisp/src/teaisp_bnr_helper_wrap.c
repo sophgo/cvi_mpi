@@ -199,11 +199,13 @@ static float teaisp_bnr_model_preprocess(TEAISP_MODEL_S *model)
 	float aegain = model->aegain_buff;
 	CVI_TENSOR *fusion_img_t = &model->input_tensors[BNR_IN_FUSION_IMG];
 
-	float *fusion_img = ((float *)CVI_NN_TensorPtr(fusion_img_t));
+	float *fusion_img = (float *)CVI_SYS_MmapCache(fusion_img_t->paddr, fusion_img_t->mem_size);
 	float cvt_k = CLIP(0.024641f / coeff_a, 0.2f, 20.0f);
 	float scale_factor = cvt_k / (4319.0f - black_level);
 	float scale_aegain = scale_factor / aegain;
 	float bias_factor = 112.0f * scale_factor;
+
+	CVI_SYS_IonInvalidateCache(fusion_img_t->paddr, fusion_img, fusion_img_t->mem_size);
 
 #if defined(__riscv_vector)
 	size_t vl;
@@ -226,6 +228,9 @@ static float teaisp_bnr_model_preprocess(TEAISP_MODEL_S *model)
 	}
 #endif
 
+	CVI_SYS_IonFlushCache(fusion_img_t->paddr, fusion_img, fusion_img_t->mem_size);
+	CVI_SYS_Munmap(fusion_img, fusion_img_t->mem_size);
+
 	return cvt_k;
 }
 
@@ -237,10 +242,6 @@ static void teaisp_bnr_model_postprocess(TEAISP_MODEL_S *model, float cvt_k)
 	CVI_TENSOR *curr_sigma_t = &model->output_tensors[BNR_OUT_SIGMA];
 	CVI_TENSOR *gamma_t = &model->output_tensors[BNR_OUT_GAMMA];
 	CVI_TENSOR *noisy_out_t = &model->output_tensors[BNR_OUT_NOISY];
-	float black_level = model->black_level_buff;
-	uint8_t *out_img_addr = (uint8_t *)CVI_SYS_MmapCache(out_img_t->paddr, out_img_t->mem_size);
-
-	//CVI_SYS_IonInvalidateCache(out_img_t->paddr, out_img_addr, out_img_t->mem_size);
 
 	if (fusion_img_t->count != noisy_out_t->count ||
 		fusion_img_t->count * 1.5 != out_img_t->count ||
@@ -250,18 +251,22 @@ static void teaisp_bnr_model_postprocess(TEAISP_MODEL_S *model, float cvt_k)
 					fusion_img_t->count, noisy_out_t->count, out_img_t->count);
 		ISP_LOG_ERR("pre_sigma_t->count %d, curr_sigma_t->count %d\n",
 					pre_sigma_t->count, curr_sigma_t->count);
-		//CVI_SYS_IonFlushCache(out_img_t->paddr, out_img_addr, out_img_t->mem_size);
-		CVI_SYS_Munmap(out_img_addr, out_img_t->mem_size);
 		return;
 	}
 
-	float *fusion_img = (float *)CVI_NN_TensorPtr(fusion_img_t);
+	uint8_t *out_img_addr = (uint8_t *)CVI_SYS_MmapCache(out_img_t->paddr, out_img_t->mem_size);
+	float *fusion_img = (float *)CVI_SYS_MmapCache(fusion_img_t->paddr, fusion_img_t->mem_size);
+	float *prev_sigma = (float *)CVI_SYS_MmapCache(pre_sigma_t->paddr, pre_sigma_t->mem_size);
 	float *noisy_out = (float *)CVI_NN_TensorPtr(noisy_out_t);
-	float *prev_sigma = (float *)CVI_NN_TensorPtr(pre_sigma_t);
 	float *gamma = (float *)CVI_NN_TensorPtr(gamma_t);
 	float *curr_sigma = (float *)CVI_NN_TensorPtr(curr_sigma_t);
+	float black_level = model->black_level_buff;
 	float scale_factor = (4319.0f - black_level) / cvt_k;
 	size_t gamma_up_count = fusion_img_t->count / fusion_img_t->shape.dim[1];
+
+	CVI_SYS_IonInvalidateCache(out_img_t->paddr, out_img_addr, out_img_t->mem_size);
+	CVI_SYS_IonInvalidateCache(fusion_img_t->paddr, fusion_img, fusion_img_t->mem_size);
+	CVI_SYS_IonInvalidateCache(pre_sigma_t->paddr, prev_sigma, pre_sigma_t->mem_size);
 
 #if defined(__riscv_vector)
 	size_t vl;
@@ -323,8 +328,12 @@ static void teaisp_bnr_model_postprocess(TEAISP_MODEL_S *model, float cvt_k)
 	}
 #endif
 
-	//CVI_SYS_IonFlushCache(out_img_t->paddr, out_img_addr, out_img_t->mem_size);
+	CVI_SYS_IonFlushCache(out_img_t->paddr, out_img_addr, out_img_t->mem_size);
+	CVI_SYS_IonFlushCache(fusion_img_t->paddr, fusion_img, fusion_img_t->mem_size);
+	CVI_SYS_IonFlushCache(pre_sigma_t->paddr, prev_sigma, pre_sigma_t->mem_size);
 	CVI_SYS_Munmap(out_img_addr, out_img_t->mem_size);
+	CVI_SYS_Munmap(fusion_img, fusion_img_t->mem_size);
+	CVI_SYS_Munmap(prev_sigma, pre_sigma_t->mem_size);
 }
 
 static void *teaisp_bnr_launch_thread(void *param)
@@ -514,8 +523,9 @@ CVI_S32 teaisp_bnr_load_model_wrap(VI_PIPE ViPipe, const char *path, void **mode
 		goto load_model_fail;
 	}
 
-	//CVI_NN_SetConfig(model, OPTION_PROGRAM_INDEX, m->core_id);
-	//CVI_NN_SetConfig(model, OPTION_OUTPUT_ALL_TENSORS, true);
+	//CVI_NN_SetConfig(m->cm_handle, OPTION_PROGRAM_INDEX, m->core_id);
+	//CVI_NN_SetConfig(m->cm_handle, OPTION_OUTPUT_ALL_TENSORS, true);
+	CVI_NN_SetConfig(m->cm_handle, OPTION_IOMEM_EMPTY);
 
 	ret = CVI_NN_GetInputOutputTensors(m->cm_handle, &m->input_tensors, &m->input_num,
 												&m->output_tensors, &m->output_num);
@@ -543,6 +553,19 @@ CVI_S32 teaisp_bnr_load_model_wrap(VI_PIPE ViPipe, const char *path, void **mode
 			m->input_tensors[i].count);
 
 		if (i == BNR_IN_INPUT_IMG) {
+			continue;
+		}
+		if (i == BNR_IN_FUSION_IMG || i == BNR_IN_SIGMA) {
+			CVI_VOID *input_vaddr_tmp;
+			CVI_U64 input_addr_tmp;
+			CVI_TENSOR *tensor_tmp = &m->input_tensors[i];
+
+			CVI_SYS_IonAlloc_Cached(&input_addr_tmp, &input_vaddr_tmp, NULL, tensor_tmp->mem_size);
+			CVI_NN_SetTensorPhysicalAddr(tensor_tmp, input_addr_tmp);
+			CVI_SYS_IonInvalidateCache(tensor_tmp->paddr, input_vaddr_tmp, tensor_tmp->mem_size);
+			memset(input_vaddr_tmp, 0, tensor_tmp->mem_size);
+			CVI_SYS_IonFlushCache(tensor_tmp->paddr, input_vaddr_tmp, tensor_tmp->mem_size);
+			CVI_SYS_Munmap(input_vaddr_tmp, tensor_tmp->mem_size);
 			continue;
 		}
 		memset((void *)CVI_NN_TensorPtr(&m->input_tensors[i]), 0, m->input_tensors[i].mem_size);
@@ -614,6 +637,8 @@ CVI_S32 teaisp_bnr_unload_model_wrap(VI_PIPE ViPipe, void *model)
 		free(m->net_names);
 		m->net_names = NULL;
 	}
+	CVI_SYS_IonFree(m->input_tensors[BNR_IN_FUSION_IMG].paddr, NULL);
+	CVI_SYS_IonFree(m->input_tensors[BNR_IN_SIGMA].paddr, NULL);
 
 	if (m->cm_handle) {
 		CVI_NN_CleanupModel(m->cm_handle);

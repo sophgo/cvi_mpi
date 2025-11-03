@@ -61,7 +61,8 @@
 							"MEMBER": [
 								"TEAISP_BNR_ATTR_S.enable",
 								"TEAISP_BNR_ATTR_S.enOpType",
-								"TEAISP_BNR_ATTR_S.UpdateInterval"
+								"TEAISP_BNR_ATTR_S.UpdateInterval",
+								"TEAISP_BNR_ATTR_S.offsetISO"
 							]
 						},
 						{

@@ -3187,6 +3187,7 @@ void TEAISP_BNR_ATTR_S_JSON(int r_w_flag, JSON *j, char *key, TEAISP_BNR_ATTR_S 
 	JSON(r_w_flag, CVI_BOOL, enable);
 	JSON(r_w_flag, ISP_OP_TYPE_E, enOpType);
 	JSON(r_w_flag, CVI_U8, UpdateInterval);
+	JSON(r_w_flag, CVI_S32, offsetISO);
 	JSON(r_w_flag, TEAISP_BNR_MANUAL_ATTR_S, stManual);
 	JSON(r_w_flag, TEAISP_BNR_AUTO_ATTR_S, stAuto);
 

@@ -92,6 +92,8 @@ typedef struct _ISP_CTX_S {
 	ISP_STATISTICS_CFG_S stsCfgInfo;
 	ISP_AWB_RATIO_ATTR_S stRatioAttr;
 
+	CVI_S32 aeDelayCompensate;
+	CVI_S32 ispPreRawDelayCompensate;
 	TEAISP_MODEL_TYPE_E enModelType;
 
 	pthread_mutex_t ispEventLock;

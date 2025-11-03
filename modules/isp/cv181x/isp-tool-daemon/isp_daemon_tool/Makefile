@@ -145,6 +145,7 @@ else
 	@cp -Lrf $(TDL_SDK_PATH)/$(CHIP_ARCH)/sample/3rd/opencv/lib/libopencv_core.so* install/lib
 	@cp -Lrf $(TDL_SDK_PATH)/$(CHIP_ARCH)/sample/3rd/opencv/lib/libopencv_imgcodecs.so* install/lib
 	@cp -Lrf $(TDL_SDK_PATH)/$(CHIP_ARCH)/sample/3rd/opencv/lib/libopencv_imgproc.so* install/lib
+	@cp -Lrf $(TDL_SDK_PATH)/$(CHIP_ARCH)/sample/3rd/zlib/lib/libz.so* install/lib
 endif
 
 

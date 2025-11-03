@@ -146,7 +146,7 @@ static optionExt venc_long_option_ext[] = {
 		"yuv files folder"},
 	{{"bindmode", optional_argument, NULL, 0},    ARG_UINT,	  0,   2,
 		"bind mode"},
-	{{"pixel_format", optional_argument, NULL, 0}, ARG_INT,	  0,   9,
+	{{"pixel_format", optional_argument, NULL, 0}, ARG_INT,	  0,   11,
 		"0: 420 planar, 1: 422 planar, 2: NV12, 3: NV21, 4: NV16, 5: NV61 6: YUYV, 7: UYVY, 8: YVYU, 9: VYUY"},
 	{{"posX", optional_argument, NULL, 0},        ARG_INT,    0, 3840,
 		"x axis of start position, need to be multiple of 16 (used for crop)"},
@@ -474,6 +474,12 @@ static PIXEL_FORMAT_E vencMapPixelFormat(CVI_S32 pixel_format)
 	case 9:
 		enPixelFormat = PIXEL_FORMAT_VYUY;
 		break;
+	case 10:
+		enPixelFormat = PIXEL_FORMAT_YUV_PLANAR_444;
+		break;
+	case 11:
+		enPixelFormat = PIXEL_FORMAT_YUV_400;
+		break;
 	default:
 		CVI_VENC_WARN("Unknown input pixel format. Assume YUV420P.\n");
 		enPixelFormat = PIXEL_FORMAT_YUV_PLANAR_420;
@@ -501,6 +507,12 @@ static CVI_U32 getSrcFrameSizeByPixelFormat(CVI_U32 width, CVI_U32 height, PIXEL
 	case PIXEL_FORMAT_NV12:
 	case PIXEL_FORMAT_NV21:
 		size = width * height * 3 / 2;
+		break;
+	case PIXEL_FORMAT_YUV_400:
+		size = width * height;
+		break;
+	case PIXEL_FORMAT_YUV_PLANAR_444:
+		size = width * height * 3;
 		break;
 	default:
 		CVI_VENC_WARN("Unknown pixel format. Assume YUV420P.\n");
@@ -3225,6 +3237,18 @@ static CVI_S32 cviReadSrcFrame(VIDEO_FRAME_S *pstVFrame, FILE *fp)
 	CVI_VENC_TRACE("\n");
 
 	switch (pstVFrame->enPixelFormat) {
+	case PIXEL_FORMAT_YUV_PLANAR_444:
+		u32CbCrReadSrcHeight = pstVFrame->u32Height;
+		bCbWidthShift = 0;
+		bCrWidthShift = 0;
+		break;
+
+	case PIXEL_FORMAT_YUV_400:
+		u32CbCrReadSrcHeight = pstVFrame->u32Height;
+		bCbWidthShift = 31;
+		bCrWidthShift = 31;
+		break;
+
 	case PIXEL_FORMAT_YUV_PLANAR_422:
 		u32CbCrReadSrcHeight = pstVFrame->u32Height;
 		bCbWidthShift = 1;

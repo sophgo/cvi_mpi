@@ -136,3 +136,13 @@ int rgn_set_chn_palette(int fd, int Handle, const MMF_CHN_S *pstChn, RGN_PALETTE
 {
 	return SDK_CTRL_SET_CFG(fd, (void *)pstChn, (void *)pstPalette, RGN_SDK_SET_CHN_PALETTE, Handle);
 }
+
+int rgn_get_ion_len(int fd, int Handle, int *pLen)
+{
+	return SDK_CTRL_GET_CFG(fd, (void *)pLen, NULL, RGN_SDK_GET_ION_LEN, Handle);
+}
+
+int rgn_set_compress_size(int fd, int Handle, int len)
+{
+	return SDK_CTRL_SET_CFG(fd, (void *)&len, NULL, RGN_SDK_SET_CMPR_SIZE, Handle);
+}

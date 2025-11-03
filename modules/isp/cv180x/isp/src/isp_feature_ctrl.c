@@ -183,6 +183,7 @@ CVI_S32 isp_feature_ctrl_init(VI_PIPE ViPipe)
 {
 	ISP_LOG_DEBUG("+\n");
 	CVI_S32 ret = CVI_SUCCESS;
+	ISP_CTX_S *pstIspCtx = NULL;
 	struct isp_feature_ctrl_runtime **runtime_ptr = _get_feature_ctrl_runtime(ViPipe);
 
 	ISP_CREATE_RUNTIME(*runtime_ptr, struct isp_feature_ctrl_runtime);
@@ -193,6 +194,18 @@ CVI_S32 isp_feature_ctrl_init(VI_PIPE ViPipe)
 		if (mod[idx])
 			if (mod[idx]->init)
 				mod[idx]->init(ViPipe);
+	}
+
+	ISP_GET_CTX(ViPipe, pstIspCtx);
+	pstIspCtx->aeDelayCompensate = 0;
+	pstIspCtx->ispPreRawDelayCompensate = 0;
+	if (getenv("AE_DELAY_COMPENSATE")) {
+		pstIspCtx->aeDelayCompensate = atoi(getenv("AE_DELAY_COMPENSATE"));
+		ISP_LOG_INFO("AE_DELAY_COMPENSATE: %d\n", pstIspCtx->aeDelayCompensate);
+	}
+	if (getenv("ISP_PRE_RAW_DELAY_COMPENSATE")) {
+		pstIspCtx->ispPreRawDelayCompensate = atoi(getenv("ISP_PRE_RAW_DELAY_COMPENSATE"));
+		ISP_LOG_INFO("ISP_PRE_RAW_DELAY_COMPENSATE: %d\n", pstIspCtx->ispPreRawDelayCompensate);
 	}
 
 	return ret;
@@ -290,6 +303,8 @@ CVI_S32 isp_feature_ctrl_post_eof(VI_PIPE ViPipe)
 	CVI_S32 ret = CVI_SUCCESS;
 	struct isp_feature_ctrl_runtime **runtime_ptr = _get_feature_ctrl_runtime(ViPipe);
 	struct isp_feature_ctrl_runtime *runtime = *runtime_ptr;
+	int aeDelayCompensate = 0;
+	int ispPreRawDelayCompensate = 0;
 
 	if (runtime == CVI_NULL) {
 		return CVI_FAILURE;
@@ -357,17 +372,22 @@ CVI_S32 isp_feature_ctrl_post_eof(VI_PIPE ViPipe)
 
 	if (pstIspCtx->enModelType == TEAISP_MODEL_MOTION) {
 		u8IspTimingDelay++;
+		aeDelayCompensate = pstIspCtx->aeDelayCompensate;
+		ispPreRawDelayCompensate = pstIspCtx->ispPreRawDelayCompensate;
+	} else {
+		aeDelayCompensate = 0;
+		ispPreRawDelayCompensate = 0;
 	}
 
 	// apply to be blc, single sensor be post sbm on, dual sensor be post online,
 	// so be post param effect together
-	aeDelayIdx = (pstIspCtx->frameCnt + pstAeResult->u8MeterFramePeriod
-		- ISP_DGAIN_APPLY_DELAY + u8IspSceneDelay - u8IspTimingDelay) % MAX_ALGO_RESULT_QUEUE_NUM;
+	aeDelayIdx = (pstIspCtx->frameCnt + pstAeResult->u8MeterFramePeriod - ISP_DGAIN_APPLY_DELAY
+		+ u8IspSceneDelay - u8IspTimingDelay + aeDelayCompensate) % MAX_ALGO_RESULT_QUEUE_NUM;
 
 	// apply to fe blc
 	// TODO@mason.zou, if fe offline (dual sensor), different at 15fps or 25fps
-	ispPrerawDelayIdx = (currentFrameIdx + pstAeResult->u8MeterFramePeriod
-		- (ISP_DGAIN_APPLY_DELAY + u8IspSceneDelay) - u8IspTimingDelay) % MAX_ALGO_RESULT_QUEUE_NUM;
+	ispPrerawDelayIdx = (currentFrameIdx + pstAeResult->u8MeterFramePeriod - ISP_DGAIN_APPLY_DELAY
+		- u8IspSceneDelay - u8IspTimingDelay + ispPreRawDelayCompensate) % MAX_ALGO_RESULT_QUEUE_NUM;
 
 	if (IsRawReplayMode())
 		aeDelayIdx = ispPrerawDelayIdx = currentFrameIdx;
@@ -403,16 +423,28 @@ CVI_S32 isp_feature_ctrl_post_eof(VI_PIPE ViPipe)
 		(pstAeResult->u32IspDgain == 0) ? DGAIN_UNIT : pstAeResult->u32IspDgain;
 	runtime->algoResultSave[aeDelayIdx].u32IspPostDgainSE = pstAeResult->u32IspDgainSF;
 	runtime->algoResultSave[aeDelayIdx].u32PostNpIso = pstIspCtx->stAeResult.u32BlcIso;
-	runtime->algoResultSave[aeDelayIdx].afAEEVRatio[ISP_CHANNEL_LE] = pstAeResult->fEvRatio[ISP_CHANNEL_LE];
-	runtime->algoResultSave[aeDelayIdx].afAEEVRatio[ISP_CHANNEL_SE] = pstAeResult->fEvRatio[ISP_CHANNEL_SE];
+
+	//remove motion map ispDgain comensation
+	CVI_U32 preDelayIdx = aeDelayIdx == 0 ? MAX_ALGO_RESULT_QUEUE_NUM - 1 : aeDelayIdx - 1;
+	CVI_FLOAT ispDGainRatio = (CVI_FLOAT)runtime->algoResultSave[aeDelayIdx].u32IspPostDgain /
+								runtime->algoResultSave[preDelayIdx].u32IspPostDgain;
+	CVI_FLOAT ispDGainRatioSE = (CVI_FLOAT)runtime->algoResultSave[aeDelayIdx].u32IspPostDgainSE /
+								runtime->algoResultSave[preDelayIdx].u32IspPostDgainSE;
+	runtime->algoResultSave[aeDelayIdx].afAEEVRatio[ISP_CHANNEL_LE] =
+								pstAeResult->fEvRatio[ISP_CHANNEL_LE] * ispDGainRatio;
+	runtime->algoResultSave[aeDelayIdx].afAEEVRatio[ISP_CHANNEL_SE] =
+								pstAeResult->fEvRatio[ISP_CHANNEL_SE] * ispDGainRatioSE;
 
 	// dgain info.
-	runtime->algoResultSave[ispPrerawDelayIdx].u32IspPreDgain =
-		(pstAeResult->u32IspDgain == 0) ? DGAIN_UNIT : pstAeResult->u32IspDgain;
-	runtime->algoResultSave[ispPrerawDelayIdx].u32IspPreDgainSE = pstAeResult->u32IspDgainSF;
-	runtime->algoResultSave[ispPrerawDelayIdx].u32PreIso = pstAeResult->u32Iso;
-	runtime->algoResultSave[ispPrerawDelayIdx].u32PreBlcIso = pstIspCtx->stAeResult.u32BlcIso;
-	runtime->algoResultSave[ispPrerawDelayIdx].u32PreNpIso = pstIspCtx->stAeResult.u32BlcIso;
+	runtime->algoResultSave[ispPrerawDelayIdx].u32IspPreDgain = DGAIN_UNIT;
+		//(pstAeResult->u32IspDgain == 0) ? DGAIN_UNIT : pstAeResult->u32IspDgain;
+	runtime->algoResultSave[ispPrerawDelayIdx].u32IspPreDgainSE = DGAIN_UNIT;//pstAeResult->u32IspDgainSF;
+	runtime->algoResultSave[ispPrerawDelayIdx].u32PreIso =
+			pstAeResult->u32Iso / (pstAeResult->u32IspDgain / DGAIN_UNIT);
+	runtime->algoResultSave[ispPrerawDelayIdx].u32PreBlcIso =
+			pstIspCtx->stAeResult.u32BlcIso / (pstAeResult->u32IspDgain / DGAIN_UNIT);
+	runtime->algoResultSave[ispPrerawDelayIdx].u32PreNpIso =
+			pstIspCtx->stAeResult.u32BlcIso / (pstAeResult->u32IspDgain / DGAIN_UNIT);
 	// ispPrerawDelayIdx = aeDelayIdx = currentFrameIdx;
 
 	isp_interpolate_update(ViPipe,

@@ -17,5 +17,7 @@ int rgn_get_canvas_info(int fd, int Handle, RGN_CANVAS_INFO_S *pstCanvasInfo);
 int rgn_update_canvas(int fd, int Handle);
 int rgn_invert_color(int fd, int Handle, MMF_CHN_S *pstChn, void *pu32Color);
 int rgn_set_chn_palette(int fd, int Handle, const MMF_CHN_S *pstChn, RGN_PALETTE_S *pstPalette);
+int rgn_get_ion_len(int fd, int Handle, int *pLen);
+int rgn_set_compress_size(int fd, int Handle, int len);
 
 #endif // __RGN_IOCTL_H_

@@ -5,15 +5,23 @@ ifeq ($(PARAM_FILE), )
      include $(PARAM_FILE)
 endif
 #
+
+ifeq ($(CONFIG_SUSPEND), y)
+CFLAGS += -DCONFIG_SUSPEND
+endif
+
 SDIR := $(CURDIR)/src
 SRCS_C := $(SDIR)/cvi_region.c
 SRCS_C += $(SDIR)/rgn_ioctl.c
+SRCS_C += $(SDIR)/cmpr_canvas.c
+SRCS_C += $(SDIR)/osdc.c
+SRCS_C += $(SDIR)/osd_cmpr.c
 #
 ODIR := $(CURDIR)/obj
 OBJS := $(SRCS_C:$(SDIR)/%.c=$(ODIR)/%.$(TARGET_MACHINE).$(CHIP_ARCH_L).o)
 DEPS := $(SRCS_C:.c=.d)
 #
-INCS = -I$(MW_INC) -I$(KERNEL_INC) -I$(SYS_INC) -I$(BIN_INC) -I$(RGN_INC)
+INCS = -I$(MW_INC) -I$(KERNEL_INC) -I$(SYS_INC) -I$(BIN_INC) -I$(RGN_INC) -I$(MW_INC)/linux
 #
 TARGET_A = $(MW_LIB)/librgn.a
 TARGET_SO = $(MW_LIB)/librgn.so
