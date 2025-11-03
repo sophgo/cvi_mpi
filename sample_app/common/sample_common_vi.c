@@ -586,8 +586,13 @@ CVI_S32 SAMPLE_COMM_VI_StartChn(SAMPLE_VI_INFO_S *pstViInfo)
 	stChnAttr.u32BindVbPool = -1;
 
 	/* fill the sensor orientation */
-	stChnAttr.bMirror = false;
-	stChnAttr.bFlip = false;
+	if (!pstViInfo->stDevInfo.bPatgen && pstViInfo->stSnsInfo.u8Orien <= 3) {
+		stChnAttr.bMirror = pstViInfo->stSnsInfo.u8Orien & 0x1;
+		stChnAttr.bFlip = (pstViInfo->stSnsInfo.u8Orien & 0x2) >> 1;
+	} else {
+		stChnAttr.bMirror = false;
+		stChnAttr.bFlip = false;
+	}
 
 	s32Ret = CVI_VI_SetChnAttr(ViPipe, ViChn, &stChnAttr);
 	if (s32Ret != CVI_SUCCESS) {

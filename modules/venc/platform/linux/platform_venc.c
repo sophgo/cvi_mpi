@@ -1079,6 +1079,7 @@ CVI_S32 platform_venc_enable_svc(VENC_CHN VeChn, CVI_BOOL enable)
 	}
 	return CVI_FAILURE;
 }
+
 CVI_S32 platform_venc_set_svc_param(VENC_CHN VeChn, const VENC_SVC_PARAM_S *pstSvcParam)
 {
 	if (s32VencFd[VeChn] > 0) {
@@ -1095,6 +1096,21 @@ CVI_S32 platform_venc_get_svc_param(VENC_CHN VeChn, VENC_SVC_PARAM_S *pstSvcPara
 	return CVI_FAILURE;
 }
 
+CVI_S32 platform_venc_set_debreath_effect(VENC_CHN VeChn, const VENC_DEBREATHEFFECT_S *pstDebreathEffect)
+{
+	if (s32VencFd[VeChn] > 0) {
+			return ioctl(s32VencFd[VeChn], CVI_VC_VENC_SET_DEBREATH_EFFECT, pstDebreathEffect);
+	}
+	return CVI_FAILURE;
+}
+
+CVI_S32 platform_venc_get_debreath_effect(VENC_CHN VeChn, VENC_DEBREATHEFFECT_S *pstDebreathEffect)
+{
+	if (s32VencFd[VeChn] > 0) {
+			return ioctl(s32VencFd[VeChn], CVI_VC_VENC_GET_DEBREATH_EFFECT, pstDebreathEffect);
+	}
+	return CVI_FAILURE;
+}
 
 
 

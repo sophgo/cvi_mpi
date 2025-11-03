@@ -309,6 +309,7 @@ CVI_S32 CVI_VENC_EnableSvc(VENC_CHN VeChn, CVI_BOOL enable)
 {
 	return platform_venc_enable_svc(VeChn, enable);
 }
+
 CVI_S32 CVI_VENC_SetSvcParam(VENC_CHN VeChn, const VENC_SVC_PARAM_S *pstSvcParam)
 {
 
@@ -318,4 +319,15 @@ CVI_S32 CVI_VENC_SetSvcParam(VENC_CHN VeChn, const VENC_SVC_PARAM_S *pstSvcParam
 CVI_S32 CVI_VENC_GetSvcParam(VENC_CHN VeChn, VENC_SVC_PARAM_S *pstSvcParam)
 {
 	return platform_venc_get_svc_param(VeChn, pstSvcParam);
+}
+
+CVI_S32 CVI_VENC_SetDebreathEffect(VENC_CHN VeChn, const VENC_DEBREATHEFFECT_S *pstDebreathEffect)
+{
+	return platform_venc_set_debreath_effect(VeChn, pstDebreathEffect);
+}
+
+CVI_S32 CVI_VENC_GetDebreathEffect(VENC_CHN VeChn, VENC_DEBREATHEFFECT_S *pstDebreathEffect)
+{
+	return platform_venc_get_debreath_effect(VeChn, pstDebreathEffect);
+
 }

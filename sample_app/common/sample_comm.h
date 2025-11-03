@@ -617,6 +617,9 @@ typedef struct _chnInputCfg_ {
 	CVI_U32  obj_size;
 	CVI_U32  dqp_tab[128];
 	CVI_U32  bRcnRefShare;
+	CVI_BOOL bDebreathEn;
+	CVI_U32  s32Strength0;
+	CVI_U32  s32Strength1;
 
 	CVI_U32 u32ResetGop;
 } chnInputCfg;

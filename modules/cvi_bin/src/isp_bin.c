@@ -564,7 +564,6 @@ static CVI_S32 isp_set_paramstruct(VI_PIPE ViPipe, ISP_Parameter_Structures *pst
 	// Other
 	CVI_ISP_SetNoiseProfileAttr(ViPipe, &pstParaBuf->np);
 	CVI_ISP_SetMonoAttr(ViPipe, &pstParaBuf->mono);
-	CVI_ISP_SetVCAttr(ViPipe, &pstParaBuf->vc_motion);
 
 	/*---------------------3A----------------------------*/
 	// AE
@@ -660,7 +659,6 @@ static CVI_S32 isp_get_paramstruct(VI_PIPE ViPipe, ISP_Parameter_Structures *pst
 	// Other
 	CVI_ISP_GetNoiseProfileAttr(ViPipe, &pstParaBuf->np);
 	CVI_ISP_GetMonoAttr(ViPipe, &pstParaBuf->mono);
-	CVI_ISP_GetVCAttr(ViPipe, &pstParaBuf->vc_motion);
 
 	/*---------------------3A----------------------------*/
 	// AE

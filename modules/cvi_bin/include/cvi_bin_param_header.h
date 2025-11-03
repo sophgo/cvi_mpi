@@ -81,7 +81,6 @@ typedef struct {
 	// other
 	ISP_CMOS_NOISE_CALIBRATION_S np;
 	ISP_MONO_ATTR_S mono;
-	ISP_VC_ATTR_S vc_motion;
 
 	// ISP_3A_Parameter_Structures
 	ISP_WDR_EXPOSURE_ATTR_S WDRExpAttr;

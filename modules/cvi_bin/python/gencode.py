@@ -23,6 +23,9 @@ def gencode(args):
     encoder = StructEncoder(profile=args.profile)
     encoder.encode(tree_list)
 
+    if args.gen_profile_only:
+        return
+
     # critical codes
     macroCG = MacroCodeGenerator(encoder.data)
     macroCG.gen_code(args.macro_code)
@@ -58,6 +61,10 @@ if __name__ == "__main__":
                         default='')
     parser.add_argument('--header_code', type=str, help='output header file',
                         default='python/cvi_bin_struct.h')
+
+    parser.add_argument('--gen_profile_only',
+                        action='store_true',
+                        help='Whether to only generate profile (default: False)')
 
     args = parser.parse_args()
 

@@ -1543,3 +1543,45 @@ CVI_S32 platform_venc_get_svc_param(VENC_CHN VeChn, VENC_SVC_PARAM_S *pstSvcPara
 
 	return CVI_SUCCESS;
 }
+
+CVI_S32 platform_venc_set_debreath_effect(VENC_CHN VeChn, const VENC_DEBREATHEFFECT_S *pstDebreathEffect)
+{
+	CVI_S32 s32Ret;
+	CVI_U32 u32ModFd = MODFD(CVI_ID_VENC, 0, VeChn);
+
+	MOD_CHECK_NULL_PTR(CVI_ID_VENC, pstDebreathEffect);
+
+	CVI_VENC_API_IN;
+
+	s32Ret = CVI_MSG_SendSync(u32ModFd, MSG_CMD_VENC_SET_DEBREATH_EFFECT, (CVI_VOID *)pstDebreathEffect,
+				sizeof(VENC_DEBREATHEFFECT_S), CVI_NULL);
+	if (s32Ret != CVI_SUCCESS) {
+		CVI_VENC_ERR("SetDebreathEffect fail, chn:%d, ret:0x%x\n", VeChn, s32Ret);
+		return s32Ret;
+	}
+
+	CVI_VENC_API_OUT;
+
+	return CVI_SUCCESS;
+}
+
+CVI_S32 platform_venc_get_debreath_effect(VENC_CHN VeChn, VENC_DEBREATHEFFECT_S *pstDebreathEffect)
+{
+	CVI_S32 s32Ret;
+	CVI_U32 u32ModFd = MODFD(CVI_ID_VENC, 0, VeChn);
+
+	MOD_CHECK_NULL_PTR(CVI_ID_VENC, pstDebreathEffect);
+
+	CVI_VENC_API_IN;
+
+	s32Ret = CVI_MSG_SendSync(u32ModFd, MSG_CMD_VENC_GET_DEBREATH_EFFECT, (CVI_VOID *)pstDebreathEffect,
+				sizeof(VENC_DEBREATHEFFECT_S), CVI_NULL);
+	if (s32Ret != CVI_SUCCESS) {
+		CVI_VENC_ERR("GetDebreathEffect fail, chn:%d, ret:0x%x\n", VeChn, s32Ret);
+		return s32Ret;
+	}
+
+	CVI_VENC_API_OUT;
+
+	return CVI_SUCCESS;
+}

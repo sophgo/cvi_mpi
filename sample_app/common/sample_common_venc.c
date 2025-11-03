@@ -142,6 +142,10 @@ static CVI_S32 SAMPLE_COMM_VENC_SetCuPrediction(
 		VENC_CHN VencChn);
 static CVI_S32 SAMPLE_COMM_VENC_DetachVbPool(VENC_CHN VencChn);
 
+static CVI_S32 SAMPLE_COMM_VENC_SetDebreathEffect(
+		chnInputCfg * pIc,
+		VENC_CHN VencChn);
+
 CVI_VOID SAMPLE_COMM_VENC_InitCommonInputCfg(commonInputCfg *pCic)
 {
 	if (!pCic) {
@@ -236,6 +240,7 @@ CVI_VOID SAMPLE_COMM_VENC_InitChnInputCfg(chnInputCfg *pIc)
 	pIc->bEsBufQueueEn = CVI_H26X_ES_BUFFER_QUEUE_DEFAULT;
 	pIc->bIsoSendFrmEn = CVI_H26X_ISO_SEND_FRAME_DEFAUL;
 	pIc->bSensorEn = CVI_H26X_SENSOR_EN_DEFAULT;
+	pIc->bDebreathEn = CVI_FALSE;
 
 	pIc->u32SliceCnt = 1;
 
@@ -967,6 +972,12 @@ CVI_S32 SAMPLE_COMM_VENC_Create(
 			SAMPLE_PRT("SAMPLE_COMM_VENC_SetSuperFrame, %d\n", s32Ret);
 			goto ERR_SAMPLE_COMM_VENC_CREATE;
 		}
+
+		s32Ret = SAMPLE_COMM_VENC_SetDebreathEffect(pIc, VencChn);
+		if (s32Ret != CVI_SUCCESS) {
+			SAMPLE_PRT("SAMPLE_COMM_VENC_SetDebreathEffect, %d\n", s32Ret);
+			goto ERR_SAMPLE_COMM_VENC_CREATE;
+		}
 	}
 
 	if (enType != PT_JPEG && enType != PT_MJPEG) {
@@ -1119,6 +1130,33 @@ CVI_S32 SAMPLE_COMM_VENC_Create(
 	return s32Ret;
 ERR_SAMPLE_COMM_VENC_CREATE:
 	CVI_VENC_DestroyChn(VencChn);
+
+	return s32Ret;
+}
+
+static CVI_S32 SAMPLE_COMM_VENC_SetDebreathEffect(
+		chnInputCfg * pIc,
+		VENC_CHN VencChn)
+{
+	CVI_S32 s32Ret = CVI_SUCCESS;
+	(void)pIc;
+	VENC_DEBREATHEFFECT_S stDebreathEffect, *pstDebreathEffect = &stDebreathEffect;
+
+	s32Ret = CVI_VENC_GetDebreathEffect(VencChn, pstDebreathEffect);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_PRT("GetFrameLostStrategy failed!\n");
+		return CVI_FAILURE;
+	}
+
+	pstDebreathEffect->bEnable =  pIc->bDebreathEn;
+	pstDebreathEffect->s32Strength0 = pIc->s32Strength0;
+	pstDebreathEffect->s32Strength1 = pIc->s32Strength1;
+
+	s32Ret = CVI_VENC_SetDebreathEffect(VencChn, pstDebreathEffect);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_PRT("SetDebreathEffect failed!\n");
+		return CVI_FAILURE;
+	}
 
 	return s32Ret;
 }

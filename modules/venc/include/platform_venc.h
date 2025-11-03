@@ -85,4 +85,6 @@ CVI_S32 platform_venc_get_h265_sao(VENC_CHN VeChn, VENC_H265_SAO_S *pstH265Sao);
 CVI_S32 platform_venc_enable_svc(VENC_CHN VeChn, CVI_BOOL enable);
 CVI_S32 platform_venc_set_svc_param(VENC_CHN VeChn, const VENC_SVC_PARAM_S *pstSvcParam);
 CVI_S32 platform_venc_get_svc_param(VENC_CHN VeChn, VENC_SVC_PARAM_S *pstSvcParam);
+CVI_S32 platform_venc_set_debreath_effect(VENC_CHN VeChn, const VENC_DEBREATHEFFECT_S *pstDebreathEffect);
+CVI_S32 platform_venc_get_debreath_effect(VENC_CHN VeChn, VENC_DEBREATHEFFECT_S *pstDebreathEffect);
 #endif

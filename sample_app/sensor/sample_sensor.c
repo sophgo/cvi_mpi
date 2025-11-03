@@ -400,6 +400,7 @@ CVI_S32 sys_vi_init(SENSOR_CFG_S *sensor_cfg)
 		g_stViConfig.s32WorkingViNum			= 1 + i;
 		g_stViConfig.as32WorkingViId[i]			= i;
 
+		g_stViConfig.astViInfo[i].stSnsInfo.u8Orien					= stSnsIniCfg->u8Orien[i];
 		g_stViConfig.astViInfo[i].stDevInfo.ViDev					= i;
 		g_stViConfig.astViInfo[i].stDevInfo.enWDRMode				= stSnsCfg->enWDRMode[i];
 
@@ -918,8 +919,13 @@ COMM_CONFIG:
 		stChnAttr.u32BindVbPool = -1;
 
 		/* fill the sensor orientation */
-		stChnAttr.bMirror = false;
-		stChnAttr.bFlip = false;
+		if (g_stViConfig.astViInfo[i].stSnsInfo.u8Orien <= 3) {
+			stChnAttr.bMirror = g_stViConfig.astViInfo[i].stSnsInfo.u8Orien & 0x1;
+			stChnAttr.bFlip = (g_stViConfig.astViInfo[i].stSnsInfo.u8Orien & 0x2) >> 1;
+		} else {
+			stChnAttr.bMirror = false;
+			stChnAttr.bFlip = false;
+		}
 
 		for (j = 0; j < VI_MAX_PIPE_NUM; j++) {
 			if (g_stViConfig.astViInfo[i].stPipeInfo.aPipe[j] >= 0 &&
