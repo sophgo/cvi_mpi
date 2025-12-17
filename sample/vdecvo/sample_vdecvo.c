@@ -40,6 +40,10 @@ typedef struct _SAMPLE_VDEC_CONFIG_S {
 static pthread_t send_vo_thread;
 static CVI_VOID *s_h264file[MAX_VDEC_NUM];
 
+// Global variables for stream resolution
+static CVI_U32 g_u32StreamWidth = 1920;   // Default width
+static CVI_U32 g_u32StreamHeight = 1080;  // Default height
+
 // #define SHOW_STATISTICS_1
 // #define SHOW_STATISTICS_2
 
@@ -619,7 +623,6 @@ CVI_VOID stop_vdec(SAMPLE_VDEC_PARAM_S *pVdecParam)
 	}
 }
 
-
 CVI_S32 start_thread(SAMPLE_VDEC_CONFIG_S *pstVdecCfg)
 {
 	CVI_S32 s32Ret = CVI_SUCCESS;
@@ -690,12 +693,6 @@ CVI_S32 SAMPLE_VDEC_SEND_VPSS_SEND_VO(CVI_S32 decoding_file_num)
 	CVI_S32 s32Ret = CVI_SUCCESS;
 	int filelen;
 
-#ifndef VDEC_WIDTH
-#define VDEC_WIDTH 1920
-#endif
-#ifndef VDEC_HEIGHT
-#define VDEC_HEIGHT 1080
-#endif
 #ifndef VPSS_WIDTH
 #define VPSS_WIDTH 1280
 #endif
@@ -709,8 +706,8 @@ CVI_S32 SAMPLE_VDEC_SEND_VPSS_SEND_VO(CVI_S32 decoding_file_num)
 #define VO_HEIGHT 1280
 #endif
 
-	stSize.u32Width = VDEC_WIDTH;
-	stSize.u32Height = VDEC_HEIGHT;
+	stSize.u32Width = g_u32StreamWidth;
+	stSize.u32Height = g_u32StreamHeight;
 
 	/************************************************
 	 * step1:  Init SYS and common VB
@@ -823,9 +820,9 @@ CVI_S32 SAMPLE_VDEC_SEND_VPSS_SEND_VO(CVI_S32 decoding_file_num)
 		filelen = snprintf(pVdecChn[i]->decode_file_name, 63, "%s", (char *)s_h264file[i]);
 		pVdecChn[i]->stChnAttr.enType = find_file_type(pVdecChn[i]->decode_file_name, filelen);
 		pVdecChn[i]->stChnAttr.enMode = VIDEO_MODE_FRAME;
-		pVdecChn[i]->stChnAttr.u32PicWidth = VDEC_WIDTH;
-		pVdecChn[i]->stChnAttr.u32PicHeight = VDEC_HEIGHT;
-		pVdecChn[i]->stChnAttr.u32StreamBufSize = VDEC_WIDTH*VDEC_HEIGHT;
+		pVdecChn[i]->stChnAttr.u32PicWidth = g_u32StreamWidth;
+		pVdecChn[i]->stChnAttr.u32PicHeight = g_u32StreamHeight;
+		pVdecChn[i]->stChnAttr.u32StreamBufSize = g_u32StreamWidth * g_u32StreamHeight;
 		pVdecChn[i]->stChnAttr.u32FrameBufCnt = 4;
 		if (pVdecChn[i]->stChnAttr.enType == PT_JPEG \
 			|| pVdecChn[i]->stChnAttr.enType == PT_MJPEG) {
@@ -875,12 +872,6 @@ CVI_S32 SAMPLE_VDEC_BIND_VPSS_BIND_VO(CVI_S32 decoding_file_num)
 	CVI_S32 s32Ret = CVI_SUCCESS;
 	int filelen;
 
-#ifndef VDEC_WIDTH
-#define VDEC_WIDTH 1920
-#endif
-#ifndef VDEC_HEIGHT
-#define VDEC_HEIGHT 1080
-#endif
 #ifndef VPSS_WIDTH
 #define VPSS_WIDTH 1280
 #endif
@@ -894,8 +885,8 @@ CVI_S32 SAMPLE_VDEC_BIND_VPSS_BIND_VO(CVI_S32 decoding_file_num)
 #define VO_HEIGHT 1280
 #endif
 
-	stSize.u32Width = VDEC_WIDTH;
-	stSize.u32Height = VDEC_HEIGHT;
+	stSize.u32Width = g_u32StreamWidth;
+	stSize.u32Height = g_u32StreamHeight;
 
 	/************************************************
 	 * step1:  Init SYS and common VB
@@ -903,7 +894,7 @@ CVI_S32 SAMPLE_VDEC_BIND_VPSS_BIND_VO(CVI_S32 decoding_file_num)
 	memset(&stVbConf, 0, sizeof(VB_CONFIG_S));
 	stVbConf.u32MaxPoolCnt		= 1;
 
-	u32BlkSize = COMMON_GetPicBufferSize(stSize.u32Width, stSize.u32Height, SAMPLE_PIXEL_FORMAT, DATA_BITWIDTH_8
+	u32BlkSize = COMMON_GetPicBufferSize(ALIGN(stSize.u32Width, H264D_ALIGN_W), ALIGN(stSize.u32Height, H264D_ALIGN_H), SAMPLE_PIXEL_FORMAT, DATA_BITWIDTH_8
 					    , enCompressMode, DEFAULT_ALIGN);
 	stVbConf.astCommPool[0].u32BlkSize	= u32BlkSize;
 	stVbConf.astCommPool[0].u32BlkCnt	= 5;
@@ -1002,9 +993,9 @@ CVI_S32 SAMPLE_VDEC_BIND_VPSS_BIND_VO(CVI_S32 decoding_file_num)
 		filelen = snprintf(pVdecChn[i]->decode_file_name, 63, "%s", (char *)s_h264file[i]);
 		pVdecChn[i]->stChnAttr.enType = find_file_type(pVdecChn[i]->decode_file_name, filelen);
 		pVdecChn[i]->stChnAttr.enMode = VIDEO_MODE_FRAME;
-		pVdecChn[i]->stChnAttr.u32PicWidth = VDEC_WIDTH;
-		pVdecChn[i]->stChnAttr.u32PicHeight = VDEC_HEIGHT;
-		pVdecChn[i]->stChnAttr.u32StreamBufSize = VDEC_WIDTH*VDEC_HEIGHT;
+		pVdecChn[i]->stChnAttr.u32PicWidth = g_u32StreamWidth;
+		pVdecChn[i]->stChnAttr.u32PicHeight = g_u32StreamHeight;
+		pVdecChn[i]->stChnAttr.u32StreamBufSize = g_u32StreamWidth * g_u32StreamHeight;
 		pVdecChn[i]->stChnAttr.u32FrameBufCnt = 1;
 		if (pVdecChn[i]->stChnAttr.enType == PT_JPEG \
 			|| pVdecChn[i]->stChnAttr.enType == PT_MJPEG) {
@@ -1028,8 +1019,8 @@ CVI_S32 SAMPLE_VDEC_BIND_VPSS_BIND_VO(CVI_S32 decoding_file_num)
 
 	for (int i = 0; i < stVdecCfg.s32ChnNum; i++) {
 		astSampleVdec[i].enType = pVdecChn[i]->stChnAttr.enType;
-		astSampleVdec[i].u32Width = VDEC_WIDTH;
-		astSampleVdec[i].u32Height = VDEC_HEIGHT;
+		astSampleVdec[i].u32Width = g_u32StreamWidth;
+		astSampleVdec[i].u32Height = g_u32StreamHeight;
 
 		astSampleVdec[i].enMode = VIDEO_MODE_FRAME;
 		astSampleVdec[i].stSampleVdecVideo.enDecMode = VIDEO_DEC_MODE_IP;
@@ -1060,6 +1051,7 @@ CVI_S32 SAMPLE_VDEC_BIND_VPSS_BIND_VO(CVI_S32 decoding_file_num)
 	stop_thread(&stVdecCfg);
 	SAMPLE_PRT("stop thread\n");
 	SAMPLE_COMM_VPSS_UnBind_VO(VpssGrp, VpssChn, VoDev, VoChn);
+
 	for (int i = 0; i < stVdecCfg.s32ChnNum; i++) {
 		SAMPLE_COMM_VDEC_UnBind_VPSS(i, VpssGrp);
 		stop_vdec(pVdecChn[i]);
@@ -1084,16 +1076,8 @@ CVI_S32 SAMPLE_VDEC_BIND_VENC(CVI_S32 decoding_file_num)
 	int filelen;
 	CVI_S32 VencChn = 0;
 
-#ifndef VDEC_WIDTH
-#define VDEC_WIDTH 1920
-#endif
-#ifndef VDEC_HEIGHT
-#define VDEC_HEIGHT 1080
-#endif
-
-
-	stSize.u32Width = VDEC_WIDTH;
-	stSize.u32Height = VDEC_HEIGHT;
+	stSize.u32Width = g_u32StreamWidth;
+	stSize.u32Height = g_u32StreamHeight;
 
 	/************************************************
 	 * step1:  Init SYS and common VB
@@ -1101,7 +1085,7 @@ CVI_S32 SAMPLE_VDEC_BIND_VENC(CVI_S32 decoding_file_num)
 	memset(&stVbConf, 0, sizeof(VB_CONFIG_S));
 	stVbConf.u32MaxPoolCnt		= 1;
 
-	u32BlkSize = COMMON_GetPicBufferSize(stSize.u32Width, stSize.u32Height, SAMPLE_PIXEL_FORMAT, DATA_BITWIDTH_8
+	u32BlkSize = COMMON_GetPicBufferSize(ALIGN(stSize.u32Width, H264D_ALIGN_W), ALIGN(stSize.u32Height, H264D_ALIGN_H), SAMPLE_PIXEL_FORMAT, DATA_BITWIDTH_8
 					    , enCompressMode, DEFAULT_ALIGN);
 	stVbConf.astCommPool[0].u32BlkSize	= u32BlkSize;
 	stVbConf.astCommPool[0].u32BlkCnt	= 1;
@@ -1129,9 +1113,9 @@ CVI_S32 SAMPLE_VDEC_BIND_VENC(CVI_S32 decoding_file_num)
 		filelen = snprintf(pVdecChn[i]->decode_file_name, 63, "%s", (char *)s_h264file[i]);
 		pVdecChn[i]->stChnAttr.enType = find_file_type(pVdecChn[i]->decode_file_name, filelen);
 		pVdecChn[i]->stChnAttr.enMode = VIDEO_MODE_FRAME;
-		pVdecChn[i]->stChnAttr.u32PicWidth = VDEC_WIDTH;
-		pVdecChn[i]->stChnAttr.u32PicHeight = VDEC_HEIGHT;
-		pVdecChn[i]->stChnAttr.u32StreamBufSize = VDEC_WIDTH*VDEC_HEIGHT;
+		pVdecChn[i]->stChnAttr.u32PicWidth = g_u32StreamWidth;
+		pVdecChn[i]->stChnAttr.u32PicHeight = g_u32StreamHeight;
+		pVdecChn[i]->stChnAttr.u32StreamBufSize = g_u32StreamWidth * g_u32StreamHeight;
 		pVdecChn[i]->stChnAttr.u32FrameBufCnt = 1;
 		if (pVdecChn[i]->stChnAttr.enType == PT_JPEG \
 			|| pVdecChn[i]->stChnAttr.enType == PT_MJPEG) {
@@ -1147,16 +1131,17 @@ CVI_S32 SAMPLE_VDEC_BIND_VENC(CVI_S32 decoding_file_num)
 		pVdecChn[i]->vdec_vb_source = VB_SOURCE_USER;
 		pVdecChn[i]->vdec_pixel_format = PIXEL_FORMAT_YUV_PLANAR_420;
 	}
+
 	/************************************************
     * step3:  Init VENC
     ************************************************/
 	VENC_CHN_ATTR_S stVencChnAttr, *pstVencChnAttr = &stVencChnAttr;
 	memset(pstVencChnAttr, 0, sizeof(VENC_CHN_ATTR_S));
 	pstVencChnAttr->stVencAttr.enType = PT_H264;
-	pstVencChnAttr->stVencAttr.u32MaxPicWidth = VDEC_WIDTH;
-	pstVencChnAttr->stVencAttr.u32MaxPicHeight = VDEC_HEIGHT;
-	pstVencChnAttr->stVencAttr.u32PicWidth = VDEC_WIDTH;
-	pstVencChnAttr->stVencAttr.u32PicHeight = VDEC_HEIGHT;
+	pstVencChnAttr->stVencAttr.u32MaxPicWidth = g_u32StreamWidth;
+	pstVencChnAttr->stVencAttr.u32MaxPicHeight = g_u32StreamHeight;
+	pstVencChnAttr->stVencAttr.u32PicWidth = g_u32StreamWidth;
+	pstVencChnAttr->stVencAttr.u32PicHeight = g_u32StreamHeight;
 	pstVencChnAttr->stVencAttr.u32BufSize = 0x30000;
 	pstVencChnAttr->stVencAttr.bByFrame = CVI_TRUE;
 	pstVencChnAttr->stVencAttr.bEsBufQueueEn = CVI_TRUE;
@@ -1189,8 +1174,8 @@ CVI_S32 SAMPLE_VDEC_BIND_VENC(CVI_S32 decoding_file_num)
 
 	for (int i = 0; i < stVdecCfg.s32ChnNum; i++) {
 		astSampleVdec[i].enType = pVdecChn[i]->stChnAttr.enType;
-		astSampleVdec[i].u32Width = VDEC_WIDTH;
-		astSampleVdec[i].u32Height = VDEC_HEIGHT;
+		astSampleVdec[i].u32Width = g_u32StreamWidth;
+		astSampleVdec[i].u32Height = g_u32StreamHeight;
 
 		astSampleVdec[i].enMode = VIDEO_MODE_FRAME;
 		astSampleVdec[i].stSampleVdecVideo.enDecMode = VIDEO_DEC_MODE_IP;
@@ -1257,8 +1242,8 @@ CVI_S32 SAMPLE_VDEC_BIND_VO(CVI_S32 decoding_file_num)
 #define VO_HEIGHT 1280
 #endif
 
-	stSize.u32Width = VDEC_WIDTH;
-	stSize.u32Height = VDEC_HEIGHT;
+	stSize.u32Width = g_u32StreamWidth;
+	stSize.u32Height = g_u32StreamHeight;
 
 	/************************************************
 	 * step1:  Init SYS and common VB
@@ -1266,7 +1251,7 @@ CVI_S32 SAMPLE_VDEC_BIND_VO(CVI_S32 decoding_file_num)
 	memset(&stVbConf, 0, sizeof(VB_CONFIG_S));
 	stVbConf.u32MaxPoolCnt		= 1;
 
-	u32BlkSize = COMMON_GetPicBufferSize(stSize.u32Width, stSize.u32Height, SAMPLE_PIXEL_FORMAT, DATA_BITWIDTH_8
+	u32BlkSize = COMMON_GetPicBufferSize(ALIGN(stSize.u32Width, H264D_ALIGN_W), ALIGN(stSize.u32Height, H264D_ALIGN_H), SAMPLE_PIXEL_FORMAT, DATA_BITWIDTH_8
 					    , enCompressMode, DEFAULT_ALIGN);
 	stVbConf.astCommPool[0].u32BlkSize	= u32BlkSize;
 	stVbConf.astCommPool[0].u32BlkCnt	= 5;
@@ -1362,7 +1347,7 @@ CVI_S32 SAMPLE_VDEC_BIND_VO(CVI_S32 decoding_file_num)
 			(astSampleVdec[i].enType == PT_JPEG || astSampleVdec[i].enType == PT_MJPEG) ? 0 : 2;
 		astSampleVdec[i].enPixelFormat = PIXEL_FORMAT_YUV_PLANAR_420;
 		astSampleVdec[i].u32FrameBufCnt =
-			(astSampleVdec[i].enType == PT_JPEG || astSampleVdec[i].enType == PT_MJPEG) ? 1 : 7;
+			(astSampleVdec[i].enType == PT_JPEG || astSampleVdec[i].enType == PT_MJPEG) ? 1 : 4;
 
 		s32Ret = vdec_init_vb_pool(i, &astSampleVdec[i], CVI_TRUE);
 		if (s32Ret != CVI_SUCCESS) {
@@ -1407,19 +1392,30 @@ CVI_VOID SAMPLE_VDECVO_HandleSig(CVI_S32 signo)
 
 CVI_VOID SAMPLE_VDECVO_Usage(CVI_CHAR *sPrgNm)
 {
-	printf("Usage : %s <case_number> <file1> <file2>\n", sPrgNm);
+	printf("Usage : %s <case_number> <file> [-r resolution]\n", sPrgNm);
 	printf("\n");
-	printf("Note: support h264 stream.\n");
-	printf("Note: support jpeg & mjpeg stream.\n");
-	printf("Note: run sample_panel first to init panel.\n");
+	printf("Arguments:\n");
+	printf("  case_number      Test case number (0-3)\n");
+	printf("  file             Input stream file \n");
 	printf("\n");
-	printf("Example: ./sample_vdecvo 1 res/enc-1080p.264 res/enc-1080p.264\n");
+	printf("Options:\n");
+	printf("  -r resolution    Set input stream resolution (e.g., -r 1920x1080)\n");
+	printf("                   Default: 1920x1080\n");
+	printf("  -h               Show this help message\n");
+	printf("\n");
+	printf("Examples:\n");
+	printf(" ./sample_vdecvo 0 res/enc-1080p.264\n");
+	printf("  Custom resolution: ./sample_vdecvo 0 res/enc-720p.264 -r 1280x720\n");
 	printf("\n");
 	printf("case_number:\n");
-	printf("\t 0)  VDEC chn bind VPSS bind VO\n");
-	printf("\t 1)  VDEC chns send to VPSS send to VO\n");
-	printf("\t 2)  VDEC chn bind VENC\n");
-	printf("\t 3)  VDEC chn bind VO\n");
+	printf("\t 0)  VDEC chn bind VPSS bind VO \n");
+	printf("\t 1)  VDEC chns send to VPSS send to VO \n");
+	printf("\t 2)  VDEC chn bind VENCn");
+	printf("\t 3)  VDEC chn bind VO (fixed 1280x720)\n");
+	printf("\n");
+	printf("Note: support h264 stream with P/B frames, default use decoder order.\n");
+	printf("Note: if h264 stream with B frames, need to modify u32FrameBufCnt to support display order.\n");
+	printf("Note: run sample_panel first to init panel (Verification on HX8394_EVB).\n");
 	printf("\n");
 }
 
@@ -1428,21 +1424,108 @@ int main(int argc, char *argv[])
 	CVI_S32 s32Ret = CVI_FAILURE;
 	CVI_S32 s32CaseNumber;
 	CVI_S32 decoding_file_num;
+	char *resolution_str = NULL;
 
-	decoding_file_num = argc - 2;
-	if (decoding_file_num < 1 || decoding_file_num > MAX_VDEC_NUM) {
+	// Manual argument parsing to handle mixed positional and option arguments
+	int case_arg_idx = -1;
+	int file_count = 0;
+	char *files[MAX_VDEC_NUM] = {NULL, NULL};
+
+	for (int i = 1; i < argc; i++) {
+		if (strcmp(argv[i], "-h") == 0) {
+			SAMPLE_VDECVO_Usage(argv[0]);
+			return CVI_SUCCESS;
+		} else if (strcmp(argv[i], "-r") == 0) {
+			if (i + 1 < argc) {
+				resolution_str = argv[i + 1];
+				i++; // Skip the resolution value
+			} else {
+				SAMPLE_PRT("Error: -r option requires a resolution argument\n");
+				SAMPLE_VDECVO_Usage(argv[0]);
+				return CVI_FAILURE;
+			}
+		} else if (argv[i][0] != '-') {
+			// This is a positional argument
+			if (case_arg_idx == -1) {
+				case_arg_idx = i;
+			} else if (file_count < MAX_VDEC_NUM) {
+				files[file_count] = argv[i];
+				file_count++;
+			} else {
+				SAMPLE_PRT("Error: Too many input files (maximum %d)\n", MAX_VDEC_NUM);
+				SAMPLE_VDECVO_Usage(argv[0]);
+				return CVI_FAILURE;
+			}
+		} else {
+			SAMPLE_PRT("Error: Unknown option %s\n", argv[i]);
+			SAMPLE_VDECVO_Usage(argv[0]);
+			return CVI_FAILURE;
+		}
+	}
+
+	// Parse resolution string if provided
+	if (resolution_str != NULL) {
+		int width, height;
+		if (sscanf(resolution_str, "%dx%d", &width, &height) == 2) {
+			if (width > 0 && height > 0) {
+				g_u32StreamWidth = (CVI_U32)width;
+				g_u32StreamHeight = (CVI_U32)height;
+				SAMPLE_PRT("Set stream resolution to %dx%d\n", width, height);
+			} else {
+				SAMPLE_PRT("Invalid resolution values: %dx%d\n", width, height);
+				SAMPLE_VDECVO_Usage(argv[0]);
+				return CVI_FAILURE;
+			}
+		} else {
+			SAMPLE_PRT("Invalid resolution format: %s (expected format: WIDTHxHEIGHT)\n", resolution_str);
+			SAMPLE_VDECVO_Usage(argv[0]);
+			return CVI_FAILURE;
+		}
+	}
+
+	// Validate parsed arguments
+	if (case_arg_idx == -1) {
+		SAMPLE_PRT("Error: Missing case number argument\n");
 		SAMPLE_VDECVO_Usage(argv[0]);
 		return CVI_FAILURE;
 	}
 
-	if (!strncmp(argv[1], "-h", 2)) {
+	if (file_count < 1) {
+		SAMPLE_PRT("Error: At least one input file is required\n");
 		SAMPLE_VDECVO_Usage(argv[0]);
-		return CVI_SUCCESS;
+		return CVI_FAILURE;
 	}
 
-	s32CaseNumber = atoi(argv[1]);
-	s_h264file[0] = argv[2];
-	s_h264file[1] = argv[3];
+	decoding_file_num = file_count;
+	s32CaseNumber = atoi(argv[case_arg_idx]);
+	s_h264file[0] = files[0];
+	s_h264file[1] = files[1]; // Will be NULL if only one file
+
+	// Validate file count based on case number
+	if (decoding_file_num != 1) {
+		SAMPLE_PRT("Error: Case %d only supports 1 input file (VO-related), but %d files provided\n",
+				s32CaseNumber, decoding_file_num);
+		SAMPLE_VDECVO_Usage(argv[0]);
+		return CVI_FAILURE;
+	}
+
+	// Handle case 3 special constraint (only supports 720x1280)
+	if (s32CaseNumber == 3) {
+		if (resolution_str != NULL &&
+			!(g_u32StreamWidth == 1280 && g_u32StreamHeight == 720)) {
+			printf("Warning: case 3 only supports resolution 1280x720. Forcing 1280x720.\n");
+		}
+		g_u32StreamWidth = 1280;
+		g_u32StreamHeight = 720;
+	}
+
+	SAMPLE_PRT("Decoding %d file(s): %s", decoding_file_num, (char *)s_h264file[0]);
+	if (decoding_file_num > 1 && s_h264file[1]) {
+		SAMPLE_PRT(", %s", (char *)s_h264file[1]);
+	}
+	SAMPLE_PRT("\n");
+	SAMPLE_PRT("Using resolution: %dx%d\n", g_u32StreamWidth, g_u32StreamHeight);
+
 	signal(SIGINT, SAMPLE_VDECVO_HandleSig);
 	signal(SIGTERM, SAMPLE_VDECVO_HandleSig);
 

@@ -365,7 +365,7 @@ CVI_S32 SAMPLE_COMM_VDEC_Bind_VO(VDEC_CHN VdecChn, VO_LAYER VoLayer, VO_CHN VoCh
 	stDestChn.s32DevId = VoLayer;
 	stDestChn.s32ChnId = VoChn;
 
-	CHECK_RET(CVI_SYS_Bind(&stSrcChn, &stDestChn), "CVI_SYS_UnBind(VDEC-VO)");
+	CHECK_RET(CVI_SYS_Bind(&stSrcChn, &stDestChn), "CVI_SYS_Bind(VDEC-VO)");
 
 	return CVI_SUCCESS;
 }
