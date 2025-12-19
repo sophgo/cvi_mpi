@@ -393,7 +393,7 @@ CVI_S32 SAMPLE_VIO_VPSS_INIT(SAMPLE_VI_CONFIG_S *pstViConfig, ASPECT_RATIO_E asp
 
 		stVpssGrpAttr.stFrameRate.s32SrcFrameRate    = -1;
 		stVpssGrpAttr.stFrameRate.s32DstFrameRate    = -1;
-		stVpssGrpAttr.enPixelFormat		     = PIXEL_FORMAT_NV21;
+		stVpssGrpAttr.enPixelFormat		     = PIXEL_FORMAT_NV12;
 		stVpssGrpAttr.u32MaxW			     = pstViInfo->stDevInfo.stSize.u32Width;
 		stVpssGrpAttr.u32MaxH			     = pstViInfo->stDevInfo.stSize.u32Height;
 		stVpssGrpAttr.u8VpssDev			     = 1;

@@ -1398,6 +1398,12 @@ CVI_S32 SAMPLE_COMM_AUDIO_StartAo(AUDIO_DEV AoDevId, CVI_S32 s32AoChn,
 		return CVI_FAILURE;
 	}
 
+	s32Ret = CVI_AO_EnableChn(AoDevId, s32AoChn);
+	if (s32Ret != CVI_SUCCESS) {
+		printf("%s: CVI_AO_EnableChn(%d) failed with %#x!\n", __func__, 0,
+		       s32Ret);
+		return CVI_FAILURE;
+	}
 
 	if (bResampleEn == CVI_TRUE) {
 		s32Ret = CVI_AO_EnableReSmp(AoDevId, s32AoChn, enInSampleRate);
@@ -1406,13 +1412,6 @@ CVI_S32 SAMPLE_COMM_AUDIO_StartAo(AUDIO_DEV AoDevId, CVI_S32 s32AoChn,
 			       AoDevId, 0, s32Ret);
 			return CVI_FAILURE;
 		}
-	}
-
-	s32Ret = CVI_AO_EnableChn(AoDevId, s32AoChn);
-	if (s32Ret != CVI_SUCCESS) {
-		printf("%s: CVI_AO_EnableChn(%d) failed with %#x!\n", __func__, 0,
-		       s32Ret);
-		return CVI_FAILURE;
 	}
 
 	return CVI_SUCCESS;

@@ -7,6 +7,10 @@
 #include <pthread.h>
 #include <inttypes.h>
 
+#ifdef __GLIBC__
+#include <malloc.h>
+#endif
+
 #if defined(ARCH_CV182X)
 #include "cvi_common.h"
 #include "cvi_math.h"
@@ -1664,7 +1668,9 @@ CVI_S32 mesh_gen_ldc(SIZE_S in_size, SIZE_S out_size,
 	free(src_2nd_list);
 	free(cfg);
 	free(rgn_attr);
-
+#ifdef __GLIBC__
+	malloc_trim(0);
+#endif
 	return ret;
 }
 
