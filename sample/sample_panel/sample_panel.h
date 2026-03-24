@@ -30,17 +30,23 @@ extern "C" {
 #include "dsi_lt9611.h"
 #include "lvds_lcm185x56.h"
 #include "hw_mcu_st7789v3.h"
+#include "hw_mcu_st7789p3.h"
 #include "bt656_pt1000k.h"
 #include "bt1120_pt1000k.h"
 #include "bt656_tp2803.h"
 #include "bt1120_nvp6021.h"
+#include "bt656_ms7024.h"
+
+#include "srgb_gc9307.h"
 #include "panel_i2c.h"
+#include "panel_spi.h"
 
 typedef enum {
 	PANEL_MODE_DSI,
 	PANEL_MODE_LVDS,
 	PANEL_MODE_BT,
 	PANEL_MODE_MCU,
+	PANEL_MODE_SRGB,
 } PANEL_TYPE;
 
 typedef struct dsi_panel_desc_s {

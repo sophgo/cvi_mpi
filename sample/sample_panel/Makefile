@@ -13,6 +13,7 @@ include ../sample.mk
 SDIR = $(CURDIR)
 SRCS = $(wildcard $(SDIR)/*.c)
 INCS = -I$(MW_INC) -I$(ISP_INC) -I$(KERNEL_INC) -I$(PANEL_INC) -I../common -I$(SENSOR_LIST_INC)
+SRCS += $(COMMON_DIR)/sample_common_peripheral.c
 OBJS = $(SRCS:.c=.o)
 DEPS = $(SRCS:.c=.d)
 
