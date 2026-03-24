@@ -34,6 +34,7 @@ extern "C" {
 #include "hw_mcu_st7789v3.h"
 #include "bt656_pt1000k.h"
 #include "bt1120_pt1000k.h"
+#include "bt656_ms7024.h"
 #include "panel_i2c.h"
 
 typedef enum {

@@ -64,6 +64,7 @@ typedef enum {
 	I80_PANEL_ST7789V3_HW_MCU_240x320_60FPS,
 	BT_PANEL_PT1000K_BT656_1280x720_25FPS_74M,
 	BT_PANEL_PT1000K_BT1120_1920x1080_25FPS_74M,
+	MS7024_BT656_480P_60FPS,
 	PANEL_MAX
 } PANEL_MODEL;
 
@@ -135,6 +136,7 @@ static char *s_panel_model_type_arr[] = {
 	"ST7789V3_HW_MCU_RGB565_240x320_60FPS",
 	"BT_PANEL_PT1000K_BT656_1280x720_25FPS_74M",
 	"BT_PANEL_PT1000K_BT1120_1920x1080_25FPS_74M",
+	"MS7024_BT656_480P_60FPS",
 };
 
 void printdsiHelp(void)
@@ -662,6 +664,17 @@ void SAMPLE_SET_PANEL_DESC(void)
 		g_panel_desc.stbtcfg.stVoPubAttr.stSyncInfo = stPt1000kbt1120_SyncInfo;
 		g_panel_desc.stbtcfg.BtAttr = stpt1000kbt1120cfg;
 		break;
+	case MS7024_BT656_480P_60FPS:
+		g_panel_desc.panel_type = PANEL_MODE_BT;
+		g_panel_desc.stbtcfg.stVoPubAttr.enIntfType = VO_INTF_BT656;
+		g_panel_desc.stbtcfg.stVoPubAttr.enIntfSync = VO_OUTPUT_USER;
+		VO_SYNC_INFO_S stMS7024bt656_SyncInfo = {.bSynm = 1, .bIop = 1, .u16FrameRate = 60
+		, .u16Vact = 480, .u16Vbb = 30, .u16Vfb = 9
+		, .u16Hact = 720, .u16Hbb = 60, .u16Hfb = 16
+		, .u16Vpw = 6, .u16Hpw = 62, .bIdv = 0, .bIhs = 0, .bIvs = 0};
+		g_panel_desc.stbtcfg.stVoPubAttr.stSyncInfo = stMS7024bt656_SyncInfo;
+		g_panel_desc.stbtcfg.BtAttr = stMS7024bt656cfg;
+		break;
 	default:
 		SAMPLE_PRT("default\n");
 		g_panel_desc.panel_type = PANEL_MODE_DSI;
@@ -838,6 +851,20 @@ void SAMPLE_PANEL_I2C_SEND(void)
 				  bt1120_1080p25_pt1000k_init_cmds[i].data);
 			if (ret != CVI_SUCCESS)
 				SAMPLE_PRT("i2c_write fail addr[0x%x]\n", bt1120_1080p25_pt1000k_init_cmds[i].addr);
+		}
+	} else if (g_input_para.panel_model == MS7024_BT656_480P_60FPS) {
+		ret = panel_i2c_init(g_input_para.dev_no);
+		if (ret != CVI_SUCCESS) {
+			SAMPLE_PRT("panel_i2c_init fail");
+		}
+		for (CVI_U32 i = 0; i < ARRAY_SIZE(bt656_480p_ms7024_init_cmds); i++) {
+			ret = panel_write_register(g_input_para.dev_no, bt656_480p_ms7024_init_cmds[i].addr,
+				  bt656_480p_ms7024_init_cmds[i].data);
+			if (ret != CVI_SUCCESS)
+				SAMPLE_PRT("i2c_write fail addr[0x%x]\n", bt656_480p_ms7024_init_cmds[i].addr);
+			if(bt656_480p_ms7024_init_cmds[i].delay) {
+				usleep(bt656_480p_ms7024_init_cmds[i].delay * 1000);
+			}
 		}
 	}
 }

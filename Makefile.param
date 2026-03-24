@@ -11,7 +11,6 @@ export MW_3RD_LIB := $(MW_PATH)/lib/3rd
 export MW_SNS_INC := $(BUILD_PATH)/media/SensorSupportList
 export OSAL_INC = $(TOP_DIR)/osal/include
 
-
 ifeq ($(KERNEL_DIR), )
 KERNEL_PATH ?= $(ROOT_DIR)/../../$(KERNEL_SRC)
 ifeq ($(PROJECT_FULLNAME), )
@@ -62,6 +61,7 @@ else ifeq ($(SDK_VER), musl_arm64)
   KERNEL_INC := $(KERNEL_DIR)/arm64/usr/include
 endif
 
+export KERNEL_INC
 
 ## ISP ##
 ISP_INC := $(MW_PATH)/include/isp
@@ -126,6 +126,10 @@ OS_TYPE:=LINUX
 ifeq ($(CONFIG_DUAL_OS), y)
 OS_TYPE = DUAL_OS
 CFLAGS += -DCONFIG_DUAL_OS
+endif
+
+ifeq ($(CONFIG_OSDC_DUAL_906), y)
+CFLAGS += -DCONFIG_OSDC_DUAL_906
 endif
 
 ifeq ($(CONFIG_SUSPEND), y)

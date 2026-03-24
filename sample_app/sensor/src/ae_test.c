@@ -64,8 +64,10 @@
 
 static AE_SENSOR_DEFAULT_S stSnsDft[MAX_SENSOR_NUM];
 
+#ifndef CONFIG_DUAL_OS
 static ISP_SENSOR_EXP_FUNC_S *stSensorExpFunc[MAX_SENSOR_NUM];
 static AE_SENSOR_EXP_FUNC_S *stExpFuncs[MAX_SENSOR_NUM];
+#endif
 extern SENSOR_CFG_S g_stSensorCfg;
 
 static void AE_SetFpsTest(CVI_U8 sID, CVI_U8 fps);
@@ -90,6 +92,351 @@ typedef struct __SENSOR_INFO_S {
 
 static _SENSOR_INFO_S sensorInfo[MAX_SENSOR_NUM];
 
+static void calcCenterG(CVI_U8 sID, CVI_U16 *LE, CVI_U16 *SE)
+{
+	CVI_U16 row, column, i;
+	CVI_U16 RValue, GValue, BValue, maxValue;
+	CVI_U8 centerRowStart, centerRowEnd, centerColumnStart, centerColumnEnd;
+	CVI_U32 centerLuma[ISP_CHANNEL_MAX_NUM] = {0, 0};
+	CVI_U16 centerCnt[ISP_CHANNEL_MAX_NUM] = {0, 0};
+
+	ISP_AE_STATISTICS_S stAeStat;
+
+	memset(&stAeStat, 0, sizeof(ISP_AE_STATISTICS_S));
+
+	CVI_ISP_GetAEStatistics(sID, &stAeStat);
+
+	centerRowStart = AE_ZONE_ROW / 2 - AE_ZONE_ROW / 4;
+	centerRowEnd = AE_ZONE_ROW / 2 + AE_ZONE_ROW / 4;
+	centerColumnStart = AE_ZONE_COLUMN / 2 - AE_ZONE_COLUMN / 4;
+	centerColumnEnd = AE_ZONE_COLUMN / 2 + AE_ZONE_COLUMN / 4;
+
+	for (i = 0; i < ISP_CHANNEL_MAX_NUM; i++) {
+		for (row = 0; row < AE_ZONE_ROW; row++) {
+			for (column = 0; column < AE_ZONE_COLUMN; column++) {
+
+				if ((row >= centerRowStart && row <= centerRowEnd) &&
+					(column >= centerColumnStart && column <= centerColumnEnd)) {
+
+					RValue = stAeStat.au16FEZoneAvg[i][0][row][column][ISP_BAYER_CHN_R];
+					GValue = (stAeStat.au16FEZoneAvg[i][0][row][column][ISP_BAYER_CHN_GR] +
+						stAeStat.au16FEZoneAvg[i][0][row][column][ISP_BAYER_CHN_GB]) / 2;
+					BValue = stAeStat.au16FEZoneAvg[i][0][row][column][ISP_BAYER_CHN_B];
+
+					maxValue = AAA_MAX(RValue, GValue);
+					maxValue = AAA_MAX(maxValue, BValue);
+					centerCnt[i]++;
+					centerLuma[i] += maxValue;
+				}
+
+			}
+		}
+	}
+
+	*LE = centerLuma[ISP_CHANNEL_LE] / centerCnt[ISP_CHANNEL_LE];
+	*SE = centerLuma[ISP_CHANNEL_SE] / centerCnt[ISP_CHANNEL_SE];
+}
+
+/* ============================================================================
+ * Dual OS / Single OS Compatible Implementation
+ * Functions are conditionally compiled based on CONFIG_DUAL_OS macro
+ * Includes: getSensorInfo, apply_sensor_default_blc, init_sensor_info,
+ *           gainLookup, AE_GainLinearTest
+ * ============================================================================ */
+#ifdef CONFIG_DUAL_OS
+/* Dual OS implementation */
+static void getSensorInfo(CVI_U8 sID)
+{
+	ISP_PUB_ATTR_S stPubAttr;
+	CVI_S32 s32Ret = CVI_SUCCESS;
+
+	memset(&stPubAttr, 0, sizeof(stPubAttr));
+
+	CVI_ISP_GetPubAttr(sID, &stPubAttr);
+
+	if (stPubAttr.enWDRMode != WDR_MODE_NONE) {
+		sensorInfo[sID].bWDRMode = true;
+	} else {
+		sensorInfo[sID].bWDRMode = false;
+	}
+
+	CVI_U8 fps = stPubAttr.f32FrameRate;
+
+	s32Ret = CVI_SNS_SetSnsFps(sID, fps, &stSnsDft[sID]);
+	if (s32Ret != CVI_SUCCESS) {
+		CVI_TRACE_LOG(CVI_DBG_ERR, "set sensor fps failed!\n");
+	}
+
+	sensorInfo[sID].fExpLineTime = 1000000 / (CVI_FLOAT) (stSnsDft[sID].u32FullLinesStd * fps);
+
+	if (stSnsDft[sID].stIntTimeAccu.f32Accuracy < 1) {
+		sensorInfo[sID].fExpLineTime = sensorInfo[sID].fExpLineTime *
+								stSnsDft[sID].stIntTimeAccu.f32Accuracy;
+	}
+
+	info_log("\nsensor: %d, fps: %d\n", sID, fps);
+
+	info_log("sensor frame line: %d, line time: %f, f32Accuracy: %f\n",
+		stSnsDft[sID].u32FullLinesStd, sensorInfo[sID].fExpLineTime,
+		stSnsDft[sID].stIntTimeAccu.f32Accuracy);
+
+	if (!sensorInfo[sID].bWDRMode) {
+
+		sensorInfo[sID].u32LExpLineMin = stSnsDft[sID].u32MinIntTime;
+		sensorInfo[sID].u32LExpLineMax = stSnsDft[sID].u32MaxIntTime;
+
+		sensorInfo[sID].u32LExpTimeMin =  sensorInfo[sID].u32LExpLineMin *
+										sensorInfo[sID].fExpLineTime + 1;
+		sensorInfo[sID].u32LExpTimeMax =  sensorInfo[sID].u32LExpLineMax *
+										sensorInfo[sID].fExpLineTime;
+
+		info_log("sensor exposure time range: %d - %d, line range: %d - %d\n",
+			sensorInfo[sID].u32LExpTimeMin, sensorInfo[sID].u32LExpTimeMax,
+			sensorInfo[sID].u32LExpLineMin, sensorInfo[sID].u32LExpLineMax);
+
+	} else {
+		SNS_EXP_MAX_S exp_mix_min = {
+			.manual = 1,
+			.ratio = { 256, 64, 64 }, //max 256x
+			.IntTimeMax = {0, 0, 0, 0},
+			.IntTimeMin = {0, 0, 0, 0},
+			.LFMaxIntTime = {0, 0, 0, 0},
+		};
+
+		s32Ret = CVI_SNS_GetExpRatio(sID, &exp_mix_min);
+		if (s32Ret != CVI_SUCCESS) {
+			CVI_TRACE_LOG(CVI_DBG_ERR, "get exp ratio failed!\n");
+		}
+
+		sensorInfo[sID].u32LExpLineMin = exp_mix_min.IntTimeMin[0];
+		sensorInfo[sID].u32SExpLineMin = exp_mix_min.IntTimeMin[0];
+
+		sensorInfo[sID].u32SExpLineMax = exp_mix_min.IntTimeMax[0];
+
+		sensorInfo[sID].u32LExpLineMax = stSnsDft[sID].u32FullLinesStd - exp_mix_min.IntTimeMax[0];
+
+		sensorInfo[sID].u32LExpTimeMin = sensorInfo[sID].u32LExpLineMin *
+										sensorInfo[sID].fExpLineTime + 1;
+		sensorInfo[sID].u32LExpTimeMax = sensorInfo[sID].u32LExpLineMax *
+										sensorInfo[sID].fExpLineTime;
+
+		sensorInfo[sID].u32SExpTimeMin = sensorInfo[sID].u32LExpTimeMin;
+		sensorInfo[sID].u32SExpTimeMax = sensorInfo[sID].u32SExpLineMax * sensorInfo[sID].fExpLineTime;
+
+		info_log("sensor LE exposure time range: %d - %d, line range: %d - %d\n",
+			sensorInfo[sID].u32LExpTimeMin, sensorInfo[sID].u32LExpTimeMax,
+			sensorInfo[sID].u32LExpLineMin, sensorInfo[sID].u32LExpLineMax);
+
+		info_log("sensor SE exposure time range: %d - %d, line range: %d - %d\n",
+			sensorInfo[sID].u32SExpTimeMin, sensorInfo[sID].u32SExpTimeMax,
+			sensorInfo[sID].u32SExpLineMin, sensorInfo[sID].u32SExpLineMax);
+	}
+
+	info_log("sensor Again max: %d, Dgain max: %d\n\n",
+		stSnsDft[sID].u32MaxAgain, stSnsDft[sID].u32MaxDgain);
+}
+
+static void apply_sensor_default_blc(CVI_U8 sID)
+{
+	ISP_CMOS_BLACK_LEVEL_S stBlc;
+	CVI_S32 s32Ret = CVI_SUCCESS;
+
+	memset(&stBlc, 0, sizeof(ISP_CMOS_BLACK_LEVEL_S));
+	s32Ret = CVI_SNS_GetIspBlkLev(sID, &stBlc);
+	if (s32Ret != CVI_SUCCESS) {
+		CVI_TRACE_LOG(CVI_DBG_ERR, "get sensor isp black level failed!\n");
+	}
+	CVI_ISP_SetBlackLevelAttr(sID, &stBlc.blcAttr);
+
+	debug_log("apply sensor default blc enOpType:%d ISO = 100 R:%d Gr:%d Gb:%d B:%d\n",
+		stBlc.blcAttr.enOpType,
+		stBlc.blcAttr.stAuto.OffsetR[0],
+		stBlc.blcAttr.stAuto.OffsetGr[0],
+		stBlc.blcAttr.stAuto.OffsetGb[0],
+		stBlc.blcAttr.stAuto.OffsetB[0]);
+}
+
+static void init_sensor_info(void)
+{
+	CVI_S32 s32Ret = CVI_SUCCESS;
+
+	for (int i = 0; i < g_stSensorCfg.sns_ini_cfg.devNum; i++) {
+		apply_sensor_default_blc(i);
+		s32Ret = CVI_SNS_GetAeDefault(i, &stSnsDft[i]);
+		if (s32Ret != CVI_SUCCESS) {
+			CVI_TRACE_LOG(CVI_DBG_ERR, "get sensor AE default failed!\n");
+		}
+		getSensorInfo(i);
+	}
+}
+
+static CVI_U32 gainLookup(CVI_U8 sID, CVI_U8 type, CVI_U32 index)
+{
+	SNS_GAIN_S stMaxGain = {
+		.gain = 1024,
+		.gainDb = 0,
+	};
+	SNS_GAIN_S stTempGain = {
+		.gain = 0,
+		.gainDb = 0,
+	};
+	CVI_U32 minGain = 1024;
+	CVI_S32 s32Ret = CVI_SUCCESS;
+
+	if (index == 0) {
+		return 1024;
+	}
+
+	if (type == 0) {
+		stMaxGain.gain = stSnsDft[sID].u32MaxAgain;
+		s32Ret = CVI_SNS_SetAgainCalc(sID, &stMaxGain);
+		if (s32Ret != CVI_SUCCESS) {
+			CVI_TRACE_LOG(CVI_DBG_ERR, "set sensor max again calc failed!\n");
+		}
+	} else {
+		stMaxGain.gain = stSnsDft[sID].u32MaxDgain;
+		s32Ret = CVI_SNS_SetDgainCalc(sID, &stMaxGain);
+		if (s32Ret != CVI_SUCCESS) {
+			CVI_TRACE_LOG(CVI_DBG_ERR, "get sensor max dgain calc failed!\n");
+		}
+	}
+
+	if (index >= stMaxGain.gainDb) {
+		return stMaxGain.gain;
+	}
+	stTempGain.gainDb = stMaxGain.gainDb;
+
+	while (1) {
+
+		stTempGain.gain = (stMaxGain.gain + minGain) / 2;
+
+		if (type == 0) {
+			s32Ret = CVI_SNS_SetAgainCalc(sID, &stTempGain);
+			if (s32Ret != CVI_SUCCESS) {
+				CVI_TRACE_LOG(CVI_DBG_ERR, "set sensor temp again calc failed!\n");
+			}
+		} else {
+			s32Ret = CVI_SNS_SetDgainCalc(sID, &stTempGain);
+			if (s32Ret != CVI_SUCCESS) {
+				CVI_TRACE_LOG(CVI_DBG_ERR, "get sensor temp dgain calc failed!\n");
+			}
+		}
+
+		if (stTempGain.gainDb == index) {
+			return stTempGain.gain;
+		} else if (stTempGain.gainDb > index) {
+			stMaxGain.gain = stTempGain.gain;
+		} else {
+			minGain = stTempGain.gain;
+		}
+	}
+}
+
+static void AE_GainLinearTest(CVI_U8 sID, CVI_S32 expTime, CVI_U32 StartISONum, CVI_U32 EndISONum)
+{
+#define RATIO_ERROR_DIFF	3
+
+	CVI_U16 leLuma, seLuma;
+	SNS_GAIN_S stDgain;
+	SNS_GAIN_S stAgain;
+	CVI_S32 s32Ret = CVI_SUCCESS;
+
+	CVI_U32 tempGain = 0;
+
+	CVI_U32 iso, gain, preAgain = 0, preDgain = 0;
+	CVI_U32	isoTable[] = {100, 200, 400, 800, 1600, 3200, 6400,
+		12800, 25600, 51200, 102400, 204800, 409600, 819200};
+	CVI_U16 isoStep = 1, curLuma, preLuma = 0, isoTblSize;
+	CVI_U16 i, lumaRatio, gainRatio;
+
+	ISP_EXPOSURE_ATTR_S expAttr = { 0 };
+
+	CVI_ISP_GetExposureAttr(sID, &expAttr);
+
+	isoTblSize = sizeof(isoTable) / sizeof(CVI_U32);
+	expAttr.bByPass = 0;
+	expAttr.u8DebugMode = 0;
+	expAttr.enOpType = OP_TYPE_MANUAL;
+	expAttr.stManual.enGainType = AE_TYPE_GAIN;
+	expAttr.stManual.enExpTimeOpType = OP_TYPE_MANUAL;
+	expAttr.stManual.enAGainOpType = OP_TYPE_MANUAL;
+	expAttr.stManual.enDGainOpType = OP_TYPE_MANUAL;
+	expAttr.stManual.enISPDGainOpType = OP_TYPE_MANUAL;
+	expAttr.stManual.u32ExpTime = expTime;
+
+	if (EndISONum < StartISONum)
+		EndISONum = StartISONum;
+
+	StartISONum = AAA_MAX(StartISONum, 100);
+
+	for (iso = StartISONum; iso <= EndISONum; iso += isoStep) {
+		for (i = 1 ; i < isoTblSize; ++i) {
+			if (iso < isoTable[i]) {
+				isoStep = (isoTable[i] - isoTable[i-1]) / 100;
+				break;
+			}
+		}
+
+		gain = (CVI_U32) ((CVI_U64) iso * (CVI_U64) AE_GAIN_BASE) / 100;
+
+		if (gain > stSnsDft[sID].u32MaxAgain && preAgain == stSnsDft[sID].u32MaxAgain) {
+			stAgain.gain = stSnsDft[sID].u32MaxAgain;
+			stDgain.gain = (CVI_U64)gain * AE_GAIN_BASE / AAA_DIV_0_TO_1(stAgain.gain);
+			tempGain = stDgain.gain;
+			s32Ret = CVI_SNS_SetDgainCalc(sID, &stDgain);
+			if (s32Ret != CVI_SUCCESS) {
+				CVI_TRACE_LOG(CVI_DBG_ERR, "set sensor gain calc failed!\n");
+			}
+			if (stDgain.gain > tempGain) {
+				error_log("\n\nWARN: The output Dgain(%d) can not bigger than", stDgain.gain);
+				error_log(" the input Dgain(%d)!!!\n\n", tempGain);
+			}
+		} else {
+			stAgain.gain = gain;
+			stDgain.gain = AE_GAIN_BASE;
+			stAgain.gain = AAA_MIN(stAgain.gain, stSnsDft[sID].u32MaxAgain);
+			tempGain = stAgain.gain;
+			s32Ret = CVI_SNS_SetAgainCalc(sID, &stAgain);
+			if (s32Ret != CVI_SUCCESS) {
+				CVI_TRACE_LOG(CVI_DBG_ERR, "set sensor gain calc failed!\n");
+			}
+			if (stAgain.gain > tempGain) {
+				error_log("\n\nWARN: The output Again(%d) can not bigger than", stAgain.gain);
+				error_log(" the input Again(%d)!!!\n\n", tempGain);
+			}
+		}
+
+		if (stAgain.gain != preAgain || stDgain.gain != preDgain) {
+			expAttr.stManual.u32AGain = stAgain.gain;
+			expAttr.stManual.u32DGain = stDgain.gain;
+			expAttr.stManual.u32ISPDGain = AE_GAIN_BASE;
+			CVI_ISP_SetExposureAttr(sID, &expAttr);
+			DELAY_500MS();
+			calcCenterG(sID, &leLuma, &seLuma);
+			curLuma = leLuma;
+			lumaRatio = curLuma * 100 / AAA_DIV_0_TO_1(preLuma);
+			gainRatio = (CVI_U64)stAgain.gain * stDgain.gain * 100 / AAA_DIV_0_TO_1((CVI_U64)preAgain * preDgain);
+			if (AAA_ABS(lumaRatio - gainRatio) > RATIO_ERROR_DIFF)
+				error_log("AG(%d):%u DG(%d):%u L:%u LR:%d GR:%d\n", stAgain.gainDb, stAgain.gain,
+					stDgain.gainDb, stDgain.gain, curLuma, lumaRatio, gainRatio);
+			else
+				info_log("AG(%d):%u DG(%d):%u L:%u LR:%d GR:%d\n", stAgain.gainDb, stAgain.gain,
+					stDgain.gainDb, stDgain.gain, curLuma, lumaRatio, gainRatio);
+			preAgain = stAgain.gain;
+			preDgain = stDgain.gain;
+			preLuma = curLuma;
+			if (stSnsDft[sID].u32MaxDgain > 1024 &&
+				stDgain.gain >= stSnsDft[sID].u32MaxDgain) {
+				break;
+			} else if (stSnsDft[sID].u32MaxDgain == 1024 &&
+				stAgain.gain >= stSnsDft[sID].u32MaxAgain) {
+				break;
+			}
+		}
+	}
+}
+#else
+/* Single OS implementation */
 static void getSensorInfo(CVI_U8 sID)
 {
 	ISP_PUB_ATTR_S stPubAttr;
@@ -105,10 +452,6 @@ static void getSensorInfo(CVI_U8 sID)
 	}
 
 	CVI_U8 fps = stPubAttr.f32FrameRate;
-
-	CVI_U16 manual = 1;
-	CVI_U32 ratio[3] = { 256, 64, 64 }; //max 256x
-	CVI_U32 IntTimeMax[4], IntTimeMin[4], LFMaxIntTime[4];
 
 	stExpFuncs[sID]->pfn_cmos_fps_set(sID, fps, &stSnsDft[sID]);
 
@@ -140,6 +483,10 @@ static void getSensorInfo(CVI_U8 sID)
 			sensorInfo[sID].u32LExpLineMin, sensorInfo[sID].u32LExpLineMax);
 
 	} else {
+		CVI_U16 manual = 1;
+		CVI_U32 ratio[3] = { 256, 64, 64 }; //max 256x
+		CVI_U32 IntTimeMax[4], IntTimeMin[4], LFMaxIntTime[4];
+
 		stExpFuncs[sID]->pfn_cmos_get_inttime_max(sID, manual, ratio, IntTimeMax,
 			IntTimeMin, LFMaxIntTime);
 
@@ -198,6 +545,149 @@ static void init_sensor_info(void)
 	}
 }
 
+static CVI_U32 gainLookup(CVI_U8 sID, CVI_U8 type, CVI_U32 index)
+{
+	CVI_U32 maxGain = 1024;
+	CVI_U32 minGain = 1024;
+
+	CVI_U32 tempGain = 0;
+
+	CVI_U32 tempIndex;
+
+	if (index == 0) {
+		return 1024;
+	}
+
+	if (type == 0) {
+		maxGain = stSnsDft[sID].u32MaxAgain;
+		stExpFuncs[sID]->pfn_cmos_again_calc_table(sID, &maxGain, &tempIndex);
+	} else {
+		maxGain = stSnsDft[sID].u32MaxDgain;
+		stExpFuncs[sID]->pfn_cmos_dgain_calc_table(sID, &maxGain, &tempIndex);
+	}
+
+	if (index >= tempIndex) {
+		return maxGain;
+	}
+
+	while (1) {
+
+		tempGain = (maxGain + minGain) / 2;
+
+		if (type == 0) {
+			stExpFuncs[sID]->pfn_cmos_again_calc_table(sID, &tempGain, &tempIndex);
+		} else {
+			stExpFuncs[sID]->pfn_cmos_dgain_calc_table(sID, &tempGain, &tempIndex);
+		}
+
+		if (tempIndex == index) {
+			return tempGain;
+		} else if (tempIndex > index) {
+			maxGain = tempGain;
+		} else {
+			minGain = tempGain;
+		}
+	}
+}
+
+static void AE_GainLinearTest(CVI_U8 sID, CVI_S32 expTime, CVI_U32 StartISONum, CVI_U32 EndISONum)
+{
+#define RATIO_ERROR_DIFF	3
+
+	CVI_U16 leLuma, seLuma;
+
+	CVI_U32 tempGain = 0;
+
+	CVI_U32 iso, gain, again, dgain, againDb = 0, dgainDb = 0,
+			preAgain = 0, preDgain = 0;
+	CVI_U32	isoTable[] = {100, 200, 400, 800, 1600, 3200, 6400,
+		12800, 25600, 51200, 102400, 204800, 409600, 819200};
+	CVI_U16 isoStep = 1, curLuma, preLuma = 0, isoTblSize;
+	CVI_U16 i, lumaRatio, gainRatio;
+
+	ISP_EXPOSURE_ATTR_S expAttr = { 0 };
+	VI_PIPE ViPipe = sID;
+
+	CVI_ISP_GetExposureAttr(sID, &expAttr);
+
+	isoTblSize = sizeof(isoTable) / sizeof(CVI_U32);
+	expAttr.bByPass = 0;
+	expAttr.u8DebugMode = 0;
+	expAttr.enOpType = OP_TYPE_MANUAL;
+	expAttr.stManual.enGainType = AE_TYPE_GAIN;
+	expAttr.stManual.enExpTimeOpType = OP_TYPE_MANUAL;
+	expAttr.stManual.enAGainOpType = OP_TYPE_MANUAL;
+	expAttr.stManual.enDGainOpType = OP_TYPE_MANUAL;
+	expAttr.stManual.enISPDGainOpType = OP_TYPE_MANUAL;
+	expAttr.stManual.u32ExpTime = expTime;
+
+	if (EndISONum < StartISONum)
+		EndISONum = StartISONum;
+
+	StartISONum = AAA_MAX(StartISONum, 100);
+
+	for (iso = StartISONum; iso <= EndISONum; iso += isoStep) {
+		for (i = 1 ; i < isoTblSize; ++i) {
+			if (iso < isoTable[i]) {
+				isoStep = (isoTable[i] - isoTable[i-1]) / 100;
+				break;
+			}
+		}
+
+		gain = (CVI_U32) ((CVI_U64) iso * (CVI_U64) AE_GAIN_BASE) / 100;
+
+		if (gain > stSnsDft[sID].u32MaxAgain && preAgain == stSnsDft[sID].u32MaxAgain) {
+			again = stSnsDft[sID].u32MaxAgain;
+			dgain = (CVI_U64)gain * AE_GAIN_BASE / AAA_DIV_0_TO_1(again);
+			tempGain = dgain;
+			stExpFuncs[sID]->pfn_cmos_dgain_calc_table(ViPipe, &dgain, &dgainDb);
+			if (dgain > tempGain) {
+				error_log("\n\nWARN: The output Dgain(%d) can not bigger than", dgain);
+				error_log(" the input Dgain(%d)!!!\n\n", tempGain);
+			}
+		} else {
+			again = gain;
+			dgain = AE_GAIN_BASE;
+			again = AAA_MIN(again, stSnsDft[sID].u32MaxAgain);
+			tempGain = again;
+			stExpFuncs[sID]->pfn_cmos_again_calc_table(ViPipe, &again, &againDb);
+			if (again > tempGain) {
+				error_log("\n\nWARN: The output Again(%d) can not bigger than", again);
+				error_log(" the input Again(%d)!!!\n\n", tempGain);
+			}
+		}
+
+		if (again != preAgain || dgain != preDgain) {
+			expAttr.stManual.u32AGain = again;
+			expAttr.stManual.u32DGain = dgain;
+			expAttr.stManual.u32ISPDGain = AE_GAIN_BASE;
+			CVI_ISP_SetExposureAttr(sID, &expAttr);
+			DELAY_500MS();
+			calcCenterG(sID, &leLuma, &seLuma);
+			curLuma = leLuma;
+			lumaRatio = curLuma * 100 / AAA_DIV_0_TO_1(preLuma);
+			gainRatio = (CVI_U64)again * dgain * 100 / AAA_DIV_0_TO_1((CVI_U64)preAgain * preDgain);
+			if (AAA_ABS(lumaRatio - gainRatio) > RATIO_ERROR_DIFF)
+				error_log("AG(%d):%u DG(%d):%u L:%u LR:%d GR:%d\n", againDb, again,
+					dgainDb, dgain, curLuma, lumaRatio, gainRatio);
+			else
+				info_log("AG(%d):%u DG(%d):%u L:%u LR:%d GR:%d\n", againDb, again,
+					dgainDb, dgain, curLuma, lumaRatio, gainRatio);
+			preAgain = again;
+			preDgain = dgain;
+			preLuma = curLuma;
+			if (stSnsDft[sID].u32MaxDgain > 1024 &&
+				dgain >= stSnsDft[sID].u32MaxDgain) {
+				break;
+			} else if (stSnsDft[sID].u32MaxDgain == 1024 &&
+				again >= stSnsDft[sID].u32MaxAgain) {
+				break;
+			}
+		}
+	}
+}
+#endif
+
 static CVI_U32 calcExpLine(CVI_U8 sID, CVI_S32 expTime)
 {
 	CVI_U32 expLine = 0;
@@ -206,51 +696,6 @@ static CVI_U32 calcExpLine(CVI_U8 sID, CVI_S32 expTime)
 	AAA_LIMIT(expLine, sensorInfo[sID].u32LExpLineMin, sensorInfo[sID].u32LExpLineMax);
 
 	return expLine;
-}
-
-static void calcCenterG(CVI_U8 sID, CVI_U16 *LE, CVI_U16 *SE)
-{
-	CVI_U16 row, column, i;
-	CVI_U16 RValue, GValue, BValue, maxValue;
-	CVI_U8 centerRowStart, centerRowEnd, centerColumnStart, centerColumnEnd;
-	CVI_U32 centerLuma[ISP_CHANNEL_MAX_NUM] = {0, 0};
-	CVI_U16 centerCnt[ISP_CHANNEL_MAX_NUM] = {0, 0};
-
-	ISP_AE_STATISTICS_S stAeStat;
-
-	memset(&stAeStat, 0, sizeof(ISP_AE_STATISTICS_S));
-
-	CVI_ISP_GetAEStatistics(sID, &stAeStat);
-
-	centerRowStart = AE_ZONE_ROW / 2 - AE_ZONE_ROW / 4;
-	centerRowEnd = AE_ZONE_ROW / 2 + AE_ZONE_ROW / 4;
-	centerColumnStart = AE_ZONE_COLUMN / 2 - AE_ZONE_COLUMN / 4;
-	centerColumnEnd = AE_ZONE_COLUMN / 2 + AE_ZONE_COLUMN / 4;
-
-	for (i = 0; i < ISP_CHANNEL_MAX_NUM; i++) {
-		for (row = 0; row < AE_ZONE_ROW; row++) {
-			for (column = 0; column < AE_ZONE_COLUMN; column++) {
-
-				if ((row >= centerRowStart && row <= centerRowEnd) &&
-					(column >= centerColumnStart && column <= centerColumnEnd)) {
-
-					RValue = stAeStat.au16FEZoneAvg[i][0][row][column][ISP_BAYER_CHN_R];
-					GValue = (stAeStat.au16FEZoneAvg[i][0][row][column][ISP_BAYER_CHN_GR] +
-						stAeStat.au16FEZoneAvg[i][0][row][column][ISP_BAYER_CHN_GB]) / 2;
-					BValue = stAeStat.au16FEZoneAvg[i][0][row][column][ISP_BAYER_CHN_B];
-
-					maxValue = AAA_MAX(RValue, GValue);
-					maxValue = AAA_MAX(maxValue, BValue);
-					centerCnt[i]++;
-					centerLuma[i] += maxValue;
-				}
-
-			}
-		}
-	}
-
-	*LE = centerLuma[ISP_CHANNEL_LE] / centerCnt[ISP_CHANNEL_LE];
-	*SE = centerLuma[ISP_CHANNEL_SE] / centerCnt[ISP_CHANNEL_SE];
 }
 
 static void _print_ae_info(CVI_U8 sID)
@@ -430,103 +875,6 @@ static void AE_SetWDRManualRatio(CVI_U8 sID, CVI_U16 ratio)
 		CVI_ISP_QueryExposureInfo(sID, &stExpInfo);
 
 		AE_SetManualExposureTest(sID, 2, 100000, stExpInfo.u32ISO);
-	}
-}
-
-static void AE_GainLinearTest(CVI_U8 sID, CVI_S32 expTime, CVI_U32 StartISONum, CVI_U32 EndISONum)
-{
-#define RATIO_ERROR_DIFF	3
-
-	CVI_U16 leLuma, seLuma;
-
-	CVI_U32 tempGain = 0;
-
-	CVI_U32 iso, gain, again, dgain, againDb = 0, dgainDb = 0,
-			preAgain = 0, preDgain = 0;
-	CVI_U32	isoTable[] = {100, 200, 400, 800, 1600, 3200, 6400,
-		12800, 25600, 51200, 102400, 204800, 409600, 819200};
-	CVI_U16 isoStep = 1, curLuma, preLuma = 0, isoTblSize;
-	CVI_U16 i, lumaRatio, gainRatio;
-
-	ISP_EXPOSURE_ATTR_S expAttr = { 0 };
-	VI_PIPE ViPipe = sID;
-
-	CVI_ISP_GetExposureAttr(sID, &expAttr);
-
-	isoTblSize = sizeof(isoTable) / sizeof(CVI_U32);
-	expAttr.bByPass = 0;
-	expAttr.u8DebugMode = 0;
-	expAttr.enOpType = OP_TYPE_MANUAL;
-	expAttr.stManual.enGainType = AE_TYPE_GAIN;
-	expAttr.stManual.enExpTimeOpType = OP_TYPE_MANUAL;
-	expAttr.stManual.enAGainOpType = OP_TYPE_MANUAL;
-	expAttr.stManual.enDGainOpType = OP_TYPE_MANUAL;
-	expAttr.stManual.enISPDGainOpType = OP_TYPE_MANUAL;
-	expAttr.stManual.u32ExpTime = expTime;
-
-	if (EndISONum < StartISONum)
-		EndISONum = StartISONum;
-
-	StartISONum = AAA_MAX(StartISONum, 100);
-
-	for (iso = StartISONum; iso <= EndISONum; iso += isoStep) {
-		for (i = 1 ; i < isoTblSize; ++i) {
-			if (iso < isoTable[i]) {
-				isoStep = (isoTable[i] - isoTable[i-1]) / 100;
-				break;
-			}
-		}
-
-		gain = (CVI_U32) ((CVI_U64) iso * (CVI_U64) AE_GAIN_BASE) / 100;
-
-		if (gain > stSnsDft[sID].u32MaxAgain && preAgain == stSnsDft[sID].u32MaxAgain) {
-			again = stSnsDft[sID].u32MaxAgain;
-			dgain = (CVI_U64)gain * AE_GAIN_BASE / AAA_DIV_0_TO_1(again);
-			tempGain = dgain;
-			stExpFuncs[sID]->pfn_cmos_dgain_calc_table(ViPipe, &dgain, &dgainDb);
-			if (dgain > tempGain) {
-				error_log("\n\nWARN: The output Dgain(%d) can not bigger than", dgain);
-				error_log(" the input Dgain(%d)!!!\n\n", tempGain);
-			}
-		} else {
-			again = gain;
-			dgain = AE_GAIN_BASE;
-			again = AAA_MIN(again, stSnsDft[sID].u32MaxAgain);
-			tempGain = again;
-			stExpFuncs[sID]->pfn_cmos_again_calc_table(ViPipe, &again, &againDb);
-			if (again > tempGain) {
-				error_log("\n\nWARN: The output Again(%d) can not bigger than", again);
-				error_log(" the input Again(%d)!!!\n\n", tempGain);
-			}
-		}
-
-		if (again != preAgain || dgain != preDgain) {
-			expAttr.stManual.u32AGain = again;
-			expAttr.stManual.u32DGain = dgain;
-			expAttr.stManual.u32ISPDGain = AE_GAIN_BASE;
-			CVI_ISP_SetExposureAttr(sID, &expAttr);
-			DELAY_500MS();
-			calcCenterG(sID, &leLuma, &seLuma);
-			curLuma = leLuma;
-			lumaRatio = curLuma * 100 / AAA_DIV_0_TO_1(preLuma);
-			gainRatio = (CVI_U64)again * dgain * 100 / AAA_DIV_0_TO_1((CVI_U64)preAgain * preDgain);
-			if (AAA_ABS(lumaRatio - gainRatio) > RATIO_ERROR_DIFF)
-				error_log("AG(%d):%u DG(%d):%u L:%u LR:%d GR:%d\n", againDb, again,
-					dgainDb, dgain, curLuma, lumaRatio, gainRatio);
-			else
-				info_log("AG(%d):%u DG(%d):%u L:%u LR:%d GR:%d\n", againDb, again,
-					dgainDb, dgain, curLuma, lumaRatio, gainRatio);
-			preAgain = again;
-			preDgain = dgain;
-			preLuma = curLuma;
-			if (stSnsDft[sID].u32MaxDgain > 1024 &&
-				dgain >= stSnsDft[sID].u32MaxDgain) {
-				break;
-			} else if (stSnsDft[sID].u32MaxDgain == 1024 &&
-				again >= stSnsDft[sID].u32MaxAgain) {
-				break;
-			}
-		}
 	}
 }
 
@@ -710,51 +1058,6 @@ static void AE_ShutterLinearTest(CVI_U8 sID, CVI_U8 fid, CVI_U32 startExpTime, C
 			curExpLine[fid] = calcExpLine(sID, tmpExpTime[fid]);
 
 		} while (curExpLine[fid] == preExpLine[fid]);
-	}
-}
-
-static CVI_U32 gainLookup(CVI_U8 sID, CVI_U8 type, CVI_U32 index)
-{
-	CVI_U32 maxGain = 1024;
-	CVI_U32 minGain = 1024;
-
-	CVI_U32 tempGain = 0;
-
-	CVI_U32 tempIndex;
-
-	if (index == 0) {
-		return 1024;
-	}
-
-	if (type == 0) {
-		maxGain = stSnsDft[sID].u32MaxAgain;
-		stExpFuncs[sID]->pfn_cmos_again_calc_table(sID, &maxGain, &tempIndex);
-	} else {
-		maxGain = stSnsDft[sID].u32MaxDgain;
-		stExpFuncs[sID]->pfn_cmos_dgain_calc_table(sID, &maxGain, &tempIndex);
-	}
-
-	if (index >= tempIndex) {
-		return maxGain;
-	}
-
-	while (1) {
-
-		tempGain = (maxGain + minGain) / 2;
-
-		if (type == 0) {
-			stExpFuncs[sID]->pfn_cmos_again_calc_table(sID, &tempGain, &tempIndex);
-		} else {
-			stExpFuncs[sID]->pfn_cmos_dgain_calc_table(sID, &tempGain, &tempIndex);
-		}
-
-		if (tempIndex == index) {
-			return tempGain;
-		} else if (tempIndex > index) {
-			maxGain = tempGain;
-		} else {
-			minGain = tempGain;
-		}
 	}
 }
 

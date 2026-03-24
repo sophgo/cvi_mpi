@@ -38,6 +38,7 @@ sample_app/tde/sample_tde
 sample_app/fastboot/sample_fastboot
 sample_app/cipher/sample_cipher
 sample_app/gdc/sample_gdc
+sample_app/sample_ir_auto/sample_ir_auto
 
 self_test/vc_ut/cvi_api_test
 self_test/vc_ut/multi_pro_chns_dec

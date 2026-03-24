@@ -1,10 +1,9 @@
 SHELL = /bin/bash
 
 ifeq ($(PARAM_FILE), )
-     PARAM_FILE:=../../Makefile.param
+     PARAM_FILE:=$(MW_PATH)/Makefile.param
      include $(PARAM_FILE)
 endif
-
 
 SDIR = $(PWD)
 ifeq ($(OS_TYPE), DUAL_OS)

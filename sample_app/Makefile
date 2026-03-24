@@ -6,7 +6,7 @@ endif
 .PHONY: all clean
 
 
-SAMPLE_APP = sbm vio vpss venc region gfbg tde sensor panel vdec audio cipher gdc
+SAMPLE_APP = sbm vio vpss venc region gfbg tde sensor panel vdec audio cipher gdc sample_ir_auto
 
 ifeq ($(OS_TYPE), DUAL_OS)
 SAMPLE_APP += fastboot

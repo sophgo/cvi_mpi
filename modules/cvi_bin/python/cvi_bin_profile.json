@@ -975,6 +975,32 @@
             {
                 "ID": 2,
                 "type":["unsigned", "char"], "name":"UpdateInterval", "dims":[], "children": []
+            },
+            {
+                "ID": 3,
+                "type":["MESH_MODE"], "name":"MeshCorrectMode", "dims":[], "children": []
+            },
+            {
+                "ID": 4,
+                "type":["unsigned", "short"], "name":"LumaStrength", "dims":[], "children": []
+            },
+            {
+                "ID": 5,
+                "type":["ISP_MESH_SHADING_MANUAL_ATTR_S"], "name":"stManual", "dims":[], "children": [
+                    {
+                        "ID": 0,
+                        "type":["unsigned", "short"], "name":"LumaStrength", "dims":[], "children": []
+                    }
+                ]
+            },
+            {
+                "ID": 6,
+                "type":["ISP_MESH_SHADING_AUTO_ATTR_S"], "name":"stAuto", "dims":[], "children": [
+                    {
+                        "ID": 0,
+                        "type":["unsigned", "short"], "name":"LumaStrength", "dims":["16"], "children": []
+                    }
+                ]
             }
         ]
     },
@@ -5931,6 +5957,10 @@
                     {
                         "ID": 7,
                         "type":["unsigned", "short"], "name":"u16ManualPos", "dims":[], "children": []
+                    },
+                    {
+                        "ID": 8,
+                        "type":["AF_MANUAL_TYPE"], "name":"enManualOpType", "dims":[], "children": []
                     }
                 ]
             }

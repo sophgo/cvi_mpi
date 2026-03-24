@@ -142,6 +142,7 @@ CVI_S32 header_bin_GetHeaderDescInfo(CVI_CHAR *pOutDesc, enum CVI_BIN_CREATMODE 
 	CVI_CHAR binGerrit[BIN_GERRIT_SIZE + 1] = { 0 };
 	CVI_CHAR binMd5[BIN_MD5_SIZE + 1] = { 0 };
 
+	memset(&sensorInfo, 0, sizeof(SENSOR_INFO));
 	isp_bin_getSensorInfo(&sensorInfo);
 	bin_get_repo_info(binGerrit, binCommitId, binMd5);
 
@@ -157,8 +158,12 @@ CVI_S32 header_bin_GetHeaderDescInfo(CVI_CHAR *pOutDesc, enum CVI_BIN_CREATMODE 
 	}
 	pOutDesc += SENSORNUM_SIZE;
 	if (inCreatMode != CVI_BIN_AUTO) {
-		for (CVI_U8 i = 0; i < sensorInfo.num; ++i) {
-			strncpy(pOutDesc + i * SENSORNAME_SIZE, sensorInfo.name[i], SENSORNAME_SIZE);
+		for (CVI_U8 i = 0, j = 0; i < SUPPORT_VI_MAX_PIPE_NUM; ++i) {
+			if (strlen(sensorInfo.name[i]) == 0) {
+				continue;
+			}
+			strncpy(pOutDesc + j * SENSORNAME_SIZE, sensorInfo.name[i], SENSORNAME_SIZE);
+			j++;
 		}
 	}
 	pOutDesc += SENSORNAME_SIZE * SUPPORT_VI_MAX_PIPE_NUM;
@@ -416,6 +421,7 @@ static CVI_S32 isp_bin_checkBinVersion(CVI_U8 *addr, CVI_U32 binSize)
 	printf("cvi_bin_isp message\n");
 
 	bin_get_repo_info(binGerrit, binCommitId, binMd5);
+	memset(&sensorInfo, 0, sizeof(SENSOR_INFO));
 	isp_bin_getSensorInfo(&sensorInfo);
 
 	printf("%-15s%-15s%-15s%-15s\n", "gerritId:", binGerrit, "commitId:", binCommitId);

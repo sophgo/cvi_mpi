@@ -431,15 +431,19 @@ struct cvi_rgn_bitmap {
 };
 CVI_S32 platform_rgn_updatecanvas(RGN_HANDLE Handle)
 {
-	CVI_S32 fd = -1, s32Ret, s32IonLen;
+	CVI_S32 fd = -1, s32Ret;
 	struct rgn_canvas *canvas;
-	RGN_ATTR_S stRegion;
-	struct cvi_rgn_bitmap *pstBitmaps;
-	CVI_U32 u32Bpp, i = 0, j = 0;
+
 	MSG_PRIV_DATA_S stPrivData;
 
 	// Driver control
 	fd = get_rgn_fd();
+
+#if !defined(CONFIG_OSDC_DUAL_906)
+	RGN_ATTR_S stRegion;
+	struct cvi_rgn_bitmap *pstBitmaps;
+	CVI_U32 u32Bpp, i = 0, j = 0;
+	CVI_S32 s32IonLen;
 
 	s32Ret = cvi_rgn_get_ion_len(fd, Handle, &s32IonLen);
 	if (s32Ret != CVI_SUCCESS) {
@@ -627,7 +631,24 @@ CVI_S32 platform_rgn_updatecanvas(RGN_HANDLE Handle)
 	}
 
 	CVI_SYS_IonFlushCache(canvas->u64PhyAddr, canvas->pu8VirtAddr, canvas->u32Size);
+#else
+	pthread_mutex_lock(&canvas_q_lock);
+	if (!STAILQ_EMPTY(&canvas_q)) {
+		STAILQ_FOREACH(canvas, &canvas_q, stailq) {
+			if (canvas->Handle == Handle) {
+				break;
+			}
+		}
+	} else {
+		CVI_TRACE_RGN(CVI_DBG_ERR, "No corresponding Handle(%d) found.\n", Handle);
+		pthread_mutex_unlock(&canvas_q_lock);
+		return CVI_ERR_RGN_ILLEGAL_PARAM;
+	}
+	pthread_mutex_unlock(&canvas_q_lock);
 
+	CVI_SYS_IonFlushCache(canvas->u64PhyAddr,
+		canvas->pu8VirtAddr, canvas->u32Size);
+#endif
 	stPrivData.as32PrivData[0] = Handle;
 	s32Ret = CVI_MSG_SendSync(fd, MSG_CMD_RGN_UPDATE_CANVAS,
 					NULL, 0, &stPrivData);

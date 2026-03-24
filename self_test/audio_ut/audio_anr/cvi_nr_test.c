@@ -290,7 +290,9 @@ DEFAULT_ANR_PATH:
 	else
 		printf("fatal error while allocate buffer[%s][%d]\n", __func__, __LINE__);
 
-
+#ifdef USE_ALIOS_AUD_DRV
+		CVI_SYS_Init();
+#endif
 	/* Step 2 assign config for vqe attribute */
 	AI_AEC_CONFIG_S default_AEC_Setting = {};
 	AUDIO_AGC_CONFIG_S default_AGC_Setting;
@@ -314,47 +316,46 @@ DEFAULT_ANR_PATH:
 	if (use_default_parameters == 1) {
 		_using_default_anr_parameters(&pstAiVqeAttr, sample_rate);
 		hopsize = s32FramePerSample;
-
 	} else {
-	/* Step3: User option for NR AGC */
-	s32Ret = _vqe_user_option(&pstAiVqeAttr);
-	printf("pstAiVqeAttr.u32OpenMask[0x%x]\n", pstAiVqeAttr.u32OpenMask);
+		/* Step3: User option for NR AGC */
+		s32Ret = _vqe_user_option(&pstAiVqeAttr);
+		printf("pstAiVqeAttr.u32OpenMask[0x%x]\n", pstAiVqeAttr.u32OpenMask);
 
 
-	printf("Enter frame size (samples)160 multiply\n");
-	scanf("%d", &s32FramePerSample);
-	printf("frame size[%d]\n", s32FramePerSample);
-	pstAiVqeAttr.s32WorkSampleRate = 16000;
+		printf("Enter frame size (samples)160 multiply\n");
+		scanf("%d", &s32FramePerSample);
+		printf("frame size[%d]\n", s32FramePerSample);
+		pstAiVqeAttr.s32WorkSampleRate = 16000;
 
-	if (bWithNotchFilter == CVI_TRUE) {
-		printf("With customize Notch Filter\n");
-		pstAiVqeAttr.stAgcCfg.para_agc_max_gain = 0;
-		pstAiVqeAttr.stAgcCfg.para_agc_target_high = 2;
-		pstAiVqeAttr.stAgcCfg.para_agc_target_low = 6;
-		pstAiVqeAttr.stAgcCfg.para_agc_vad_ena = 1;
-		pstAiVqeAttr.stAnrCfg.para_nr_snr_coeff = 10;
-		pstAiVqeAttr.para_notch_freq = 1;
-		pstAiVqeAttr.stAnrCfg.para_nr_init_sile_time = 0;
+		if (bWithNotchFilter == CVI_TRUE) {
+			printf("With customize Notch Filter\n");
+			pstAiVqeAttr.stAgcCfg.para_agc_max_gain = 0;
+			pstAiVqeAttr.stAgcCfg.para_agc_target_high = 2;
+			pstAiVqeAttr.stAgcCfg.para_agc_target_low = 6;
+			pstAiVqeAttr.stAgcCfg.para_agc_vad_ena = 1;
+			pstAiVqeAttr.stAnrCfg.para_nr_snr_coeff = 10;
+			pstAiVqeAttr.para_notch_freq = 1;
+			pstAiVqeAttr.stAnrCfg.para_nr_init_sile_time = 0;
 
-	}
-	hopsize = s32FramePerSample;
-	if (s32Ret == CVI_FAILURE) {
-		ERR_PRINTF("Err\n");
-		return CVI_FAILURE;
-	}
+		}
+		hopsize = s32FramePerSample;
+		if (s32Ret == CVI_FAILURE) {
+			ERR_PRINTF("Err\n");
+			return CVI_FAILURE;
+		}
 
-	if (bIsWav == CVI_TRUE) {
-		fread(&wav_header[0], 1, 44, fp_test_input);/* wav header  */
-		pstAiVqeAttr.s32WorkSampleRate = (CVI_S32)wav_header[12];
-	} else {
-		int rate;
+		if (bIsWav == CVI_TRUE) {
+			fread(&wav_header[0], 1, 44, fp_test_input);/* wav header  */
+			pstAiVqeAttr.s32WorkSampleRate = (CVI_S32)wav_header[12];
+		} else {
+			int rate;
 
-		printf("Enter sample rate (8000/16000):\n");
-		scanf("%d", &rate);
-		printf("\n");
-		pstAiVqeAttr.s32WorkSampleRate  = rate;
-	}
-	printf("sample rate[%d]\n", pstAiVqeAttr.s32WorkSampleRate);
+			printf("Enter sample rate (8000/16000):\n");
+			scanf("%d", &rate);
+			printf("\n");
+			pstAiVqeAttr.s32WorkSampleRate  = rate;
+		}
+		printf("sample rate[%d]\n", pstAiVqeAttr.s32WorkSampleRate);
 	}
 	/* step4 init algo function */
 	s32Ret = CVI_AI_SetTalkVqeAttr(
@@ -365,7 +366,7 @@ DEFAULT_ANR_PATH:
 			 &pstAiVqeAttr);
 
 	if (s32Ret != CVI_SUCCESS) {
-		ERR_PRINTF("\n");
+		printf("CVI_AI_SetTalkVqeAttr fail,ret:%d\n", s32Ret);
 		free(audio_buffer);
 		return CVI_FAILURE;
 	}
@@ -379,6 +380,7 @@ DEFAULT_ANR_PATH:
 		/* This section of codes have to be replaced by reading system layer */
 		/* bitstream in real platform */
 		/* copy unit in memcpy is byte */
+
 		if (fread(pWrite, sizeof(short), hopsize * u32UsrFrmDepth,
 			  fp_test_input) != (size_t)(hopsize * u32UsrFrmDepth)) {
 			/* get current frame data */
@@ -415,6 +417,9 @@ DEFAULT_ANR_PATH:
 	CVI_AI_DisableVqe(0, 0);
 	//CVI_AudIn_AlgoFreeBuffer();
 	CVI_AudIn_AlgoDeInit();
+#ifdef USE_ALIOS_AUD_DRV
+	CVI_SYS_Exit();
+#endif
 	free(audio_buffer);
 	return 0;
 Pattern_EOF:
@@ -423,6 +428,10 @@ Pattern_EOF:
 	CVI_AI_DisableVqe(0, 0);
 	//CVI_AudIn_AlgoFreeBuffer();
 	CVI_AudIn_AlgoDeInit();
+	sleep(1);
+#ifdef USE_ALIOS_AUD_DRV
+	CVI_SYS_Exit();
+#endif
 	free(audio_buffer);
 	return 0;
 
