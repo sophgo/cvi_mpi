@@ -142,6 +142,7 @@ extern ISP_SNS_OBJ_S stSnsGc2053_1l_Obj;
 extern ISP_SNS_OBJ_S stSnsGc2083_Obj;
 extern ISP_SNS_OBJ_S stSnsGc2093_Obj;
 extern ISP_SNS_OBJ_S stSnsGc2093_Slave_Obj;
+extern ISP_SNS_OBJ_S stSnsGc20c3_Obj;
 extern ISP_SNS_OBJ_S stSnsGc2145_Obj;
 extern ISP_SNS_OBJ_S stSnsGc2385_1L_Obj;
 extern ISP_SNS_OBJ_S stSnsGc4023_Obj;
