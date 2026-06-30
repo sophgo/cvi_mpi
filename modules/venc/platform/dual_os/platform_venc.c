@@ -273,7 +273,7 @@ CVI_S32 platform_venc_start_recv_frame(VENC_CHN VeChn, const VENC_RECV_PIC_PARAM
 CVI_S32 platform_venc_stop_recv_frame(VENC_CHN VeChn)
 {
 	CVI_S32 s32Ret;
-	CVI_U32 u32ModFd = MODFD(CVI_ID_VENC, 0, VeChn);
+	CVI_U32 u32ModFd = MODFD2(CVI_ID_VENC, 0, VeChn, 1);
 
 	CVI_VENC_API_IN;
 

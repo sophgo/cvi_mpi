@@ -4,10 +4,10 @@ ifeq ($(PARAM_FILE), )
 	include $(PARAM_FILE)
 endif
 
-PANEL_INC =../../component/panel/
-SDIR = $(PWD)
+PANEL_INC =../../component/PanelSupportList/panels
+SDIR = $(CURDIR)
 SRCS = $(wildcard $(SDIR)/*.c)
-COMM_INC = $(PWD)/../common
+COMM_INC = $(CURDIR)/../common
 INCS = -I$(MW_INC) -I$(PANEL_INC) -I$(COMM_INC) -I$(ISP_INC) -I$(MW_INC)/sensor
 OBJS = $(SRCS:.c=.o)
 DEPS = $(SRCS:.c=.d)

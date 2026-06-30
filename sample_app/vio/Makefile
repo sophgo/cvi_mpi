@@ -30,9 +30,9 @@ REQUIRES = cvi_common
 LIBS = $(shell PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) pkg-config --libs --define-variable=mw_dir=$(MW_PATH) cvi_common)
 else
 ELFFLAGS += -static
-LIBS = -lvi -lvpss -lvenc -lrgn -lvo -lmipi -lsys -lsensor -lcvi_bin -lisp -lawb -lae -laf
+LIBS = -lvi -lvpss -lvenc -lrgn -lvo -lmipi -lsys -lsensor -lcvi_bin -lisp -lisp_algo -lawb -lae -laf
 ifneq ($(OS_TYPE), DUAL_OS)
-LIBS += -lsns_full -lsensor $(ISP_LIB) -lisp -lawb -lae -laf -lisp_algo -lcvi_bin
+LIBS += -lsns_full -lsensor $(ISP_LIB) -lisp -lawb -lae -laf -lcvi_bin
 endif
 endif
 

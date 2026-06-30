@@ -18,11 +18,11 @@ REQUIRES = cvi_common
 LIBS += $(shell PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) pkg-config --libs --define-variable=mw_dir=$(MW_PATH) cvi_common)
 else
 ELFFLAGS += -static
-LIBS +=  -lsensor -lvi -lvpss -lsys -lvenc -lrgn
+LIBS +=  -lsensor -lvi -lvpss -lsys -lvenc -lrgn -lvo -lcvi_bin -lisp -lisp_algo -lawb -lae -laf
 endif
 
 ifneq ($(OS_TYPE), DUAL_OS)
-LIBS += -lsns_full $(ISP_LIB)
+LIBS += -lsns_full
 endif
 
 EXTRA_CFLAGS = $(INCS) $(DEFS)
@@ -40,7 +40,7 @@ $(SDIR)/%.o: $(SDIR)/%.c
 	@echo [$(notdir $(CC))] $(notdir $@)
 
 $(TARGET): $(COMM_OBJ) $(OBJS)
-	@$(CXX) -o $@ -Wl,--start-group $(OBJS) $(COMM_OBJS) -Wl,--end-group $(ELFFLAGS) $(EXTRA_LDFLAGS)
+	@$(CXX) -o $@ -Wl,--start-group $(OBJS) $(COMM_OBJS) $(EXTRA_LDFLAGS) -Wl,--end-group $(ELFFLAGS)
 	@echo -e $(BLUE)[LINK]$(END)[$(notdir $(CXX))] $(notdir $@)
 
 clean:

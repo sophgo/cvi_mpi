@@ -185,5 +185,6 @@ CVI_S32 vi_ut_vpss_deinit(VI_UT_CTX *pUtCtx);
 CVI_S32 vi_ut_vi_deinit(VI_UT_CTX *pUtCtx);
 CVI_VOID vi_ut_sys_exit();
 CVI_S32 vi_ut_set_vi_vpss_mode(VI_UT_CTX *pUtCtx);
+CVI_S32 vi_ut_ai_isp_test(VI_UT_CTX *pUtCtx);
 
 #endif

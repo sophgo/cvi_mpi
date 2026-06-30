@@ -22,6 +22,7 @@ modules/uapi/
 modules/msg/
 modules/pq_bin/
 component/isp
+component/PanelSupportList
 
 sample_app/sensor/sample_sensor
 sample_app/sbm/sample_sbm

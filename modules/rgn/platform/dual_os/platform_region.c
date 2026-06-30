@@ -156,6 +156,11 @@ CVI_S32 platform_rgn_setbitmap(RGN_HANDLE Handle, const BITMAP_S *pstBitmap)
 		break;
 	}
 
+	case PIXEL_FORMAT_4BIT_MODE: {
+		u32Len = pstBitmap->u32Width * pstBitmap->u32Height * 0.5;
+		break;
+	}
+
 	case PIXEL_FORMAT_ARGB_4444:
 	case PIXEL_FORMAT_ARGB_1555:
 	default: {
@@ -256,7 +261,7 @@ CVI_S32 platform_rgn_detachfromchn(RGN_HANDLE Handle, const MMF_CHN_S *pstChn)
 #endif
 
 	// Driver control
-	fd = get_rgn_fd();
+	fd = MODFD2(CVI_ID_RGN, 0, 0, 1);
 	stPrivData.as32PrivData[0] = Handle;
 	s32Ret = CVI_MSG_SendSync(fd, MSG_CMD_RGN_DETACH_FROM_CHN,
 				(CVI_VOID *)pstChn, sizeof(MMF_CHN_S), &stPrivData);
@@ -334,6 +339,9 @@ static inline CVI_S32 rgn_get_bytesperline(PIXEL_FORMAT_E enPixelFormat, CVI_U32
 		break;
 	case PIXEL_FORMAT_8BIT_MODE:
 		*bytesperline = width;
+		break;
+	case PIXEL_FORMAT_4BIT_MODE:
+		*bytesperline = width >> 1;
 		break;
 	default:
 		CVI_TRACE_RGN(CVI_DBG_ERR, "not supported pxl-fmt(%d).\n", enPixelFormat);
@@ -437,7 +445,7 @@ CVI_S32 platform_rgn_updatecanvas(RGN_HANDLE Handle)
 	MSG_PRIV_DATA_S stPrivData;
 
 	// Driver control
-	fd = get_rgn_fd();
+	fd = MODFD2(CVI_ID_RGN, 0, 0, 1);
 
 #if !defined(CONFIG_OSDC_DUAL_906)
 	RGN_ATTR_S stRegion;
@@ -540,6 +548,10 @@ CVI_S32 platform_rgn_updatecanvas(RGN_HANDLE Handle)
 			osdc_canvas.format = OSD_LUT8;
 			u32Bpp = 1;
 			break;
+		case PIXEL_FORMAT_4BIT_MODE:
+			osdc_canvas.format = OSD_LUT4;
+			u32Bpp = 0;
+			break;
 
 		default:
 			osdc_canvas.format = OSD_ARGB1555;
@@ -581,18 +593,24 @@ CVI_S32 platform_rgn_updatecanvas(RGN_HANDLE Handle)
 					pstObjAttr[i].stRgnRect.u32IsFill,
 					pstObjAttr[i].stRgnRect.u32Thick);
 			} else if (pstObjAttr[i].enObjType == RGN_CMPR_BIT_MAP) {
-				pstBitmaps[j].u32BitmapSize = pstObjAttr[i].stBitmap.stRect.u32Width *
-								pstObjAttr[i].stBitmap.stRect.u32Height * u32Bpp;
+				if (u32Bpp == 0) {
+					// 4bit mode: 2 pixels per byte
+					pstBitmaps[j].u32BitmapSize = (pstObjAttr[i].stBitmap.stRect.u32Width *
+									pstObjAttr[i].stBitmap.stRect.u32Height + 1) / 2;
+				} else {
+					pstBitmaps[j].u32BitmapSize = pstObjAttr[i].stBitmap.stRect.u32Width *
+									pstObjAttr[i].stBitmap.stRect.u32Height * u32Bpp;
+				}
 				pstBitmaps[j].pBitmapVAddr = CVI_SYS_MmapCache(pstObjAttr[i].stBitmap.u64BitmapPAddr,
 								pstBitmaps[j].u32BitmapSize);
 
-				CVI_OSDC_SetBitmapObjAttr(&osdc_canvas, &obj_vec[i],
-					pstBitmaps[j++].pBitmapVAddr,
-					pstObjAttr[i].stBitmap.stRect.s32X,
-					pstObjAttr[i].stBitmap.stRect.s32Y,
-					pstObjAttr[i].stBitmap.stRect.u32Width,
-					pstObjAttr[i].stBitmap.stRect.u32Height,
-					false);
+					CVI_OSDC_SetBitmapObjAttr(&osdc_canvas, &obj_vec[i],
+						pstBitmaps[j++].pBitmapVAddr,
+						pstObjAttr[i].stBitmap.stRect.s32X,
+						pstObjAttr[i].stBitmap.stRect.s32Y,
+						pstObjAttr[i].stBitmap.stRect.u32Width,
+						pstObjAttr[i].stBitmap.stRect.u32Height,
+						false);
 			}
 		}
 

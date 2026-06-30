@@ -16,10 +16,7 @@ else
 	CFLAGS += -DCV184X_FPGA_RAW_REPLAY
 endif
 
-ISP_LIBS = -lae -lawb -laf -lcvi_ispd2 -lisp -ldl
-ifeq ($(OS_TYPE), LINUX)
-	ISP_LIBS += -lisp_algo
-endif
+ISP_LIBS = -lae -lawb -laf -lcvi_ispd2 -lisp -lisp_algo -ldl
 
 OBJS = $(SRCS:.c=.o)
 DEPS = $(SRCS:.c=.d)

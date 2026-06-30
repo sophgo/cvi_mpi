@@ -58,7 +58,6 @@ int vi_sdk_put_smooth_rawdump(int fd, int pipe, VIDEO_FRAME_INFO_S *pstFrameInfo
 int vi_sdk_set_chn_rotation(int fd, struct vi_chn_rot_cfg *cfg);
 int vi_sdk_get_chn_rotation(int fd, struct vi_chn_rot_cfg *cfg);
 int vi_sdk_set_chn_ldc(int fd, struct vi_chn_ldc_cfg *cfg);
-int vi_sdk_set_chn_ldc(int fd, struct vi_chn_ldc_cfg *cfg);
 int vi_sdk_get_chn_ldc(int fd, int pipe, int chn, struct vi_chn_ldc_cfg *cfg);
 int vi_sdk_set_chn_flip_mirror(int fd, struct vi_chn_flip_mirror_cfg *cfg);
 int vi_sdk_get_chn_flip_mirror(int fd, struct vi_chn_flip_mirror_cfg *cfg);
@@ -67,5 +66,9 @@ int vi_sdk_detach_vbpool(int fd, struct vi_vb_pool_cfg *cfg);
 int vi_sdk_dump_register(int fd, int pipe, struct ip_info *ip_info);
 int vi_sdk_set_dev_rx_frame_count(int fd, int dev, uint32_t count);
 int vi_sdk_get_dev_rx_frame_count(int fd, int dev, uint32_t *count);
+
+int vi_sdk_set_ai_isp_cfg(int fd, VI_AI_ISP_CFG_S *pstAiIspCfg);
+int vi_sdk_get_ai_isp_raw(int fd, VI_AI_ISP_INFO_WRAP_S *pstAiIspInfoWrap);
+int vi_sdk_put_ai_isp_raw(int fd, VI_AI_ISP_INFO_WRAP_S *pstAiIspInfoWrap);
 
 #endif // MODULES_VPU_INCLUDE_VI_IOCTL_H_

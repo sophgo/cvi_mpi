@@ -371,18 +371,16 @@ static CVI_VOID *SAMPLE_COMM_ISP_Thread(void *arg)
 	snprintf(szThreadName, sizeof(szThreadName), "ISP%d_RUN", IspDev);
 	prctl(PR_SET_NAME, szThreadName, 0, 0, 0);
 
-	if (IspDev > 0) {
-		SAMPLE_PRT("ISP Dev %d return\n", IspDev);
-		return NULL;
-	}
-
 	// TODO: HGJ
 	//CVI_SYS_RegisterThermalCallback(callback_FPS);
 
 	SAMPLE_PRT("ISP Dev %d running!\n", IspDev);
 	s32Ret = CVI_ISP_Run(IspDev);
-	if (s32Ret != 0)
+	if (s32Ret != CVI_SUCCESS) {
 		SAMPLE_PRT("CVI_ISP_Run failed with %#x!\n", s32Ret);
+	} else {
+		SAMPLE_PRT("CVI_ISP_Run success with %#x!\n", s32Ret);
+	}
 
 	return NULL;
 }

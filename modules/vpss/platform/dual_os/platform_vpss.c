@@ -789,16 +789,24 @@ CVI_S32 platform_vpss_getchnframe(VPSS_GRP VpssGrp, VPSS_CHN VpssChn, VIDEO_FRAM
 	if (s32Ret != CVI_SUCCESS)
 		return s32Ret;
 
-	stPrivData.as32PrivData[0] = s32MilliSec;
-	s32Ret = CVI_MSG_SendSync(u32ModFd, MSG_CMD_VPSS_GET_CHN_FRAME, (CVI_VOID *)pstFrameInfo,
-				0, &stPrivData);
-	if (s32Ret != CVI_SUCCESS) {
-		CVI_TRACE_VPSS(CVI_DBG_ERR, "Get chn frame fail,VpssGrp:%d, VpssChn:%d, s32Ret:%x\n",
-			VpssGrp, VpssChn, s32Ret);
-		return s32Ret;
+	if (s32MilliSec == -1) {
+		stPrivData.as32PrivData[0] = CVI_IPCMSG_SEND_SYNC_TIMEOUT - 100;
+	} else {
+		stPrivData.as32PrivData[0] = s32MilliSec;
 	}
 
-	return CVI_SUCCESS;
+	do {
+		s32Ret = CVI_MSG_SendSync(u32ModFd, MSG_CMD_VPSS_GET_CHN_FRAME, (CVI_VOID *)pstFrameInfo,
+					0, &stPrivData);
+		if (s32Ret != CVI_SUCCESS) {
+			CVI_TRACE_VPSS(CVI_DBG_ERR, "Get chn frame timeout,VpssGrp:%d, VpssChn:%d, s32Ret:%x\n",
+				VpssGrp, VpssChn, s32Ret);
+		} else {
+			break;
+		}
+	} while (s32MilliSec == -1);
+
+	return s32Ret;
 }
 
 CVI_S32 platform_vpss_releasechnframe(VPSS_GRP VpssGrp, VPSS_CHN VpssChn, const VIDEO_FRAME_INFO_S *pstVideoFrame)

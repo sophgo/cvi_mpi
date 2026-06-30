@@ -744,3 +744,15 @@ CVI_S32 CVI_VI_GetDevRxFrameCount(VI_DEV ViDev, CVI_U32 *pu32FrameCount)
 
 	return platform_vi_getdevrxframecount(ViDev, pu32FrameCount);
 }
+
+CVI_S32 CVI_VI_AiIspCfg(VI_AI_ISP_CFG_S *pstAiIspCfg)
+{
+	CHECK_VI_NULL_PTR(pstAiIspCfg);
+	return platform_vi_aiispcfg(pstAiIspCfg);
+}
+
+CVI_S32 CVI_VI_AiIspInfo(VI_AI_ISP_INFO_WRAP_S *pstAiIspInfoWrap)
+{
+	CHECK_VI_NULL_PTR(pstAiIspInfoWrap);
+	return platform_vi_aiispinfo(pstAiIspInfoWrap);
+}

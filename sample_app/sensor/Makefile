@@ -18,7 +18,7 @@ INCS = -I$(MW_INC) -I$(ISP_INC) -I$(MW_INC)/sensor -I./inc -I$(COMM_INC)
 TARGET = sample_sensor
 
 ifeq ($(OS_TYPE), DUAL_OS)
-LIBS += -lvi -lvpss -lsys -lini -lsensor -lisp -lawb -lae -laf
+LIBS += -lvi -lvpss -lsys -lini -lsensor -lisp -lisp_algo -lawb -lae -laf
 else
 LIBS = -lvi -lini -lsns_full -lsensor -lgdc -lsys -lisp -lcvi_bin -lawb -lae -laf -lisp_algo -lvo -lvpss
 endif

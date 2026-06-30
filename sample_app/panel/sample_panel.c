@@ -65,6 +65,10 @@ typedef enum {
 	BT_PANEL_PT1000K_BT656_1280x720_25FPS_74M,
 	BT_PANEL_PT1000K_BT1120_1920x1080_25FPS_74M,
 	MS7024_BT656_480P_60FPS,
+	MS7024_BT656_480P_30FPS,
+	MS7024_BT656_576P_50FPS,
+	MS7024_BT656_576P_25FPS,
+	MS7024_BT656_480P_30FPS_TESTPATTERN,
 	PANEL_MAX
 } PANEL_MODEL;
 
@@ -86,10 +90,10 @@ inputPara g_input_para = {
 static struct panel_desc_s g_panel_desc = {
 	.panel_mode = "HX8394_EVB",
 	.panel_type = PANEL_MODE_DSI,
-	.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_hx8394_720x1280,
-	.stdsicfg.hs_timing_cfg = &hs_timing_cfg_hx8394_720x1280,
-	.stdsicfg.dsi_init_cmds = dsi_init_cmds_hx8394_720x1280,
-	.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_hx8394_720x1280)
+	.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_dsi_hx8394_720x1280_NULL_4lane_60fps,
+	.stdsicfg.hs_timing_cfg = &hs_timing_cfg_dsi_hx8394_720x1280_NULL_4lane_60fps,
+	.stdsicfg.dsi_init_cmds = dsi_init_cmds_dsi_hx8394_720x1280_NULL_4lane_60fps,
+	.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_dsi_hx8394_720x1280_NULL_4lane_60fps)
 };
 
 static optionExt long_option_ext[] = {
@@ -137,6 +141,11 @@ static char *s_panel_model_type_arr[] = {
 	"BT_PANEL_PT1000K_BT656_1280x720_25FPS_74M",
 	"BT_PANEL_PT1000K_BT1120_1920x1080_25FPS_74M",
 	"MS7024_BT656_480P_60FPS",
+	"MS7024_BT656_480P_30FPS",
+	"MS7024_BT656_576P_50FPS",
+	"MS7024_BT656_576P_25FPS",
+	"MS7024_BT656_480P_30FPS_TESTPATTERN",
+
 };
 
 void printdsiHelp(void)
@@ -475,94 +484,94 @@ void SAMPLE_SET_PANEL_DESC(void)
 	switch (g_input_para.panel_model) {
 	case DSI_PANEL_ILI9881C:
 		g_panel_desc.panel_type = PANEL_MODE_DSI;
-		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_ili9881c_720x1280;
-		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_ili9881c_720x1280;
-		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_ili9881c_720x1280;
-		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_ili9881c_720x1280);
+		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_dsi_ili9881c_720x1280_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_dsi_ili9881c_720x1280_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_dsi_ili9881c_720x1280_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_dsi_ili9881c_720x1280_NULL_4lane_60fps);
 		break;
 	case DSI_PANEL_ILI9881D:
 		g_panel_desc.panel_type = PANEL_MODE_DSI;
-		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_ili9881d_720x1280;
-		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_ili9881d_720x1280;
-		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_ili9881d_720x1280;
-		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_ili9881d_720x1280);
+		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_dsi_ili9881d_720x1280_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_dsi_ili9881d_720x1280_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_dsi_ili9881d_720x1280_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_dsi_ili9881d_720x1280_NULL_4lane_60fps);
 		break;
 	case DSI_PANEL_JD9366AB:
 		g_panel_desc.panel_type = PANEL_MODE_DSI;
-		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_jd9366ab_800x1280;
-		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_jd9366ab_800x1280;
-		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_jd9366ab_800x1280;
-		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_jd9366ab_800x1280);
+		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_dsi_jd9366ab_800x1280_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_dsi_jd9366ab_800x1280_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_dsi_jd9366ab_800x1280_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_dsi_jd9366ab_800x1280_NULL_4lane_60fps);
 		break;
 	case DSI_PANEL_NT35521:
 		g_panel_desc.panel_type = PANEL_MODE_DSI;
-		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_nt35521_800x1280;
-		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_nt35521_800x1280;
-		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_nt35521_800x1280;
-		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_nt35521_800x1280);
+		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_dsi_nt35521_800x1280_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_dsi_nt35521_800x1280_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_dsi_nt35521_800x1280_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_dsi_nt35521_800x1280_NULL_4lane_60fps);
 		break;
 	case DSI_PANEL_OTA7290B:
 		g_panel_desc.panel_type = PANEL_MODE_DSI;
-		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_ota7290b_320x1280;
-		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_ota7290b_320x1280;
-		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_ota7290b_320x1280;
-		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_ota7290b_320x1280);
+		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_dsi_ota7290b_320x1280_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_dsi_ota7290b_320x1280_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_dsi_ota7290b_320x1280_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_dsi_ota7290b_320x1280_NULL_4lane_60fps);
 		break;
 	case DSI_PANEL_OTA7290B_1920:
 		g_panel_desc.panel_type = PANEL_MODE_DSI;
-		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_ota7290b_440x1920;
-		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_ota7290b_440x1920;
-		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_ota7290b_440x1920;
-		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_ota7290b_440x1920);
+		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_dsi_ota7290b_440x1920_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_dsi_ota7290b_440x1920_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_dsi_ota7290b_440x1920_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_dsi_ota7290b_440x1920_NULL_4lane_60fps);
 		break;
 	case DSI_PANEL_ICN9707:
 		g_panel_desc.panel_type = PANEL_MODE_DSI;
-		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_icn9707_480x1920;
-		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_icn9707_480x1920;
-		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_icn9707_480x1920;
-		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_icn9707_480x1920);
+		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_dsi_icn9707_480x1920_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_dsi_icn9707_480x1920_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_dsi_icn9707_480x1920_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_dsi_icn9707_480x1920_NULL_4lane_60fps);
 		break;
 	case DSI_PANEL_3AML069LP01G:
 		g_panel_desc.panel_type = PANEL_MODE_DSI;
-		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_3AML069LP01G_600x1024;
-		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_3AML069LP01G_600x1024;
-		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_3AML069LP01G_600x1024;
-		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_3AML069LP01G_600x1024);
+		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_dsi_3aml069lp01g_600x1024_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_dsi_3aml069lp01g_600x1024_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_dsi_3aml069lp01g_600x1024_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_dsi_3aml069lp01g_600x1024_NULL_4lane_60fps);
 		break;
 	case DSI_PANEL_ST7701:
 		g_panel_desc.panel_type = PANEL_MODE_DSI;
-		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_st7701_480x800;
-		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_st7701_480x800;
-		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_st7701_480x800;
-		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_st7701_480x800);
+		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_dsi_st7701_480x800_NULL_2lane_60fps;
+		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_dsi_st7701_480x800_NULL_2lane_60fps;
+		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_dsi_st7701_480x800_NULL_2lane_60fps;
+		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_dsi_st7701_480x800_NULL_2lane_60fps);
 		break;
 	case DSI_PANEL_ST7701_480x640:
 		g_panel_desc.panel_type = PANEL_MODE_DSI;
-		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_st7701_480x640;
-		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_st7701_480x640;
-		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_st7701_480x640;
-		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_st7701_480x640);
+		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_dsi_st7701_480x640_NULL_2lane_60fps;
+		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_dsi_st7701_480x640_NULL_2lane_60fps;
+		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_dsi_st7701_480x640_NULL_2lane_60fps;
+		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_dsi_st7701_480x640_NULL_2lane_60fps);
 		break;
 	case DSI_PANEL_ST7703:
 		g_panel_desc.panel_type = PANEL_MODE_DSI;
-		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_st7703_640x480;
-		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_st7703_640x480;
-		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_st7703_640x480;
-		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_st7703_640x480);
+		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_dsi_st7703_640x480_NULL_2lane_60fps;
+		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_dsi_st7703_640x480_NULL_2lane_60fps;
+		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_dsi_st7703_640x480_NULL_2lane_60fps;
+		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_dsi_st7703_640x480_NULL_2lane_60fps);
 		break;
 	case DSI_PANEL_HX8399_1080P:
 		g_panel_desc.panel_type = PANEL_MODE_DSI;
-		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_hx8399_1080x1920;
-		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_hx8399_1080x1920;
-		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_hx8399_1080x1920;
-		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_hx8399_1080x1920);
+		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_dsi_hx8399_1080x1920_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_dsi_hx8399_1080x1920_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_dsi_hx8399_1080x1920_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_dsi_hx8399_1080x1920_NULL_4lane_60fps);
 		break;
 	case DSI_PANEL_GM8775C:
 		g_panel_desc.panel_type = PANEL_MODE_DSI;
-		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_gm8775c;
-		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_gm8775c;
-		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_gm8775c;
-		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_gm8775c);
+		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_dsi_gm8775c_1920x1080_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_dsi_gm8775c_1920x1080_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_dsi_gm8775c_1920x1080_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_dsi_gm8775c_1920x1080_NULL_4lane_60fps);
 		break;
 	case DSI_PANEL_LT9611_1920x1080_60:
 		g_panel_desc.panel_type = PANEL_MODE_DSI;
@@ -615,10 +624,10 @@ void SAMPLE_SET_PANEL_DESC(void)
 		break;
 	case DSI_PANEL_HX8394_EVB:
 		g_panel_desc.panel_type = PANEL_MODE_DSI;
-		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_hx8394_720x1280;
-		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_hx8394_720x1280;
-		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_hx8394_720x1280;
-		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_hx8394_720x1280);
+		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_dsi_hx8394_720x1280_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_dsi_hx8394_720x1280_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_dsi_hx8394_720x1280_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_dsi_hx8394_720x1280_NULL_4lane_60fps);
 		break;
 	case LVDS_PANEL_LCM185X56:
 		g_panel_desc.panel_type = PANEL_MODE_LVDS;
@@ -675,13 +684,50 @@ void SAMPLE_SET_PANEL_DESC(void)
 		g_panel_desc.stbtcfg.stVoPubAttr.stSyncInfo = stMS7024bt656_SyncInfo;
 		g_panel_desc.stbtcfg.BtAttr = stMS7024bt656cfg;
 		break;
+	case MS7024_BT656_480P_30FPS:
+	case MS7024_BT656_480P_30FPS_TESTPATTERN: {
+		g_panel_desc.panel_type = PANEL_MODE_BT;
+		g_panel_desc.stbtcfg.stVoPubAttr.enIntfType = VO_INTF_BT656;
+		g_panel_desc.stbtcfg.stVoPubAttr.enIntfSync = VO_OUTPUT_USER;
+		VO_SYNC_INFO_S stMS7024bt656_SyncInfo = {.bSynm = 1, .bIop = 1, .u16FrameRate = 30
+		, .u16Vact = 480, .u16Vbb = 30, .u16Vfb = 9
+		, .u16Hact = 720, .u16Hbb = 60, .u16Hfb = 16
+		, .u16Vpw = 6, .u16Hpw = 62, .bIdv = 0, .bIhs = 0, .bIvs = 0};
+		g_panel_desc.stbtcfg.stVoPubAttr.stSyncInfo = stMS7024bt656_SyncInfo;
+		g_panel_desc.stbtcfg.BtAttr = stMS7024bt656cfg;
+		break;
+	}
+	case MS7024_BT656_576P_50FPS: {
+		g_panel_desc.panel_type = PANEL_MODE_BT;
+		g_panel_desc.stbtcfg.stVoPubAttr.enIntfType = VO_INTF_BT656;
+		g_panel_desc.stbtcfg.stVoPubAttr.enIntfSync = VO_OUTPUT_USER;
+		VO_SYNC_INFO_S stMS7024bt656_576p_SyncInfo = {.bSynm = 1, .bIop = 1, .u16FrameRate = 50
+		, .u16Vact = 576, .u16Vbb = 39, .u16Vfb = 5
+		, .u16Hact = 720, .u16Hbb = 68, .u16Hfb = 12
+		, .u16Vpw = 5, .u16Hpw = 64, .bIdv = 0, .bIhs = 0, .bIvs = 0};
+		g_panel_desc.stbtcfg.stVoPubAttr.stSyncInfo = stMS7024bt656_576p_SyncInfo;
+		g_panel_desc.stbtcfg.BtAttr = stMS7024bt656cfg;
+		break;
+	}
+	case MS7024_BT656_576P_25FPS: {
+		g_panel_desc.panel_type = PANEL_MODE_BT;
+		g_panel_desc.stbtcfg.stVoPubAttr.enIntfType = VO_INTF_BT656;
+		g_panel_desc.stbtcfg.stVoPubAttr.enIntfSync = VO_OUTPUT_USER;
+		VO_SYNC_INFO_S stMS7024bt656_576p_SyncInfo = {.bSynm = 1, .bIop = 1, .u16FrameRate = 25
+		, .u16Vact = 576, .u16Vbb = 39, .u16Vfb = 5
+		, .u16Hact = 720, .u16Hbb = 68, .u16Hfb = 12
+		, .u16Vpw = 5, .u16Hpw = 64, .bIdv = 0, .bIhs = 0, .bIvs = 0};
+		g_panel_desc.stbtcfg.stVoPubAttr.stSyncInfo = stMS7024bt656_576p_SyncInfo;
+		g_panel_desc.stbtcfg.BtAttr = stMS7024bt656cfg;
+		break;
+	}
 	default:
 		SAMPLE_PRT("default\n");
 		g_panel_desc.panel_type = PANEL_MODE_DSI;
-		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_hx8394_720x1280;
-		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_hx8394_720x1280;
-		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_hx8394_720x1280;
-		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_hx8394_720x1280);
+		g_panel_desc.stdsicfg.dev_cfg = (struct combo_dev_cfg_s *)&dev_cfg_dsi_hx8394_720x1280_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_dsi_hx8394_720x1280_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_dsi_hx8394_720x1280_NULL_4lane_60fps;
+		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_dsi_hx8394_720x1280_NULL_4lane_60fps);
 		break;
 	}
 	if (g_input_para.pn_swap_flag) {
@@ -857,13 +903,69 @@ void SAMPLE_PANEL_I2C_SEND(void)
 		if (ret != CVI_SUCCESS) {
 			SAMPLE_PRT("panel_i2c_init fail");
 		}
-		for (CVI_U32 i = 0; i < ARRAY_SIZE(bt656_480p_ms7024_init_cmds); i++) {
-			ret = panel_write_register(g_input_para.dev_no, bt656_480p_ms7024_init_cmds[i].addr,
-				  bt656_480p_ms7024_init_cmds[i].data);
+		for (CVI_U32 i = 0; i < ARRAY_SIZE(bt656_480p60_ms7024_init_cmds); i++) {
+			ret = panel_write_register(g_input_para.dev_no, bt656_480p60_ms7024_init_cmds[i].addr,
+				  bt656_480p60_ms7024_init_cmds[i].data);
 			if (ret != CVI_SUCCESS)
-				SAMPLE_PRT("i2c_write fail addr[0x%x]\n", bt656_480p_ms7024_init_cmds[i].addr);
-			if(bt656_480p_ms7024_init_cmds[i].delay) {
-				usleep(bt656_480p_ms7024_init_cmds[i].delay * 1000);
+				SAMPLE_PRT("i2c_write fail addr[0x%x]\n", bt656_480p60_ms7024_init_cmds[i].addr);
+			if(bt656_480p60_ms7024_init_cmds[i].delay) {
+				usleep(bt656_480p60_ms7024_init_cmds[i].delay * 1000);
+			}
+		}
+	} else if (g_input_para.panel_model == MS7024_BT656_480P_30FPS) {
+		ret = panel_i2c_init(g_input_para.dev_no);
+		if (ret != CVI_SUCCESS) {
+			SAMPLE_PRT("panel_i2c_init fail");
+		}
+		for (CVI_U32 i = 0; i < ARRAY_SIZE(bt656_480p30_ms7024_init_cmds); i++) {
+			ret = panel_write_register(g_input_para.dev_no, bt656_480p30_ms7024_init_cmds[i].addr,
+				  bt656_480p30_ms7024_init_cmds[i].data);
+			if (ret != CVI_SUCCESS)
+				SAMPLE_PRT("i2c_write fail addr[0x%x]\n", bt656_480p30_ms7024_init_cmds[i].addr);
+			if(bt656_480p30_ms7024_init_cmds[i].delay) {
+				usleep(bt656_480p30_ms7024_init_cmds[i].delay * 1000);
+			}
+		}
+	} else if (g_input_para.panel_model == MS7024_BT656_576P_50FPS) {
+		ret = panel_i2c_init(g_input_para.dev_no);
+		if (ret != CVI_SUCCESS) {
+			SAMPLE_PRT("panel_i2c_init fail");
+		}
+		for (CVI_U32 i = 0; i < ARRAY_SIZE(bt656_576p50_ms7024_init_cmds); i++) {
+			ret = panel_write_register(g_input_para.dev_no, bt656_576p50_ms7024_init_cmds[i].addr,
+				  bt656_576p50_ms7024_init_cmds[i].data);
+			if (ret != CVI_SUCCESS)
+				SAMPLE_PRT("i2c_write fail addr[0x%x]\n", bt656_576p50_ms7024_init_cmds[i].addr);
+			if(bt656_576p50_ms7024_init_cmds[i].delay) {
+				usleep(bt656_576p50_ms7024_init_cmds[i].delay * 1000);
+			}
+		}
+	} else if (g_input_para.panel_model == MS7024_BT656_576P_25FPS) {
+		ret = panel_i2c_init(g_input_para.dev_no);
+		if (ret != CVI_SUCCESS) {
+			SAMPLE_PRT("panel_i2c_init fail");
+		}
+		for (CVI_U32 i = 0; i < ARRAY_SIZE(bt656_576p25_ms7024_init_cmds); i++) {
+			ret = panel_write_register(g_input_para.dev_no, bt656_576p25_ms7024_init_cmds[i].addr,
+				  bt656_576p25_ms7024_init_cmds[i].data);
+			if (ret != CVI_SUCCESS)
+				SAMPLE_PRT("i2c_write fail addr[0x%x]\n", bt656_576p25_ms7024_init_cmds[i].addr);
+			if(bt656_576p25_ms7024_init_cmds[i].delay) {
+				usleep(bt656_576p25_ms7024_init_cmds[i].delay * 1000);
+			}
+		}
+	} else if (g_input_para.panel_model == MS7024_BT656_480P_30FPS_TESTPATTERN) {
+		ret = panel_i2c_init(g_input_para.dev_no);
+		if (ret != CVI_SUCCESS) {
+			SAMPLE_PRT("panel_i2c_init fail");
+		}
+		for (CVI_U32 i = 0; i < ARRAY_SIZE(bt656_480p30_testpattern_ms7024_init_cmds); i++) {
+			ret = panel_write_register(g_input_para.dev_no, bt656_480p30_testpattern_ms7024_init_cmds[i].addr,
+				  bt656_480p30_testpattern_ms7024_init_cmds[i].data);
+			if (ret != CVI_SUCCESS)
+				SAMPLE_PRT("i2c_write fail addr[0x%x]\n", bt656_480p30_testpattern_ms7024_init_cmds[i].addr);
+			if(bt656_480p30_testpattern_ms7024_init_cmds[i].delay) {
+				usleep(bt656_480p30_testpattern_ms7024_init_cmds[i].delay * 1000);
 			}
 		}
 	}

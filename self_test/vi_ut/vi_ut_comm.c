@@ -1697,3 +1697,188 @@ CVI_S32 vi_test(VI_UT_CTX *pUtCtx)
 
 	return s32Ret;
 }
+
+#define AI_ISP_TEST_LOOP_CNT (10)
+
+static pthread_t ai_isp_thread_id;
+static volatile CVI_BOOL ai_isp_thread_running = CVI_FALSE;
+
+static void *ai_isp_raw_loop_thread(void *arg)
+{
+	VI_PIPE ViPipe = (VI_PIPE)(uintptr_t)arg;
+	VI_AI_ISP_INFO_WRAP_S wrap_info;
+	CVI_S32 s32Ret;
+	CVI_U32 loop_cnt = 0;
+
+	UT_PRT("[AI_ISP] raw loop thread start, pipe=%d\n", ViPipe);
+
+	prctl(PR_SET_NAME, "ai_isp_raw_loop");
+
+	while (ai_isp_thread_running) {
+		memset(&wrap_info, 0, sizeof(wrap_info));
+		wrap_info.viPipe = ViPipe;
+		wrap_info.enCmd = VI_CMD_GET_AI_ISP_RAW;
+
+		s32Ret = CVI_VI_AiIspInfo(&wrap_info);
+		if (s32Ret != CVI_SUCCESS) {
+			UT_PRT("[AI_ISP] CVI_VI_AiIspInfo GET failed, ret=%#x\n", s32Ret);
+			usleep(5000);
+			continue;
+		}
+
+		if (wrap_info.stIspInfo.inputAddr[0] == 0 || wrap_info.stIspInfo.outputAddr[0] == 0) {
+			UT_PRT("[AI_ISP] get raw addr zero, retry\n");
+			usleep(5000);
+			continue;
+		}
+
+		UT_PRT("[AI_ISP] loop %u: input=0x%llx output=0x%llx size=%u\n",
+			loop_cnt,
+			(unsigned long long)wrap_info.stIspInfo.inputAddr[0],
+			(unsigned long long)wrap_info.stIspInfo.outputAddr[0],
+			wrap_info.stIspInfo.size);
+
+		// bypass TPU: memcpy input raw to output raw
+		{
+			CVI_U32 size = wrap_info.stIspInfo.size;
+			void *src = CVI_SYS_Mmap(wrap_info.stIspInfo.inputAddr[0], size);
+			void *dst = CVI_SYS_Mmap(wrap_info.stIspInfo.outputAddr[0], size);
+
+			if (src && dst) {
+				memcpy(dst, src, size);
+				CVI_SYS_Munmap(src, size);
+				CVI_SYS_Munmap(dst, size);
+			} else {
+				UT_PRT("[AI_ISP] mmap failed\n");
+				if (src)
+					CVI_SYS_Munmap(src, size);
+				if (dst)
+					CVI_SYS_Munmap(dst, size);
+			}
+		}
+
+		memset(&wrap_info, 0, sizeof(wrap_info));
+		wrap_info.viPipe = ViPipe;
+		wrap_info.enCmd = VI_CMD_PUT_AI_ISP_RAW;
+
+		s32Ret = CVI_VI_AiIspInfo(&wrap_info);
+		if (s32Ret != CVI_SUCCESS) {
+			UT_PRT("[AI_ISP] CVI_VI_AiIspInfo PUT failed, ret=%#x\n", s32Ret);
+		}
+
+		loop_cnt++;
+		if (loop_cnt >= AI_ISP_TEST_LOOP_CNT) {
+			UT_PRT("[AI_ISP] reached test loop count %u, stopping\n", loop_cnt);
+			break;
+		}
+	}
+
+	ai_isp_thread_running = CVI_FALSE;
+	UT_PRT("[AI_ISP] raw loop thread end, pipe=%d, loops=%u\n", ViPipe, loop_cnt);
+	return NULL;
+}
+
+CVI_S32 vi_ut_ai_isp_test(VI_UT_CTX *pUtCtx)
+{
+	CVI_S32 s32Ret = CVI_SUCCESS;
+	VI_PIPE ViPipe = 0;
+	VI_AI_ISP_CFG_S ai_isp_cfg;
+
+	UT_PRT("[AI_ISP] test start\n");
+
+	s32Ret = vi_ut_sys_init(pUtCtx);
+	if (s32Ret != CVI_SUCCESS) {
+		UT_PRT("[AI_ISP] sys init failed, ret=%#x\n", s32Ret);
+		return s32Ret;
+	}
+
+	s32Ret = vi_ut_set_vi_vpss_mode(pUtCtx);
+	if (s32Ret != CVI_SUCCESS) {
+		UT_PRT("[AI_ISP] set vi_vpss mode failed, ret=%#x\n", s32Ret);
+		return s32Ret;
+	}
+
+	// Step 1: AI ISP INIT
+	memset(&ai_isp_cfg, 0, sizeof(ai_isp_cfg));
+	ai_isp_cfg.viPipe = ViPipe;
+	ai_isp_cfg.enAiIspType = VI_AI_ISP_CFG_INIT;
+	ai_isp_cfg.reserved[0] = 1; // fp16
+
+	s32Ret = CVI_VI_AiIspCfg(&ai_isp_cfg);
+	if (s32Ret != CVI_SUCCESS) {
+		UT_PRT("[AI_ISP] INIT failed, ret=%#x\n", s32Ret);
+		goto ai_isp_test_deinit;
+	}
+	UT_PRT("[AI_ISP] INIT success\n");
+
+	s32Ret = vi_ut_vi_init(pUtCtx);
+	if (s32Ret != CVI_SUCCESS) {
+		UT_PRT("[AI_ISP] vi init failed, ret=%#x\n", s32Ret);
+		return s32Ret;
+	}
+
+	// Step 2: AI ISP ENABLE
+	memset(&ai_isp_cfg, 0, sizeof(ai_isp_cfg));
+	ai_isp_cfg.viPipe = ViPipe;
+	ai_isp_cfg.enAiIspType = VI_AI_ISP_CFG_ENABLE;
+
+	s32Ret = CVI_VI_AiIspCfg(&ai_isp_cfg);
+	if (s32Ret != CVI_SUCCESS) {
+		UT_PRT("[AI_ISP] ENABLE failed, ret=%#x\n", s32Ret);
+		goto ai_isp_test_deinit_vi;
+	}
+	UT_PRT("[AI_ISP] ENABLE success %d\n", ai_isp_cfg.enAiIspType);
+
+	// Step 3: start raw loop thread (get -> bypass memcpy -> put)
+	ai_isp_thread_running = CVI_TRUE;
+	s32Ret = pthread_create(&ai_isp_thread_id, NULL,
+		ai_isp_raw_loop_thread, (void *)(uintptr_t)ViPipe);
+	if (s32Ret != 0) {
+		UT_PRT("[AI_ISP] create thread failed, ret=%d\n", s32Ret);
+		ai_isp_thread_running = CVI_FALSE;
+		goto ai_isp_test_disable;
+	}
+
+	// wait for thread to finish
+	pthread_join(ai_isp_thread_id, NULL);
+	UT_PRT("[AI_ISP] raw loop thread joined\n");
+
+ai_isp_test_disable:
+	// Step 4: AI ISP DISABLE
+	memset(&ai_isp_cfg, 0, sizeof(ai_isp_cfg));
+	ai_isp_cfg.viPipe = ViPipe;
+	ai_isp_cfg.enAiIspType = VI_AI_ISP_CFG_DISABLE;
+
+	s32Ret = CVI_VI_AiIspCfg(&ai_isp_cfg);
+	if (s32Ret != CVI_SUCCESS) {
+		UT_PRT("[AI_ISP] DISABLE failed, ret=%#x\n", s32Ret);
+	} else {
+		UT_PRT("[AI_ISP] DISABLE success\n");
+	}
+
+ai_isp_test_deinit_vi:
+	// Step 5: AI ISP DEINIT
+	memset(&ai_isp_cfg, 0, sizeof(ai_isp_cfg));
+	ai_isp_cfg.viPipe = ViPipe;
+	ai_isp_cfg.enAiIspType = VI_AI_ISP_CFG_DEINIT;
+
+	s32Ret = CVI_VI_AiIspCfg(&ai_isp_cfg);
+	if (s32Ret != CVI_SUCCESS) {
+		UT_PRT("[AI_ISP] DEINIT failed, ret=%#x\n", s32Ret);
+	} else {
+		UT_PRT("[AI_ISP] DEINIT success\n");
+	}
+
+	return s32Ret;
+
+ai_isp_test_deinit:
+	s32Ret = vi_ut_vi_deinit(pUtCtx);
+	if (s32Ret != CVI_SUCCESS) {
+		UT_PRT("[AI_ISP] vi deinit failed, ret=%#x\n", s32Ret);
+	}
+
+	vi_ut_sys_exit();
+	UT_PRT("[AI_ISP] test end\n");
+
+	return s32Ret;
+}

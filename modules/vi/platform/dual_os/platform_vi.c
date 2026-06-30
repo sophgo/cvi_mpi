@@ -1193,3 +1193,45 @@ CVI_S32 platform_vi_getmipibinddev(VI_DEV ViDev, MIPI_DEV *pMipiDev)
 
 	return CVI_ERR_VI_NOT_SUPPORT;
 }
+
+CVI_S32 platform_vi_aiispcfg(VI_AI_ISP_CFG_S *pstAiIspCfg)
+{
+	CVI_S32 s32Ret = CVI_SUCCESS;
+	CVI_U32 u32ModFd = MODFD(CVI_ID_VI, 0, 0);
+
+	if (pstAiIspCfg == CVI_NULL) {
+		CVI_TRACE_VI(CVI_DBG_ERR, "pstAiIspCfg is NULL\n");
+		return CVI_ERR_VI_INVALID_NULL_PTR;
+	}
+
+	s32Ret = CVI_MSG_SendSync(u32ModFd, MSG_CMD_VI_AI_ISP_CFG,
+				  pstAiIspCfg, sizeof(*pstAiIspCfg), NULL);
+	if (s32Ret != CVI_SUCCESS) {
+		CVI_TRACE_VI(CVI_DBG_ERR, "AI_ISP_CFG fail, ViPipe:%d, ret:0x%x\n",
+			pstAiIspCfg->viPipe, s32Ret);
+		return s32Ret;
+	}
+
+	return CVI_SUCCESS;
+}
+
+CVI_S32 platform_vi_aiispinfo(VI_AI_ISP_INFO_WRAP_S *pstAiIspInfoWrap)
+{
+	CVI_S32 s32Ret = CVI_SUCCESS;
+	CVI_U32 u32ModFd = MODFD(CVI_ID_VI, 0, 0);
+
+	if (pstAiIspInfoWrap == CVI_NULL) {
+		CVI_TRACE_VI(CVI_DBG_ERR, "pstAiIspInfoWrap is NULL\n");
+		return CVI_ERR_VI_INVALID_NULL_PTR;
+	}
+
+	s32Ret = CVI_MSG_SendSync(u32ModFd, MSG_CMD_VI_AI_ISP_INFO,
+				  pstAiIspInfoWrap, sizeof(*pstAiIspInfoWrap), NULL);
+	if (s32Ret != CVI_SUCCESS) {
+		CVI_TRACE_VI(CVI_DBG_ERR, "AI_ISP_INFO fail, ViPipe:%d, ret:0x%x\n",
+			pstAiIspInfoWrap->viPipe, s32Ret);
+		return s32Ret;
+	}
+
+	return CVI_SUCCESS;
+}

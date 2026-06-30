@@ -47,6 +47,7 @@ enum CASE_UT {
 	CASE_VI_MULTI_INIT_TEST,
 	// CASE_VI_PLD_TEST,
 	// CASE_VI_SLT_TEST,
+	CASE_AI_ISP_TEST,
 	CASE_MAX,
 };
 
@@ -1107,6 +1108,25 @@ static int case_vi_multi_init_test(void *p)
 	return s32Ret;
 }
 
+static int case_ai_isp_test(void *p)
+{
+	CVI_S32 s32Ret = CVI_SUCCESS;
+	VI_UT_CTX *pUtCtx = (VI_UT_CTX *)p;
+
+	pUtCtx->viVpssMode = VI_OFFLINE_VPSS_OFFLINE;
+	pUtCtx->isDpcmOn = true;
+
+	scanf_fe_dram_post_dram_info(pUtCtx);
+
+	s32Ret = vi_ut_ai_isp_test(pUtCtx);
+	if (s32Ret != CVI_SUCCESS) {
+		UT_PRT("vi_ut_ai_isp_test failed. s32Ret: 0x%x !\n", s32Ret);
+		return s32Ret;
+	}
+
+	return s32Ret;
+}
+
 static const struct vi_ut_info vi_uts[] = {
 	UT_INFO(CASE_RAW_REPLAY,			case_raw_replay,		0),
 	UT_INFO(CASE_SENSOR_ON_THE_FLY,			case_sensor_onthefly,		0),
@@ -1130,6 +1150,7 @@ static const struct vi_ut_info vi_uts[] = {
 	UT_INFO(CASE_LOAD_MESH_LDC,			case_load_mesh_ldc,		0),
 	UT_INFO(CASE_VI_SDK_TEST,			case_vi_sdk_test,		0),
 	UT_INFO(CASE_VI_MULTI_INIT_TEST,		case_vi_multi_init_test,	0),
+	UT_INFO(CASE_AI_ISP_TEST,			case_ai_isp_test,		0),
 };
 
 static const CVI_U8 *strlwc(const CVI_U8 *in, CVI_U8 *out, CVI_U32 len)

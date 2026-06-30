@@ -433,6 +433,8 @@ int printf_sample_usage(void)
 	printf("\t8:GetVolume db test\n");
 	printf("\t9:ioctl test\n");
 	printf("\t10:Aec test\n");
+	printf("\t11:SetStereoVolume test\n");
+	printf("\t12:GetStereoVolume test\n");
 
 	return 0;
 }
@@ -455,6 +457,8 @@ int printf_parse_usage(void)
 	printf("SetVol eg:./sample_audio 6\n");
 	printf("GetVol eg:./sample_audio 8\n");
 	printf("AECtest eg:./sample_audio 10 --list -r 8000 -R 8000 -c 2 -p 320 -C 0 -V 1 -F play.wav -T 10\n");
+	printf("SetStereoVolume eg:./sample_audio 11\n");
+	printf("GetStereoVolume eg:./sample_audio 12\n");
 	printf("[----------------------------------]\n");
 	return 0;
 }
@@ -1772,17 +1776,87 @@ CVI_S32 SAMPLE_AUDIO_DEBUG_GET_VOLUME(void)
 	return CVI_SUCCESS;
 }
 
+CVI_S32 SAMPLE_AUDIO_DEBUG_SET_STEREO_VOLUME(void)
+{
+	printf("Enter %s\n", __func__);
+
+	CVI_S32 s32Ret = CVI_SUCCESS;
+	CVI_S32 err;
+	CVI_S32 idevid = 0;
+	CVI_S32 stereoid = 0;
+	CVI_S32 volumedb = 0;
+	CVI_S32 s32SetInputOrOutput = 0;
+
+	printf("----------------------cvi check------------------------\n");
+	printf("\n Enter output card id:\n");
+	err = scanf("%d", &idevid);
+	printf("\n Enter stereo id (0:left, 1:right):\n");
+	err = scanf("%d", &stereoid);
+	printf("\n Enter volume (0~48, 0:mute):\n");
+	err = scanf("%d", &volumedb);
+	printf("\n enter card[%d] stereoid[%d] vol[%d]\n", idevid, stereoid, volumedb);
+	if (err == EOF)
+		printf("[Error][%s][%d]\n", __func__, __LINE__);
+	printf("\n Set [Ain]StereoVolume:1  Set [Aout]StereoVolume:0 ? [0 or 1]\n");
+	err = scanf("%d", &s32SetInputOrOutput);
+	printf("select [%d]\n", s32SetInputOrOutput);
+	if (s32SetInputOrOutput == 0) {
+		s32Ret = CVI_AO_SetStereoVolume(idevid, stereoid, volumedb);
+		if (s32Ret != CVI_SUCCESS) {
+			printf("[Error][%s][%d]\n", __func__, __LINE__);
+			return CVI_FAILURE;
+		}
+	} else {
+		s32Ret = CVI_AI_SetStereoVolume(idevid, stereoid, volumedb);
+		if (s32Ret != CVI_SUCCESS) {
+			printf("[Error][%s][%d]\n", __func__, __LINE__);
+			return CVI_FAILURE;
+		}
+	}
+
+	return CVI_SUCCESS;
+}
+
+CVI_S32 SAMPLE_AUDIO_DEBUG_GET_STEREO_VOLUME(void)
+{
+	printf("Enter %s\n", __func__);
+	CVI_S32 idevid = 0;
+	CVI_S32 stereoid = 0;
+	CVI_S32 volume = 0;
+	CVI_S32 s32Ret = CVI_SUCCESS;
+	CVI_S32 err;
+
+	printf("Enter card id:\n");
+	err = scanf("%d", &idevid);
+	printf("\n Enter stereo id (0:left, 1:right):\n");
+	err = scanf("%d", &stereoid);
+	if (err == EOF)
+		printf("[Error][%s][%d]\n", __func__, __LINE__);
+	printf("\n enter card[%d] stereoid[%d]\n", idevid, stereoid);
+	s32Ret = CVI_AO_GetStereoVolume(idevid, stereoid, &volume);
+	printf("Get StereoVolume Aout[%d]\n", volume);
+	if (s32Ret != CVI_SUCCESS) {
+		printf("[Error][%s][%d]\n", __func__, __LINE__);
+		return CVI_FAILURE;
+	}
+	s32Ret = CVI_AI_GetStereoVolume(idevid, stereoid, &volume);
+	printf("Get StereoVolume Ain[%d]\n", volume);
+	if (s32Ret != CVI_SUCCESS) {
+		printf("[Error][%s][%d]\n", __func__, __LINE__);
+		return CVI_FAILURE;
+	}
+
+	return CVI_SUCCESS;
+}
+
 void *VQE_RECORD_GET_FRAME(void *parg)
 {
 
 	AUDIO_FRAME_S stFrame;
 	AEC_FRAME_S   stAecFrm;
 	int s32Ret = 0;
-	int s32ChnCnt = 2;
 
 	ST_VQE_RECORD_TEST_STRUCT *pstVqeRecord = (ST_VQE_RECORD_TEST_STRUCT *)parg;
-
-	s32ChnCnt = (pstVqeRecord->bVqe)?1:2;
 
 
 	FILE *fp_rec = fopen("sample_record.raw", "wb");
@@ -1808,7 +1882,7 @@ void *VQE_RECORD_GET_FRAME(void *parg)
 			printf("[cvi_warrn] block mode return size 0...\n");
 
 
-		fwrite(stFrame.u64VirAddr[0], 1, (stFrame.u32Len * s32ChnCnt * 2), fp_rec);
+		fwrite(stFrame.u64VirAddr[0], 1, (stFrame.u32Len * (stFrame.enSoundmode + 1) * 2), fp_rec);
 
 		s32Ret = CVI_AI_ReleaseFrame(pstVqeRecord->AiDev, pstVqeRecord->AiChn,
 					 &stFrame,
@@ -2060,7 +2134,7 @@ CVI_S32 main(int argc, char *argv[])
 
 	u32Index = atoi(argv[1]);
 
-	if (u32Index > 10) {
+	if (u32Index > 12) {
 		printf_sample_usage();
 		return CVI_FAILURE;
 	}
@@ -2134,6 +2208,18 @@ CVI_S32 main(int argc, char *argv[])
 	case 10: {
 		printf("[sample code]AEC self loop test\n");
 		SAMPLE_AUDIO_AEC_LOOP_TEST(&stAudioparam);
+		break;
+	}
+	case 11: {
+		printf("[cviaudio] Set StereoVolume!\n");
+		SAMPLE_AUDIO_DEBUG_SET_STEREO_VOLUME();
+		printf("[cviaudio]SET STEREO VOLUME!...end\n");
+		break;
+	}
+	case 12: {
+		printf("[cviaudio] Get StereoVolume!\n");
+		SAMPLE_AUDIO_DEBUG_GET_STEREO_VOLUME();
+		printf("[cviaudio]GET STEREO VOLUME!...end\n");
 		break;
 	}
 	default: {
