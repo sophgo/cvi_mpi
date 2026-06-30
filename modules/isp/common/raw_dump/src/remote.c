@@ -368,7 +368,7 @@ int send_file(const char *path)
 
 	snprintf(cmd_buffer, CMD_LENGTH, "%s %ld",
 		"cvitek file",
-		statbuf.st_size + FILE_NAME_MAX_LENGTH);
+		(long int)(statbuf.st_size + FILE_NAME_MAX_LENGTH));
 
 	LOGOUT("send cmd: %s\n", cmd_buffer);
 

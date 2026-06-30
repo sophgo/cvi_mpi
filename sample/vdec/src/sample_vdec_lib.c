@@ -139,7 +139,7 @@ CVI_S32 vencStartBindVpss(sampleVdec *psvdec)
 		pIc->height = height;
 		SAMPLE_PRT("size = %d x %d\n", width, height);
 
-		sprintf(pIc->output_path, "chn%d_%s_%dp", idx, pvdcic->output_path,VPSS_OUTPUT_HEIGHT);
+		snprintf(pIc->output_path, 2 * sizeof(pIc->output_path), "chn%d_%s_%dp", idx, pvdcic->output_path,VPSS_OUTPUT_HEIGHT);
 		SAMPLE_PRT("output_path = %s\n", pIc->output_path);
 
 		sprintf(pIc->codec, "%s", "mjp");

@@ -19,6 +19,7 @@ typedef enum {
 	PANEL_MODE_LVDS,
 	PANEL_MODE_BT,
 	PANEL_MODE_MCU,
+	PANEL_MODE_RGB,
 } PANEL_TYPE;
 
 typedef struct dsi_panel_desc_s {

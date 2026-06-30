@@ -46,7 +46,7 @@ else ifeq ($(TARGET_MACHINE), riscv64-unknown-linux-musl)
   OPT_LEVEL := -Os
   OPT_LEVEL += -mcpu=c906fdv -march=rv64imafdcv0p7xthead -mcmodel=medany -mabi=lp64d -mno-ldd
 endif
-KERNEL_INC  := ./
+KERNEL_INC  := ${KERNEL_PATH}/build/${CHIP}_${BOARD}/usr/include/
 
 ALIOS_MMF_DIR := $(MW_PATH)/../cvi_alios/components/cvi_mmf_sdk
 IPCM_DIR :=  $(MW_PATH)/../osdrv/interdrv/ipcm

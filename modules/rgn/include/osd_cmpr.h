@@ -44,7 +44,7 @@ typedef struct {
 	int status;
 } StreamBuffer;
 
-inline int clip(int data, int min, int max)
+static inline int clip(int data, int min, int max)
 {
 	return (data > max) ? max : (data < min) ? min : data;
 }

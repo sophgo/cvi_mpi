@@ -127,7 +127,7 @@ RGBA get_color(CVI_U8 *ptr, OSD_FORMAT format)
 	return out_c;
 }
 
-inline bool is_equal_color(RGBA c0, RGBA c1)
+static inline bool is_equal_color(RGBA c0, RGBA c1)
 {
 	return c0.code == c1.code;
 }

@@ -47,13 +47,13 @@ CVI_S32 rawReplayAutoTestInit(const char *pathPrefix)
 	CVI_S32 ret = CVI_SUCCESS;
 
 	char path[_BUFF_LEN] = {0};
-	char cmd[_BUFF_LEN] = {0};
+	char cmd[_BUFF_LEN * 2] = {0};
 
 	FILE *fp = NULL;
 
 	snprintf(path, _BUFF_LEN, "%s/sensor_cfg.ini", pathPrefix);
 
-	snprintf(cmd, _BUFF_LEN, "cp %s /mnt/data/sensor_cfg.ini", path);
+	snprintf(cmd, _BUFF_LEN * 2, "cp %s /mnt/data/sensor_cfg.ini", path);
 
 	system(cmd);
 
@@ -263,7 +263,7 @@ CVI_S32 rawReplayAutoTestStart(const char *pathPrefix)
 CVI_S32 rawReplayAutoTestMd5(const char *pathPrefix)
 {
 	CVI_S32 ret = CVI_SUCCESS;
-	char cmd[_BUFF_LEN] = {0};
+	char cmd[_BUFF_LEN * 2] = {0};
 	char path[_BUFF_LEN] = {0};
 	FILE *fp = NULL;
 
@@ -275,7 +275,7 @@ CVI_S32 rawReplayAutoTestMd5(const char *pathPrefix)
 	do {
 		snprintf(path, _BUFF_LEN, "%s/output.yuv", pathPrefix);
 
-		snprintf(cmd, _BUFF_LEN, "md5sum %s > /tmp/temp.md5", path);
+		snprintf(cmd, _BUFF_LEN * 2, "md5sum %s > /tmp/temp.md5", path);
 		system(cmd);
 
 		struct stat statbuf;

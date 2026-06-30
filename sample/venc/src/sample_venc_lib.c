@@ -537,7 +537,7 @@ CVI_S32 venc_main(int argc, char **argv)
 			psv->chnCtx[0].chnIc.getstream_timeout = -1;
 			psv->chnCtx[0].chnIc.sendframe_timeout = 20000;
 			snprintf(yuvFilename, MAX_STRING_LEN, "%s", psv->chnCtx[0].chnIc.input_path);
-			snprintf(psv->chnCtx[0].chnIc.input_path, MAX_STRING_LEN, "%s%s",
+			snprintf(psv->chnCtx[0].chnIc.input_path, 2 * MAX_STRING_LEN, "%s%s",
 				 pcic->yuvFolder, yuvFilename);
 			psv->chnCtx[0].chnIc.bCreateChn = bCreateChn;
 
@@ -1598,7 +1598,7 @@ static CVI_U32 _SAMPLE_VENC_INIT_CHANNEL(sampleVenc *psv, CVI_U32 chnNum)
 	}
 
 	SAMPLE_COMM_VENC_GetFilePostfix(pvecc->enPayLoad, file_ext);
-	snprintf(pIc->outputFileName, MAX_STRING_LEN, "%s%s",
+	snprintf(pIc->outputFileName, 2 * MAX_STRING_LEN, "%s%s",
 			pIc->output_path, file_ext);
 
 	CVI_VENC_FLOW("Begin to send frames ..., bsMode = %d\n", pIc->bsMode);

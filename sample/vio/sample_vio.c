@@ -1759,7 +1759,7 @@ CVI_S32 SAMPLE_VIO_VpssStitch(void)
 	astVpssChnAttr[VpssChn].enPixelFormat               = SAMPLE_PIXEL_FORMAT;
 	astVpssChnAttr[VpssChn].stFrameRate.s32SrcFrameRate = -1;
 	astVpssChnAttr[VpssChn].stFrameRate.s32DstFrameRate = -1;
-	astVpssChnAttr[VpssChn].u32Depth                    = 1;
+	astVpssChnAttr[VpssChn].u32Depth                    = 2;
 	astVpssChnAttr[VpssChn].bMirror                     = CVI_FALSE;
 	astVpssChnAttr[VpssChn].bFlip                       = CVI_FALSE;
 	astVpssChnAttr[VpssChn].stAspectRatio.enMode        = ASPECT_RATIO_AUTO;
@@ -1778,7 +1778,10 @@ CVI_S32 SAMPLE_VIO_VpssStitch(void)
 	// stitch
 	CVI_STITCH_ATTR_S stStitchAttr;
 	stStitchAttr.u8ChnNum = 2;
-	stStitchAttr.VoChn = 0;
+	stStitchAttr.u8DstChnNum = 1;
+	stStitchAttr.astDstChn[0].enModId = CVI_ID_VO;
+	stStitchAttr.astDstChn[0].s32DevId = 0;
+	stStitchAttr.astDstChn[0].s32ChnId = 0;
 	stStitchAttr.s32OutFps = -1;
 	stStitchAttr.enOutPixelFormat = SAMPLE_PIXEL_FORMAT;
 	stStitchAttr.stOutSize.u32Width = 720;

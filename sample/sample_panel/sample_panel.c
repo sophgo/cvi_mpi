@@ -16,8 +16,11 @@
 #include "cvi_hw_i80.h"
 #include "sample_panel.h"
 #include "cvi_msg_client.h"
+#include "cvi_common.h"
+#include "panel_spi.h"
 
 #include "dsi_hx8394_evb.h"
+#include "dsi_lt9611.h"
 #include "dsi_ili9881c.h"
 #include "dsi_ili9881d.h"
 #include "dsi_jd9366ab.h"
@@ -34,6 +37,7 @@
 #include "hw_mcu_st7789v3.h"
 #include "bt656_tp2803.h"
 #include "hw_mcu_st7789v.h"
+#include "rgb666_frd280c50106a.h"
 
 static int fd;
 
@@ -58,6 +62,13 @@ typedef enum {
 	DSI_PANEL_3AML069LP01G,
 	DSI_PANEL_GM8775C,
 	DSI_PANEL_HX8394_EVB,
+	DSI_PANEL_LT9611_1920x1080_60,
+	DSI_PANEL_LT9611_1920x1080_30,
+	DSI_PANEL_LT9611_1280x720_60,
+	DSI_PANEL_LT9611_1024x768_60,
+	DSI_PANEL_LT9611_1280x1024_60,
+	DSI_PANEL_LT9611_1600x1200_60,
+	DSI_PANEL_LT9611_1440x720_60,
 	DSI_PANEL_HX8399_1080P,
 	DSI_PANEL_ICN9707,
 	DSI_PANEL_ILI9881C,
@@ -72,6 +83,7 @@ typedef enum {
 	BT_PANEL_TP2803_BT656_1280x720_25FPS_72M,
 	I80_PANEL_ST7789V3_HW_MCU_240x320_60FPS,
 	I80_PANEL_ST7789V_HW_MCU_240x320_60FPS,
+	TTL_RGB666_LQ121S,
 	PANEL_MAX
 } PANEL_MODEL;
 
@@ -116,6 +128,13 @@ static char *s_panel_model_type_arr[] = {
 	"3AML069LP01G",
 	"GM8775C",
 	"HX8394_EVB",
+	"LT9611_1920x1080_60",
+	"LT9611_1920x1080_30",
+	"LT9611_1280x720_60",
+	"LT9611_1024x768_60",
+	"LT9611_1280x1024_60",
+	"LT9611_1600x1200_60",
+	"LT9611_1440x720_60",
 	"HX8399_1080P",
 	"ICN9707",
 	"ILI9881C",
@@ -130,6 +149,7 @@ static char *s_panel_model_type_arr[] = {
 	"TP2803_BT656_1280x720_25FPS_72M",
 	"ST7789V3_HW_MCU_RGB565_240x320_60FPS",
 	"ST7789V_HW_MCU_RGB565_240x320_60FPS",
+	"TTL_RGB666_LQ121S"
 };
 
 void printdsiHelp(void)
@@ -199,7 +219,8 @@ int dsi_init(int devno, const struct dsc_instr *cmds, int size)
 	int ret;
 
 	if (cmds == NULL) {
-		return CVI_FAILURE;
+		printf("dsi init cmds NULL.\n");
+		return CVI_SUCCESS;
 	}
 
 	for (int i = 0; i < size; i++) {
@@ -311,6 +332,17 @@ CVI_S32 SAMPLE_PANEL_ENABLE(void)
 		ret = CVI_HWI80_Init(VoDev, &g_panel_desc.stHwI80Attr);
 		if (ret != CVI_SUCCESS) {
 			printf("CVI_VO_HWI80_Init fail!\n");
+			return CVI_FAILURE;
+		}
+	}else if (g_panel_desc.panel_type == PANEL_MODE_RGB) {
+		ret = CVI_VO_SetPubAttr(VoDev, &g_panel_desc.stVoPubAttr);
+		if (ret != CVI_SUCCESS) {
+			printf("failed with %#x!\n", ret);
+			return CVI_FAILURE;
+		}
+		ret = panel_spi_sendData(prgb_st7789v2_init_cmds, ARRAY_SIZE(prgb_st7789v2_init_cmds));
+		if (ret != CVI_SUCCESS) {
+			printf("Send Data failed\n");
 			return CVI_FAILURE;
 		}
 	} else {
@@ -499,6 +531,48 @@ void SAMPLE_SET_PANEL_DESC(void)
 		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_hx8394_720x1280;
 		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_hx8394_720x1280);
 		break;
+	case DSI_PANEL_LT9611_1920x1080_60:
+		g_panel_desc.panel_type = PANEL_MODE_DSI;
+		g_panel_desc.stdsicfg.dev_cfg = &dev_cfg_lt9611_1920x1080_60Hz;
+		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_lt9611;
+		g_panel_desc.stdsicfg.dsi_init_cmds = NULL;
+		g_panel_desc.stdsicfg.dsi_init_cmds_size = 0;
+		break;
+	case DSI_PANEL_LT9611_1920x1080_30:
+		g_panel_desc.panel_type = PANEL_MODE_DSI;
+		g_panel_desc.stdsicfg.dev_cfg = &dev_cfg_lt9611_1920x1080_30Hz;
+		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_lt9611;
+		g_panel_desc.stdsicfg.dsi_init_cmds = NULL;
+		g_panel_desc.stdsicfg.dsi_init_cmds_size = 0;
+		break;
+	case DSI_PANEL_LT9611_1280x720_60:
+		g_panel_desc.panel_type = PANEL_MODE_DSI;
+		g_panel_desc.stdsicfg.dev_cfg = &dev_cfg_lt9611_1280x720_60Hz;
+		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_lt9611;
+		g_panel_desc.stdsicfg.dsi_init_cmds = NULL;
+		g_panel_desc.stdsicfg.dsi_init_cmds_size = 0;
+		break;
+	case DSI_PANEL_LT9611_1024x768_60:
+		g_panel_desc.panel_type = PANEL_MODE_DSI;
+		g_panel_desc.stdsicfg.dev_cfg = &dev_cfg_lt9611_1024x768_60Hz;
+		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_lt9611;
+		g_panel_desc.stdsicfg.dsi_init_cmds = NULL;
+		g_panel_desc.stdsicfg.dsi_init_cmds_size = 0;
+		break;
+	case DSI_PANEL_LT9611_1280x1024_60:
+		g_panel_desc.panel_type = PANEL_MODE_DSI;
+		g_panel_desc.stdsicfg.dev_cfg = &dev_cfg_lt9611_1280x1024_60Hz;
+		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_lt9611;
+		g_panel_desc.stdsicfg.dsi_init_cmds = NULL;
+		g_panel_desc.stdsicfg.dsi_init_cmds_size = 0;
+		break;
+	case DSI_PANEL_LT9611_1600x1200_60:
+		g_panel_desc.panel_type = PANEL_MODE_DSI;
+		g_panel_desc.stdsicfg.dev_cfg = &dev_cfg_lt9611_1600x1200_60Hz;
+		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_lt9611;
+		g_panel_desc.stdsicfg.dsi_init_cmds = NULL;
+		g_panel_desc.stdsicfg.dsi_init_cmds_size = 0;
+		break;
 	case LVDS_PANEL_LCM185X56:
 		g_panel_desc.panel_type = PANEL_MODE_LVDS;
 		g_panel_desc.stVoPubAttr.enIntfType = VO_INTF_LCD_24BIT;
@@ -509,6 +583,13 @@ void SAMPLE_SET_PANEL_DESC(void)
 		, .u16Vpw = 2, .u16Hpw = 20, .bIdv = 0, .bIhs = 0, .bIvs = 0};
 		g_panel_desc.stVoPubAttr.stSyncInfo = stLcm185x56_SyncInfo;
 		g_panel_desc.stVoPubAttr.stLvdsAttr = lvds_lcm185x56_cfg;
+		break;
+	case DSI_PANEL_LT9611_1440x720_60:
+		g_panel_desc.panel_type = PANEL_MODE_DSI;
+		g_panel_desc.stdsicfg.dev_cfg = &dev_cfg_lt9611_1440x720_60Hz;
+		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_lt9611;
+		g_panel_desc.stdsicfg.dsi_init_cmds = NULL;
+		g_panel_desc.stdsicfg.dsi_init_cmds_size = 0;
 		break;
 	case BT_PANEL_TP2803_BT656_1280x720_25FPS_72M:
 		g_panel_desc.panel_type = PANEL_MODE_BT;
@@ -528,6 +609,17 @@ void SAMPLE_SET_PANEL_DESC(void)
 	case I80_PANEL_ST7789V_HW_MCU_240x320_60FPS:
 		g_panel_desc.panel_type = PANEL_MODE_MCU;
 		g_panel_desc.stHwI80Attr = st7789vCfg;
+		break;
+	case TTL_RGB666_LQ121S:
+		g_panel_desc.panel_type = PANEL_MODE_RGB;
+		g_panel_desc.stVoPubAttr.enIntfType = VO_INTF_RGB;
+		g_panel_desc.stVoPubAttr.enIntfSync = VO_OUTPUT_USER;
+		VO_SYNC_INFO_S stRgb666_SyncInfo = {.bSynm = 1, .bIop = 1, .u16FrameRate = 50
+		, .u16Vact = 320, .u16Vbb = 0, .u16Vfb = 0
+		, .u16Hact = 240, .u16Hbb = 20, .u16Hfb = 10
+		, .u16Vpw = 5, .u16Hpw = 5, .bIdv = 0, .bIhs = 0, .bIvs = 0};
+		g_panel_desc.stVoPubAttr.stSyncInfo = stRgb666_SyncInfo;
+		g_panel_desc.stVoPubAttr.stRgbAttr = stFRD280C50106A;
 		break;
 	default:
 		printf("default\n");

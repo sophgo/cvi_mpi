@@ -51,7 +51,7 @@ else ifeq ($(TARGET_MACHINE), riscv64-unknown-linux-musl)
   OPT_LEVEL := -Os
   OPT_LEVEL += -mno-ldd -mcpu=c906fdv -march=rv64imafdcv0p7xthead -mcmodel=medany -mabi=lp64d
 endif
-KERNEL_INC  := ./
+KERNEL_INC  := ${KERNEL_PATH}/build/${CHIP}_${BOARD}/usr/include/
 
 OSDRV_PATH	?= $(CURDIR)/../osdrv
 KERNEL_PATH	?= $(CURDIR)/../linux_5.10

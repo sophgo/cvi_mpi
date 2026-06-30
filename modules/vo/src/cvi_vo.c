@@ -239,7 +239,7 @@ CVI_S32 CVI_VO_SetPubAttr(VO_DEV VoDev, const VO_PUB_ATTR_S *pstPubAttr)
 
 	s32Ret = CVI_MSG_SendSync(u32ModFd, MSG_CMD_VO_SET_PUBATTR, (CVI_VOID *)pstPubAttr, sizeof(*pstPubAttr), CVI_NULL);
 	if (s32Ret != CVI_SUCCESS) {
-		CVI_TRACE_GDC(CVI_DBG_ERR, "CVI_VO_SetPubAttr fail,s32Ret:%x\n", s32Ret);
+		CVI_TRACE_VO(CVI_DBG_ERR, "CVI_VO_SetPubAttr fail,s32Ret:%x\n", s32Ret);
 		return s32Ret;
 	}
 
