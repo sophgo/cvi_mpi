@@ -31,9 +31,11 @@
 #include "dsi_icn9707.h"
 #include "dsi_3aml069lp01g.h"
 #include "dsi_st7701.h"
+#include "dsi_st7102.h"
 #include "dsi_hx8399_1080p.h"
 #include "dsi_gm8775c.h"
 #include "lvds_lcm185x56.h"
+#include "lvds_g101jls04_1024x600.h"
 #include "hw_mcu_st7789v3.h"
 #include "bt656_tp2803.h"
 #include "hw_mcu_st7789v.h"
@@ -79,7 +81,9 @@ typedef enum {
 	DSI_PANEL_OTA7290B_1920,
 	DSI_PANEL_OTA7290B,
 	DSI_PANEL_ST7701,
+	DSI_PANEL_ST7102,
 	LVDS_PANEL_LCM185X56,
+	LVDS_PANEL_G101JLS04_1024x600,
 	BT_PANEL_TP2803_BT656_1280x720_25FPS_72M,
 	I80_PANEL_ST7789V3_HW_MCU_240x320_60FPS,
 	I80_PANEL_ST7789V_HW_MCU_240x320_60FPS,
@@ -145,7 +149,9 @@ static char *s_panel_model_type_arr[] = {
 	"OTA7290B_1920",
 	"OTA7290B",
 	"ST7701",
+	"ST7102",
 	"LCM185X56",
+	"LVDS_G101JLS04_1024x600",
 	"TP2803_BT656_1280x720_25FPS_72M",
 	"ST7789V3_HW_MCU_RGB565_240x320_60FPS",
 	"ST7789V_HW_MCU_RGB565_240x320_60FPS",
@@ -510,6 +516,13 @@ void SAMPLE_SET_PANEL_DESC(void)
 		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_st7701_480x800;
 		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_st7701_480x800);
 		break;
+	case DSI_PANEL_ST7102:
+		g_panel_desc.panel_type = PANEL_MODE_DSI;
+		g_panel_desc.stdsicfg.dev_cfg = &dev_cfg_st7102_480x854;
+		g_panel_desc.stdsicfg.hs_timing_cfg = &hs_timing_cfg_st7102_480x854;
+		g_panel_desc.stdsicfg.dsi_init_cmds = dsi_init_cmds_st7102_480x854;
+		g_panel_desc.stdsicfg.dsi_init_cmds_size = ARRAY_SIZE(dsi_init_cmds_st7102_480x854);
+		break;
 	case DSI_PANEL_HX8399_1080P:
 		g_panel_desc.panel_type = PANEL_MODE_DSI;
 		g_panel_desc.stdsicfg.dev_cfg = &dev_cfg_hx8399_1080x1920;
@@ -583,6 +596,17 @@ void SAMPLE_SET_PANEL_DESC(void)
 		, .u16Vpw = 2, .u16Hpw = 20, .bIdv = 0, .bIhs = 0, .bIvs = 0};
 		g_panel_desc.stVoPubAttr.stSyncInfo = stLcm185x56_SyncInfo;
 		g_panel_desc.stVoPubAttr.stLvdsAttr = lvds_lcm185x56_cfg;
+		break;
+	case LVDS_PANEL_G101JLS04_1024x600:
+		g_panel_desc.panel_type = PANEL_MODE_LVDS;
+		g_panel_desc.stVoPubAttr.enIntfType = VO_INTF_LCD_24BIT;
+		g_panel_desc.stVoPubAttr.enIntfSync = VO_OUTPUT_USER;
+		VO_SYNC_INFO_S stG101jls04_SyncInfo = {.bSynm = 1, .bIop = 1, .u16FrameRate = 60
+		, .u16Vact = 600, .u16Vbb = 23, .u16Vfb = 12
+		, .u16Hact = 1024, .u16Hbb = 160, .u16Hfb = 160
+		, .u16Vpw = 0, .u16Hpw = 0, .bIdv = 0, .bIhs = 0, .bIvs = 0};
+		g_panel_desc.stVoPubAttr.stSyncInfo = stG101jls04_SyncInfo;
+		g_panel_desc.stVoPubAttr.stLvdsAttr = lvds_g101jls04_1024x600_cfg;
 		break;
 	case DSI_PANEL_LT9611_1440x720_60:
 		g_panel_desc.panel_type = PANEL_MODE_DSI;

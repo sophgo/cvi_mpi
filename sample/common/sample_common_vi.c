@@ -1004,6 +1004,9 @@ CVI_S32 SAMPLE_COMM_VI_GetSizeBySensor(SNS_TYPE_E enMode, PIC_SIZE_E *penSize)
 	case CISTA_C4390_MIPI_4M_30FPS_10BIT:
 		*penSize = PIC_1440P;
 		break;
+	case OV_OV4689_MIPI_4M_30FPS_10BIT:
+		*penSize = PIC_2688x1520;
+		break;
 	case SMS_SC301IOT_MIPI_3M_30FPS_10BIT:
 		*penSize = PIC_1536P;
 		break;
