@@ -115,6 +115,10 @@ VO_SYNC_INFO_S stSyncInfo[VO_OUTPUT_BUTT] = {
 		, .u16Vact = 1280, .u16Vbb = 4, .u16Vfb = 6
 		, .u16Hact = 720, .u16Hbb = 36, .u16Hfb = 128
 		, .u16Vpw = 16, .u16Hpw = 64, .bIdv = 0, .bIhs = 0, .bIvs = 1},
+	[VO_OUTPUT_720x1280_120] = {.bSynm = 1, .bIop = 1, .u16FrameRate = 120
+		, .u16Vact = 1280, .u16Vbb = 4, .u16Vfb = 6
+		, .u16Hact = 720, .u16Hbb = 36, .u16Hfb = 128
+		, .u16Vpw = 16, .u16Hpw = 64, .bIdv = 0, .bIhs = 0, .bIvs = 1},
 	[VO_OUTPUT_1080x1920_60] = {.bSynm = 1, .bIop = 1, .u16FrameRate = 60
 		, .u16Vact = 1920, .u16Vbb = 36, .u16Vfb = 6
 		, .u16Hact = 1080, .u16Hbb = 148, .u16Hfb = 88
@@ -1238,5 +1242,3 @@ CVI_S32 CVI_VO_GetGammaInfo(VO_GAMMA_INFO_S *pinfo)
 
 	return CVI_SUCCESS;
 }
-
-

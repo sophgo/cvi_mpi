@@ -26,6 +26,8 @@ struct combo_dev_cfg_s dev_cfg_hx8394_720x1280 = {
 		.vid_vsa_pos_polarity = false,
 		.vid_hsa_pos_polarity = true,
 	},
+	// case 1: HX8394 DSI pixel clock for 720x1280 at 60Hz, set pixel_clk at 74250KHz
+	// case 2: HX8394 DSI pixel clock for 720x1280 at 120Hz, set pixel_clk at 148500KHz
 	.pixel_clk = 74250,
 };
 
